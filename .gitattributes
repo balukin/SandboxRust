@@ -1,0 +1,61 @@
+# Audio
+*.aif                   lfs
+*.aiff                  lfs
+*.it                    lfs
+*.mod                   lfs
+*.mp3                   lfs
+*.ogg                   lfs
+*.s3m                   lfs
+*.wav                   lfs
+*.xm                    lfs
+
+# Video
+*.asf                   lfs
+*.avi                   lfs
+*.flv                   lfs
+*.mov                   lfs
+*.mp4                   lfs
+*.mpeg                  lfs
+*.mpg                   lfs
+*.ogv                   lfs
+*.wmv                   lfs
+
+# Images
+*.bmp                   lfs
+*.exr                   lfs
+*.gif                   lfs
+*.hdr                   lfs
+*.iff                   lfs
+*.jpeg                  lfs
+*.jpg                   lfs
+*.pict                  lfs
+*.png                   lfs
+*.psd                   lfs
+*.tga                   lfs
+*.tif                   lfs
+*.tiff                  lfs
+*.webp                  lfs
+
+# Compressed Archive
+*.7z                    lfs
+*.bz2                   lfs
+*.gz                    lfs
+*.rar                   lfs
+*.tar                   lfs
+*.zip                   lfs
+
+# Compiled Dynamic Library
+*.dll                   lfs
+*.pdb                   lfs
+*.so                    lfs
+
+# Fonts
+*.otf                   lfs
+*.ttf                   lfs
+
+# Executable/Installer
+*.apk                   lfs
+*.exe                   lfs
+
+# Documents
+*.pdf                   lfs
