@@ -22,6 +22,8 @@
     "PerMapRanking": false,
     "LeaderboardType": "None",
     "CsProjName": "",
-    "StartupScene": "scenes/minimal.scene"
+    "StartupScene": "scenes/main.scene",
+    "LaunchMode": "Normal",
+    "MapStartupScene": "scenes/main.scene"
   }
 }
