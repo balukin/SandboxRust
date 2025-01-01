@@ -124,40 +124,6 @@
       ]
     },
     {
-      "__guid": "9370a674-8b8e-4a47-ac87-6390f6c0c166",
-      "Flags": 0,
-      "Name": "Floor",
-      "Scale": "1000,1000,1",
-      "Enabled": true,
-      "Components": [
-        {
-          "__type": "Sandbox.ModelRenderer",
-          "__guid": "5bd8d323-9a22-4c7b-b748-0a7c1781c80f",
-          "BodyGroups": 18446744073709551615,
-          "CreateAttachments": false,
-          "MaterialOverride": "materials/floor.vmat",
-          "Model": "models/dev/plane.vmdl",
-          "RenderOptions": {
-            "GameLayer": true,
-            "OverlayLayer": false,
-            "BloomLayer": false,
-            "AfterUILayer": false
-          },
-          "RenderType": "Off",
-          "Tint": "1,1,1,1"
-        },
-        {
-          "__type": "Sandbox.PlaneCollider",
-          "__guid": "523c23d4-b57c-46a7-80b9-bf69b7fd0ed8",
-          "Center": "0,0,0",
-          "IsTrigger": false,
-          "Scale": "100,100",
-          "Static": true,
-          "SurfaceVelocity": "0,0,0"
-        }
-      ]
-    },
-    {
       "__guid": "46267e29-e1ab-4602-8065-8ad32284bd85",
       "Flags": 0,
       "Name": "Player",
@@ -338,6 +304,26 @@
           ]
         }
       ]
+    },
+    {
+      "__guid": "a8c81702-29e4-4502-974a-6d44febfcb71",
+      "Flags": 0,
+      "Name": "Map",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.MapInstance",
+          "__guid": "7363a30c-8cec-4f0f-9e44-532ee711a358",
+          "__version": 1,
+          "EnableCollision": true,
+          "MapName": "facepunch.flatgrass",
+          "NoOrigin": false,
+          "OnMapLoaded": null,
+          "OnMapUnloaded": null,
+          "UseMapFromLaunch": false
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {
