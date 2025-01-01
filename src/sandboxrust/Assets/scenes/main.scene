@@ -334,214 +334,121 @@
       "Enabled": true,
       "Children": [
         {
-          "__guid": "9ebba148-3222-479b-a7b3-b0d23d4663fc",
+          "__guid": "b61417c6-a125-484f-a943-40e0493f026c",
           "Flags": 0,
-          "Name": "barrel",
-          "Position": "23.3812,0,47.49332",
+          "Name": "barrel (3)",
+          "Position": "-90,0,0",
           "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "1503676d-1e86-44e9-981a-48b6609aa722",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
+          "__Prefab": "props/barrel.prefab",
+          "__PrefabVariables": {}
         },
         {
-          "__guid": "3ce91097-638d-4316-af8f-fe1b656a714d",
+          "__guid": "78ad0680-5e14-46ff-b46d-78950a3d7485",
           "Flags": 0,
-          "Name": "barrel",
-          "Position": "-18.55402,-37.61703,47.4933",
+          "Name": "barrel (6)",
+          "Position": "-45,0,94.84851",
           "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "c0903fb8-7824-4df1-bd5b-79c06898e541",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
+          "__Prefab": "props/barrel.prefab",
+          "__PrefabVariables": {}
         },
         {
-          "__guid": "36644409-fd68-4fff-a5d9-b27a9013f25f",
+          "__guid": "c371d931-4ac5-4b6a-8a2f-90cec40f3160",
           "Flags": 0,
-          "Name": "barrel",
-          "Position": "23.3812,-37.61703,47.4933",
+          "Name": "barrel (4)",
+          "Position": "-22.5,0,47.49997",
           "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "d5061a39-ec96-4a1a-9e9a-4ad86b7c96bf",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
+          "__Prefab": "props/barrel.prefab",
+          "__PrefabVariables": {}
         },
         {
-          "__guid": "b1081ca8-1f7c-46b9-95ed-fa39e31064ca",
+          "__guid": "dc3fa2f2-a115-4a1b-93da-24c2c80c7829",
           "Flags": 0,
-          "Name": "barrel",
-          "Position": "-38.90712,-37.61703,0",
+          "Name": "barrel (5)",
+          "Position": "-67.5,0,47.49997",
           "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "d21f7acb-d606-48fd-96fd-e7df6a468bd8",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
+          "__Prefab": "props/barrel.prefab",
+          "__PrefabVariables": {}
         },
         {
-          "__guid": "fa6c98e3-7c19-4970-93bb-2d647fa9f244",
+          "__guid": "9f72f1c2-fc9b-4dd8-bdb9-8ac105ce2ffb",
           "Flags": 0,
-          "Name": "barrel",
-          "Position": "41.56357,-37.61703,0",
+          "Name": "barrel (2)",
           "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "669de2c5-3fee-4a28-8e15-ac266bf090f9",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
+          "__Prefab": "props/barrel.prefab",
+          "__PrefabVariables": {}
         },
         {
-          "__guid": "52534eb3-c65e-4b5e-9b7f-7fb5728dd17c",
+          "__guid": "1afe6efe-df05-4329-b790-0d2f9004ed3e",
           "Flags": 0,
-          "Name": "barrel",
-          "Position": "-0.00003051758,-37.61703,0",
+          "Name": "barrel (1)",
+          "Position": "-45,0,0",
           "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "6f2a7365-41a7-4f4e-9b29-053e8d837e26",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
+          "__Prefab": "props/barrel.prefab",
+          "__PrefabVariables": {}
+        }
+      ]
+    },
+    {
+      "__guid": "f483c6d7-b374-4530-977f-52158dfea7b6",
+      "Flags": 0,
+      "Name": "Cubemap",
+      "Position": "168.0294,-135.5717,202.4301",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.EnvmapProbe",
+          "__guid": "7b2ac681-0478-4e01-acde-9d444fd96ff1",
+          "Bounds": {
+            "Mins": "-300,-300,-300",
+            "Maxs": "300,300,300"
+          },
+          "DelayBetweenUpdates": 0.1,
+          "Feathering": 0.25,
+          "FrameInterval": 4,
+          "MaxDistance": 150,
+          "MultiBounce": false,
+          "Projection": "Box",
+          "RenderDynamically": true,
+          "Texture": "textures/cubemaps/default2.vtex",
+          "TintColor": "1,1,1,1",
+          "UpdateStrategy": "FrameInterval",
+          "ZFar": 512,
+          "ZNear": 2
+        }
+      ]
+    },
+    {
+      "__guid": "bb845221-fe5f-4ef9-af42-12703a98b409",
+      "Flags": 0,
+      "Name": "Boxes",
+      "Position": "264.4928,-8.556137,158.9301",
+      "Enabled": true,
+      "Children": [
+        {
+          "__guid": "93759109-9f66-4297-a785-58ec4edc793d",
+          "Flags": 0,
+          "Name": "box",
+          "Position": "-36.25017,0,52.09076",
+          "Enabled": true,
+          "__Prefab": "props/box.prefab",
+          "__PrefabVariables": {}
         },
         {
-          "__guid": "52ef177f-00e8-4256-9269-ec0b9c33350d",
+          "__guid": "74d95c54-70c4-4a54-965c-99b6236522ec",
           "Flags": 0,
-          "Name": "barrel",
-          "Position": "-18.55399,0,47.49332",
+          "Name": "box",
+          "Position": "-61.4256,0,0.00004577637",
           "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "dd6861cd-a4e4-434d-a8cf-29e5fa78fbf7",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
+          "__Prefab": "props/box.prefab",
+          "__PrefabVariables": {}
         },
         {
-          "__guid": "0a371b88-9399-4650-8aa7-28f6be32ee89",
+          "__guid": "3f35a973-6680-41e0-907f-77505fbc2898",
           "Flags": 0,
-          "Name": "barrel",
-          "Position": "-38.90709,0,0",
+          "Name": "box",
           "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "30bf4e94-1eec-4aa8-b022-d8fbc06af3bd",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
-        },
-        {
-          "__guid": "1ba3ec4d-f28c-40a2-b766-5fe5fcba8ec7",
-          "Flags": 0,
-          "Name": "barrel",
-          "Position": "41.56363,0,0",
-          "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "91bc1688-36db-4854-9bf8-359eb9a5bae0",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
-        },
-        {
-          "__guid": "50241c66-456a-468b-9511-e8582764a280",
-          "Flags": 0,
-          "Name": "barrel",
-          "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "25f44d89-90e8-4677-84d7-97a085eaf6f7",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
-        },
-        {
-          "__guid": "32ef4a05-fc6a-430b-a2c2-a47062ad5b78",
-          "Flags": 0,
-          "Name": "barrel",
-          "Position": "1.359283,-21.05873,94.92671",
-          "Rotation": "0,0.000000000000001776357,0.9999999,0.00000004417284",
-          "Scale": "2,2,2",
-          "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.Prop",
-              "__guid": "b9a6916c-2a5b-4d03-88ae-801588d8c972",
-              "BodyGroups": 18446744073709551615,
-              "Health": 0,
-              "IsStatic": false,
-              "Model": "models/metalbarrel.vmdl",
-              "StartAsleep": false,
-              "Tint": "1,1,1,1"
-            }
-          ]
+          "__Prefab": "props/box.prefab",
+          "__PrefabVariables": {}
         }
       ]
     }
@@ -574,7 +481,6 @@
   "Description": null,
   "__references": [
     "jodiscontent.spray1#24114",
-    "luke.dnd_metalbarrel#60589",
     "yupigames.viewmodel_usa_colt45_pistol_lod0#61815"
   ],
   "__version": 2
