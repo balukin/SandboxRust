@@ -45,6 +45,82 @@
           "ZFar": 10000,
           "ZNear": 10
         }
+      ],
+      "Children": [
+        {
+          "__guid": "fe388b3d-1f3e-4a64-ba30-640a1ad28edc",
+          "Flags": 0,
+          "Name": "VmGun",
+          "Position": "18.16621,-7.200005,-4.952101",
+          "Rotation": "0,0,1,-0.00000004371139",
+          "Components": [
+            {
+              "__type": "Sandbox.SkinnedModelRenderer",
+              "__guid": "b2cc0572-b18d-495c-910e-95dfa9c80ec6",
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "CreateBoneObjects": false,
+              "Model": "models/weapons_activision/viewmodel_usa_colt45_pistol/viewmodel_usa_colt45_pistol_lod0.vmdl",
+              "Morphs": {},
+              "Parameters": {
+                "bools": {},
+                "ints": {},
+                "floats": {},
+                "vectors": {},
+                "rotations": {}
+              },
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Sequence": {
+                "Name": null
+              },
+              "Tint": "1,1,1,1",
+              "UseAnimGraph": true
+            }
+          ]
+        },
+        {
+          "__guid": "ff80b390-918f-4253-847b-41165530068b",
+          "Flags": 0,
+          "Name": "VmSpray",
+          "Position": "18.16624,-7.199998,-20.85213",
+          "Rotation": "0,0,0.4984891,0.866896",
+          "Components": [
+            {
+              "__type": "Sandbox.SkinnedModelRenderer",
+              "__guid": "9494502f-b6f5-4a65-b064-786f6f11ffb4",
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "CreateBoneObjects": false,
+              "Model": "models/spray1.vmdl",
+              "Morphs": {},
+              "Parameters": {
+                "bools": {},
+                "ints": {},
+                "floats": {},
+                "vectors": {},
+                "rotations": {}
+              },
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Sequence": {
+                "Name": null
+              },
+              "Tint": "1,1,1,1",
+              "UseAnimGraph": true
+            }
+          ]
+        }
       ]
     },
     {
@@ -181,6 +257,19 @@
           "__guid": "a17b5a80-d605-4972-99d9-a6534c83fe1e",
           "ClimbableTags": "ladder",
           "Priority": 5
+        },
+        {
+          "__type": "WeaponSwitcher",
+          "__guid": "dd6e6979-35a5-47d5-b1fd-4b1716aac807",
+          "CurrentWeapon": "Spray",
+          "GunGo": {
+            "_type": "gameobject",
+            "go": "fe388b3d-1f3e-4a64-ba30-640a1ad28edc"
+          },
+          "SprayGo": {
+            "_type": "gameobject",
+            "go": "ff80b390-918f-4253-847b-41165530068b"
+          }
         }
       ],
       "Children": [
@@ -278,6 +367,9 @@
   "ResourceVersion": 2,
   "Title": null,
   "Description": null,
-  "__references": [],
+  "__references": [
+    "jodiscontent.spray1#24114",
+    "yupigames.viewmodel_usa_colt45_pistol_lod0#61815"
+  ],
   "__version": 2
 }
