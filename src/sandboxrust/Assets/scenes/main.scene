@@ -2,25 +2,6 @@
   "__guid": "3c3688de-581b-4650-b707-4cafbb0adb9e",
   "GameObjects": [
     {
-      "__guid": "883879e6-66c2-4fda-bb89-b1d5134c54b7",
-      "Flags": 0,
-      "Name": "Sun",
-      "Rotation": "-0.1464466,0.3535534,0.3535534,0.8535534",
-      "Tags": "light,light_directional",
-      "Enabled": true,
-      "Components": [
-        {
-          "__type": "Sandbox.DirectionalLight",
-          "__guid": "f7e790b6-349b-4694-9cbc-b25334deca80",
-          "FogMode": "Enabled",
-          "FogStrength": 1,
-          "LightColor": "1,1,1,1",
-          "Shadows": true,
-          "SkyColor": "0,0,0,0"
-        }
-      ]
-    },
-    {
       "__guid": "379816cd-f45e-4bc5-b7ae-b1a4a9a606e4",
       "Flags": 0,
       "Name": "MainCamera",
