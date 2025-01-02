@@ -19,7 +19,7 @@
           "AfterUILayer": false
         },
         "RenderType": "On",
-        "Tint": "1,1,1,1"
+        "Tint": "0.77674,0.27096,0.27096,1"
       },
       {
         "__type": "Sandbox.HullCollider",
