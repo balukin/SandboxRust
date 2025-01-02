@@ -42,4 +42,3 @@ bld/
 msbuild.log
 msbuild.err
 msbuild.wrn
-**/*.shader_c
