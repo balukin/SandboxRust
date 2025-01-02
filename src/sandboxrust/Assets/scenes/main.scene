@@ -418,7 +418,7 @@
           "__guid": "74d95c54-70c4-4a54-965c-99b6236522ec",
           "Flags": 0,
           "Name": "box",
-          "Position": "-61.4256,0,0.00004577637",
+          "Position": "-61.4256,0,115.0666",
           "Enabled": true,
           "__Prefab": "props/box.prefab",
           "__PrefabVariables": {}
