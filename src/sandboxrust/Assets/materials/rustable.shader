@@ -13,7 +13,7 @@ MODES
 COMMON
 {
 	#include "common/shared.hlsl"
-	#include "common/classes/AmbientLight.hlsl"	
+	#include "common/classes/AmbientLight.hlsl"	    	
 }
 
 struct VertexInput
@@ -46,6 +46,8 @@ PS
 	#include "light_probe_volume.fxc"
 	#include "envmap_filtering.hlsl"
 
+	Texture2D RustData < Attribute( "RustData" ); >;
+	SamplerState RustSampler;
 
 	// Finds the closest environment map and samples it, loosely based on base library AmbientLight::FromEnvMapProbe
     float3 SampleMetallicReflection(float3 WorldPosition, float2 ScreenPosition, float3 WorldNormal, float3 ViewDir)
@@ -57,7 +59,7 @@ PS
         const uint2 tile = GetTileForScreenPosition(ScreenPosition);
         
         float3 reflectionColor = float3(0, 0, 0);
-        float closestDistance = 100000.0f; // Initialize with a large value
+        float closestDistance = 100000.0f;
         uint closestIndex = 0;
         
         // Iterate over environment maps in the tile
@@ -89,19 +91,44 @@ PS
         return reflectionColor;
     }
 
+	// Sample the texture in a triplanar manner - should be good enough for mapping the rust data across the surface
+	float3 SampleTriplanar(float3 worldPos, float3 worldNormal, Texture2D tex, SamplerState samp)
+    {
+		const float scale = 0.05f;
+        float3 scaledPos = worldPos * scale;
+
+		// Calculate weights based on the normal
+        float3 blendWeights = abs(worldNormal);
+        blendWeights = blendWeights / (blendWeights.x + blendWeights.y + blendWeights.z);
+
+        // Sample the texture for each axis
+        float3 xSample = tex.Sample(samp, scaledPos.yz).rgb;
+        float3 ySample = tex.Sample(samp, scaledPos.xz).rgb;
+        float3 zSample = tex.Sample(samp, scaledPos.xy).rgb;
+
+        // Blend the samples based on the weights
+        return xSample * blendWeights.x + ySample * blendWeights.y + zSample * blendWeights.z;
+    }
+
     #include "common/pixel.hlsl"
 
 	float4 MainPs( PixelInput i ) : SV_Target0
 	{
 		float3 absoluteWorldPos = i.vPositionWithOffsetWs + g_vCameraPositionWs;
-		float3 viewDir = normalize(g_vCameraPositionWs - i.vPositionWithOffsetWs);
+		// float3 viewDir = normalize(g_vCameraPositionWs - i.vPositionWithOffsetWs);
 		
-		float3 reflectionColor = SampleMetallicReflection(absoluteWorldPos, i.vPositionSs.xy / i.vPositionSs.w, i.vNormalWs, viewDir);
-		
-		Material m = Material::From( i );
-		m.Albedo.rgb = reflectionColor;
-		return ShadingModelStandard::Shade( i, m );
-	}
+		// float3 reflectionColor = SampleMetallicReflection(absoluteWorldPos, i.vPositionSs.xy / i.vPositionSs.w, i.vNormalWs, viewDir);
 
-	
+		// // TODO: For now testing world pos triplanar sampling - later we're gonna need to move to object space independent of the world transform
+        // float3 triplanarSample = SampleTriplanar(absoluteWorldPos, i.vNormalWs, RustData, RustSampler);
+		// return float4(triplanarSample, 1);
+		
+		// Material m = Material::From( i );
+		// // m.Albedo.rgb = reflectionColor; // disable for now
+		// m.Albedo.rgb = triplanarSample;
+		// return ShadingModelStandard::Shade( i, m );
+
+		float3 triplanarSample = SampleTriplanar(absoluteWorldPos, i.vNormalWs, RustData, RustSampler);
+		return float4(triplanarSample, 1.0);
+	}
 }

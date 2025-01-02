@@ -50,6 +50,10 @@
         "OverrideMassCenter": false,
         "RigidbodyFlags": 0,
         "StartAsleep": false
+      },
+      {
+        "__type": "RustableObject",
+        "__guid": "a399fbf4-4172-4248-a831-5b8c265aecad"
       }
     ],
     "Children": [],
