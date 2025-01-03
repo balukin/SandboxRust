@@ -415,64 +415,6 @@
           "__PrefabVariables": {}
         },
         {
-          "__guid": "cbdafe9a-b931-430d-827d-49164c6ec18d",
-          "Flags": 0,
-          "Name": "tbox",
-          "Position": "-61.4256,-71.95988,43.21214",
-          "Enabled": true,
-          "Components": [
-            {
-              "__type": "Sandbox.ModelRenderer",
-              "__guid": "fdf66559-ad7a-4d87-a394-602fa4837118",
-              "BodyGroups": 18446744073709551615,
-              "CreateAttachments": false,
-              "Model": "models/dev/box.vmdl",
-              "RenderOptions": {
-                "GameLayer": true,
-                "OverlayLayer": false,
-                "BloomLayer": false,
-                "AfterUILayer": false
-              },
-              "RenderType": "On",
-              "Tint": "1,1,1,1"
-            },
-            {
-              "__type": "Sandbox.BoxCollider",
-              "__guid": "51c3d65c-df20-4491-b815-7224bf2ba7ba",
-              "Center": "0,0,0",
-              "IsTrigger": false,
-              "Scale": "50,50,50",
-              "Static": false,
-              "SurfaceVelocity": "0,0,0"
-            },
-            {
-              "__type": "Sandbox.Rigidbody",
-              "__guid": "49660609-7f7e-444b-97f3-6ec7195765cd",
-              "AngularDamping": 0,
-              "Gravity": true,
-              "LinearDamping": 0,
-              "Locking": {
-                "X": false,
-                "Y": false,
-                "Z": false,
-                "Pitch": false,
-                "Yaw": false,
-                "Roll": false
-              },
-              "MassCenterOverride": "0,0,0",
-              "MassOverride": 0,
-              "MotionEnabled": true,
-              "OverrideMassCenter": false,
-              "RigidbodyFlags": 0,
-              "StartAsleep": false
-            },
-            {
-              "__type": "RustableObject",
-              "__guid": "27a7df08-dd44-43e3-bcc8-26f986d470a8"
-            }
-          ]
-        },
-        {
           "__guid": "74d95c54-70c4-4a54-965c-99b6236522ec",
           "Flags": 0,
           "Name": "box",
