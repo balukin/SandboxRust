@@ -4,16 +4,8 @@ Layer0
 {
 	shader "materials/rustable.shader"
 
-	//---- Fog ----
-	g_bFogEnabled "1"
-
 	//---- Material ----
-	TextureAmbientOcclusion "materials/default/default_ao.tga"
-	TextureBlendMask "materials/default/default_blend.tga"
+	RustData "materials/default/default.tga"
 	TextureColor "materials/default/default_color.tga"
-	TextureMetalness "materials/default/default_metal.tga"
-	TextureNormal "materials/default/default_normal.tga"
-	TextureRoughness "materials/default/default_rough.tga"
-	TextureTintMask "materials/default/default.tga"
 	TextureTranslucency "materials/default/default_trans.tga"
 }

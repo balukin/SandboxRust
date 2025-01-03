@@ -1,5 +1,6 @@
 using System;
 using Sandbox;
+using Sandbox.Diagnostics;
 
 /// <summary>
 /// Component for objects that can have rust applied to them.
@@ -9,7 +10,7 @@ public sealed class RustableObject : Component
 
 	ModelRenderer modelRenderer;
 
-	[Property]
+	// [Property]
 	public Texture RustData { get; set; }
 
 	protected override void OnStart()
@@ -19,10 +20,10 @@ public sealed class RustableObject : Component
 
 		modelRenderer = GetComponent<ModelRenderer>();
 
-		// Create per-instance material?
-		var instanceMaterial = modelRenderer.GetMaterial( 0 ).CreateCopy();
-		instanceMaterial.Attributes.Set( "RustData", RustData );
-		modelRenderer.SetMaterial( instanceMaterial );		
+		// Create per-instance material - TODO: does it load already as an instance or is it shared?
+		var instanceMaterial = Material.Load( "materials/rustable_untextured.vmat" ).CreateCopy();
+		modelRenderer.MaterialOverride = instanceMaterial;
+		instanceMaterial.Set( "RustData", RustData );
 	}
 
 	/// <summary>
@@ -32,14 +33,16 @@ public sealed class RustableObject : Component
 	{
 		// Random garbage to check if it's even getting to the shader
 		var data = new byte[width * height * 3];
-		const int checkerboardSizeR = 32;
-		const int checkerboardSizeG = 16;
-		const int checkerboardSizeB = 8;
+		const int globalMultiplier = 16;
+		const int checkerboardSizeR = 32 * globalMultiplier;
+		const int checkerboardSizeG = 16 * globalMultiplier;
+		const int checkerboardSizeB = 8 * globalMultiplier;
 		
 		for ( int y = 0; y < height; y++ )
 		{
 			for ( int x = 0; x < width; x++ )
 			{
+				
 				int index = (y * width + x) * 3;
 
 				// Red channel: checkerboard size of 32
@@ -53,13 +56,14 @@ public sealed class RustableObject : Component
 				// Blue channel: checkerboard size of 8
 				bool darkOrLightB = ((x / checkerboardSizeB) + (y / checkerboardSizeB)) % 2 == 0;
 				data[index + 2] = darkOrLightB ? (byte)100 : (byte)200;
+
+				
 			}
 		}
 
-		return new Texture2DBuilder()
-			.WithSize( width, height )
-			.WithFormat( ImageFormat.RGB888 )
-			.WithData( data )
+		return Texture.Create(width, height, ImageFormat.RGB888 )
+			.WithDynamicUsage()
+			.WithData( data, data.Length )
 			.Finish();
 	}
 }

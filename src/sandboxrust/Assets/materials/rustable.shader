@@ -13,7 +13,11 @@ MODES
 COMMON
 {
 	#include "common/shared.hlsl"
-	#include "common/classes/AmbientLight.hlsl"	    	
+	#include "common/classes/AmbientLight.hlsl"	 
+    
+    // wat
+	CreateInputTexture2D( RustData, Srgb, 8, "", "_rustdata", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) ); 
+    CreateTexture2D( g_tRustData ) < Channel( RGB, Box( RustData ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;
 }
 
 struct VertexInput
@@ -45,9 +49,6 @@ PS
 	#include "vr_environment_map.fxc"    
 	#include "light_probe_volume.fxc"
 	#include "envmap_filtering.hlsl"
-
-	Texture2D RustData < Attribute( "RustData" ); >;
-	SamplerState RustSampler;
 
 	// Finds the closest environment map and samples it, loosely based on base library AmbientLight::FromEnvMapProbe
     float3 SampleMetallicReflection(float3 WorldPosition, float2 ScreenPosition, float3 WorldNormal, float3 ViewDir)
@@ -92,7 +93,7 @@ PS
     }
 
 	// Sample the texture in a triplanar manner - should be good enough for mapping the rust data across the surface
-	float3 SampleTriplanar(float3 worldPos, float3 worldNormal, Texture2D tex, SamplerState samp)
+	float3 SampleTriplanar(float3 worldPos, float3 worldNormal)
     {
 		const float scale = 0.05f;
         float3 scaledPos = worldPos * scale;
@@ -102,9 +103,9 @@ PS
         blendWeights = blendWeights / (blendWeights.x + blendWeights.y + blendWeights.z);
 
         // Sample the texture for each axis
-        float3 xSample = tex.Sample(samp, scaledPos.yz).rgb;
-        float3 ySample = tex.Sample(samp, scaledPos.xz).rgb;
-        float3 zSample = tex.Sample(samp, scaledPos.xy).rgb;
+        float3 xSample = g_tRustData.Sample(g_sPointWrap, scaledPos.yz).rgb;
+        float3 ySample = g_tRustData.Sample(g_sPointWrap, scaledPos.xz).rgb;
+        float3 zSample = g_tRustData.Sample(g_sPointWrap, scaledPos.xy).rgb;
 
         // Blend the samples based on the weights
         return xSample * blendWeights.x + ySample * blendWeights.y + zSample * blendWeights.z;
@@ -128,7 +129,7 @@ PS
 		// m.Albedo.rgb = triplanarSample;
 		// return ShadingModelStandard::Shade( i, m );
 
-		float3 triplanarSample = SampleTriplanar(absoluteWorldPos, i.vNormalWs, RustData, RustSampler);
+		float3 triplanarSample = SampleTriplanar(absoluteWorldPos, i.vNormalWs);
 		return float4(triplanarSample, 1.0);
 	}
 }
