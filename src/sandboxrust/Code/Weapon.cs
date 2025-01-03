@@ -45,7 +45,7 @@ public class Weapon : Component
         
         // Perform raycast
         var tr = Scene.Trace.Ray(ray, 4096)
-            .IgnoreGameObjectHierarchy(GameObject.Parent)
+            .IgnoreGameObjectHierarchy(GameObject)
             .Run();
 
         if (!tr.Hit)
@@ -58,6 +58,7 @@ public class Weapon : Component
         DebugObject.Create()
             .WithName("Hit")
             .WithPosition(tr.HitPosition)
+            .WithDirection(tr.Normal)
             .WithTimeout(1f);
 
         // We have hit something - you can use tr.HitPosition and tr.Normal
