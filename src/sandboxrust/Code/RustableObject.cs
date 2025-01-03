@@ -10,8 +10,19 @@ public sealed class RustableObject : Component
 
 	ModelRenderer modelRenderer;
 
-	// [Property]
+	/// <summary>
+	/// Texture that holds all the data related to rusting in three channels.
+	/// R represents rusting factor - how much rust is on surface in this spot.
+	/// G represents moisture factor - how wet the surface is in this spot.
+	/// B represents structural integrity - starts at 1, decreases when rusty surface is hit by some projectile.
+	/// </summary>
 	public Texture RustData { get; set; }
+
+	/// <summary>
+	/// If set to true, the object will move around a bit to verify coord mappings. Don't use with actual physics.
+	/// </summary>
+	[Property]
+	public bool TestWiggle { get; set; }
 
 	protected override void OnStart()
 	{
@@ -65,5 +76,16 @@ public sealed class RustableObject : Component
 			.WithDynamicUsage()
 			.WithData( data, data.Length )
 			.Finish();
+	}
+
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+
+		if ( TestWiggle )
+		{
+			Transform.Local = Transform.Local
+				.WithRotation( Transform.Local.Rotation * Rotation.FromAxis( Vector3.Up, Time.Now / 15f ) );
+		}
 	}
 }

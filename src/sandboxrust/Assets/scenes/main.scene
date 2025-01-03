@@ -424,6 +424,45 @@
           "__PrefabVariables": {}
         },
         {
+          "__guid": "254c832e-c014-48d6-a18a-16b599c87546",
+          "Flags": 0,
+          "Name": "wigglybox",
+          "Position": "0,-101.9679,41.35701",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.ModelRenderer",
+              "__guid": "cc2c92ec-41e1-4dd5-9507-dd94df5ee6c8",
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "MaterialOverride": "materials/rustable_untextured.vmat",
+              "Model": "models/dev/box.vmdl",
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Tint": "1,1,1,1"
+            },
+            {
+              "__type": "Sandbox.BoxCollider",
+              "__guid": "73211632-deb9-4356-9bd5-e839cc33a7b8",
+              "Center": "0,0,0",
+              "IsTrigger": false,
+              "Scale": "50,50,50",
+              "Static": false,
+              "SurfaceVelocity": "0,0,0"
+            },
+            {
+              "__type": "RustableObject",
+              "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6",
+              "TestWiggle": true
+            }
+          ]
+        },
+        {
           "__guid": "3f35a973-6680-41e0-907f-77505fbc2898",
           "Flags": 0,
           "Name": "box",
