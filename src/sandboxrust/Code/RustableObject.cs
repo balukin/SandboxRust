@@ -24,6 +24,8 @@ public sealed class RustableObject : Component
 	[Property]
 	public bool TestWiggle { get; set; }
 
+	private SurfaceImpactHandler impactHandler;
+
 	protected override void OnStart()
 	{
 		base.OnStart();
@@ -35,6 +37,8 @@ public sealed class RustableObject : Component
 		var instanceMaterial = Material.Load( "materials/rustable_untextured.vmat" ).CreateCopy();
 		modelRenderer.MaterialOverride = instanceMaterial;
 		instanceMaterial.Set( "RustData", RustData );
+
+		impactHandler = GameObject.GetOrAddComponent<SurfaceImpactHandler>();
 	}
 
 	/// <summary>

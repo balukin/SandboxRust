@@ -3,12 +3,16 @@
 /// </summary>
 public class Weapon : Component
 {
+
     PlayerController player;
     WeaponSwitcher switcher;
-    
+
     [Property]
     public float ShootDelay { get; set; } = 0.1f;
-    
+
+    [Property]
+    public bool VisualizeHits { get; set; } = false;
+
     TimeSince timeSincePrimaryAttack;
 
     protected override void OnStart()
@@ -20,7 +24,7 @@ public class Weapon : Component
 
     protected override void OnFixedUpdate()
     {
-        if (Input.Pressed("attack1"))
+        if ( Input.Pressed( "attack1" ) )
         {
             TryShoot();
         }
@@ -29,40 +33,51 @@ public class Weapon : Component
     protected void TryShoot()
     {
         // Check if we can shoot again based on delay
-        if (timeSincePrimaryAttack < ShootDelay)
+        if ( timeSincePrimaryAttack < ShootDelay )
             return;
 
         timeSincePrimaryAttack = 0;
 
-        DebugObject.Create()
-            .WithName("Ray")
-            .WithPosition(player.EyeTransform.Position)
-            .WithDirection(player.EyeTransform.Forward)
-            .WithTimeout(2f);
+        if ( VisualizeHits )
+        {
+            // Spawn temporary shooting ray effect
+            DebugObject.Create()
+                .WithName( "Ray" )
+                .WithPosition( player.EyeTransform.Position )
+                .WithDirection( player.EyeTransform.Forward )
+                .WithTimeout( 2f );
+        }
 
         // Create a ray from camera position forward
         var ray = player.EyeTransform.ForwardRay;
-        
+
         // Perform raycast
-        var tr = Scene.Trace.Ray(ray, 4096)
-            .IgnoreGameObjectHierarchy(GameObject)
+        var tr = Scene.Trace.Ray( ray, 4096 )
+            .IgnoreGameObjectHierarchy( GameObject )
             .Run();
 
-        if (!tr.Hit)
+        if ( !tr.Hit )
         {
-            Log.Info("No hit");
             return;
         }
 
-        // Spawn temporary hit effect
-        DebugObject.Create()
-            .WithName("Hit")
-            .WithPosition(tr.HitPosition)
-            .WithDirection(tr.Normal)
-            .WithTimeout(1f);
+        var impactHandler = tr.GameObject.GetComponent<SurfaceImpactHandler>();
+        if ( impactHandler == null )
+        {
+            // Something we don't care about was hit
+            return;
+        }
 
-        // We have hit something - you can use tr.HitPosition and tr.Normal
-        // for effects or further processing
-        Log.Info($"Hit at position: {tr.HitPosition}, Normal: {tr.Normal}");
+        impactHandler.HandleImpact( tr.HitPosition, tr.Normal, switcher.CurrentWeapon );
+
+        if ( VisualizeHits )
+        {
+            // Spawn temporary hit effect
+            DebugObject.Create()
+                .WithName( "Hit" )
+                .WithPosition( tr.HitPosition )
+                .WithDirection( tr.Normal )
+                .WithTimeout( 1f );
+        }
     }
 }
