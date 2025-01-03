@@ -217,6 +217,11 @@
             "_type": "gameobject",
             "go": "ff80b390-918f-4253-847b-41165530068b"
           }
+        },
+        {
+          "__type": "Weapon",
+          "__guid": "40459d0a-360e-46f3-992a-2492732f4249",
+          "ShootDelay": 0.1
         }
       ],
       "Children": [
@@ -453,12 +458,22 @@
               "IsTrigger": false,
               "Scale": "50,50,50",
               "Static": false,
+              "Surface": "props/hittable_surface.surface",
               "SurfaceVelocity": "0,0,0"
             },
             {
               "__type": "RustableObject",
               "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6",
               "TestWiggle": true
+            },
+            {
+              "__type": "Sandbox.BoxCollider",
+              "__guid": "267d4f1d-3bb3-4da1-ba9d-13907964105a",
+              "Center": "0,0,0",
+              "IsTrigger": false,
+              "Scale": "50,50,50",
+              "Static": false,
+              "SurfaceVelocity": "0,0,0"
             }
           ]
         },
