@@ -28,6 +28,8 @@ struct VertexInput
 struct PixelInput
 {
 	#include "common/pixelinput.hlsl"
+    float3 vPositionOs : TEXCOORD8;    // Add object space position
+    float3 vNormalOs : TEXCOORD9;    // Add object space normal - TODO Verify the include - maybe it's there already
 };
 
 VS
@@ -36,10 +38,10 @@ VS
 
 	PixelInput MainVs( VertexInput i )
 	{
+        // Pass object space position and normal to pixel shader
 		PixelInput o = ProcessVertex( i );
-		
-		// float3x4 mtw = CalculateInstancingObjectToWorldMatrix( i );
-		
+		o.vPositionOs = i.vPositionOs.xyz;  
+        o.vNormalOs = i.vNormalOs.xyz;
 		return FinalizeVertex( o );
 	}
 }
@@ -92,24 +94,27 @@ PS
         return reflectionColor;
     }
 
-	// Sample the texture in a triplanar manner - should be good enough for mapping the rust data across the surface
-	float3 SampleTriplanar(float3 worldPos, float3 worldNormal)
+    float3 SampleTriplanar(float3 objectPos, float3 objectNormal)
     {
-		const float scale = 0.05f;
-        float3 scaledPos = worldPos * scale;
+        const float maxSize = 100.0;
+        float3 uvw = objectPos / maxSize + 0.5;
 
-		// Calculate weights based on the normal
-        float3 blendWeights = abs(worldNormal);
-        blendWeights = blendWeights / (blendWeights.x + blendWeights.y + blendWeights.z);
+        // Calculate blend weights
+        float3 blendWeights = abs(objectNormal);
+        blendWeights = pow(blendWeights, 2.0);
+        blendWeights = blendWeights / (blendWeights.x + blendWeights.y + blendWeights.z + 1e-5);
 
         // Sample the texture for each axis
-        float3 xSample = g_tRustData.Sample(g_sPointWrap, scaledPos.yz).rgb;
-        float3 ySample = g_tRustData.Sample(g_sPointWrap, scaledPos.xz).rgb;
-        float3 zSample = g_tRustData.Sample(g_sPointWrap, scaledPos.xy).rgb;
+        float3 xSample = g_tRustData.Sample(g_sBilinearClamp, uvw.yz).rgb; // YZ plane
+        float3 ySample = g_tRustData.Sample(g_sBilinearClamp, uvw.xz).rgb; // XZ plane
+        float3 zSample = g_tRustData.Sample(g_sBilinearClamp, uvw.xy).rgb; // XY plane
 
         // Blend the samples based on the weights
-        return xSample * blendWeights.x + ySample * blendWeights.y + zSample * blendWeights.z;
+        return xSample * blendWeights.x + 
+            ySample * blendWeights.y +  
+            zSample * blendWeights.z;
     }
+
 
     #include "common/pixel.hlsl"
 
@@ -129,7 +134,7 @@ PS
 		// m.Albedo.rgb = triplanarSample;
 		// return ShadingModelStandard::Shade( i, m );
 
-		float3 triplanarSample = SampleTriplanar(absoluteWorldPos, i.vNormalWs);
+		float3 triplanarSample = SampleTriplanar(i.vPositionOs, i.vNormalOs);
 		return float4(triplanarSample, 1.0);
 	}
 }

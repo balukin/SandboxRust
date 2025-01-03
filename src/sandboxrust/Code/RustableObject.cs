@@ -44,7 +44,7 @@ public sealed class RustableObject : Component
 	{
 		// Random garbage to check if it's even getting to the shader
 		var data = new byte[width * height * 3];
-		const int globalMultiplier = 16;
+		const int globalMultiplier = 4;
 		const int checkerboardSizeR = 32 * globalMultiplier;
 		const int checkerboardSizeG = 16 * globalMultiplier;
 		const int checkerboardSizeB = 8 * globalMultiplier;

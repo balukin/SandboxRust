@@ -35,6 +35,11 @@
         "Static": false,
         "SurfaceVelocity": "0,0,0",
         "Type": "Cylinder"
+      },
+      {
+        "__type": "RustableObject",
+        "__guid": "c5d4175f-bc9f-4bdd-a2ac-69c5b9ecfd86",
+        "TestWiggle": false
       }
     ],
     "Children": [],
