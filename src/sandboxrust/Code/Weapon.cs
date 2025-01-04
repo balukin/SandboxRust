@@ -24,7 +24,7 @@ public class Weapon : Component
 
     protected override void OnFixedUpdate()
     {
-        if ( Input.Pressed( "attack1" ) )
+        if ( Input.Down( "attack1" ) )
         {
             TryShoot();
         }
