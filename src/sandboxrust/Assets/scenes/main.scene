@@ -221,7 +221,8 @@
         {
           "__type": "Weapon",
           "__guid": "40459d0a-360e-46f3-992a-2492732f4249",
-          "ShootDelay": 0.1
+          "ShootDelay": 0.1,
+          "VisualizeHits": false
         }
       ],
       "Children": [
@@ -473,6 +474,7 @@
               "IsTrigger": false,
               "Scale": "50,50,50",
               "Static": false,
+              "Surface": "props/hittable_surface.surface",
               "SurfaceVelocity": "0,0,0"
             }
           ]
