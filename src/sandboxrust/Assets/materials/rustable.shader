@@ -15,9 +15,8 @@ COMMON
 	#include "common/shared.hlsl"
 	#include "common/classes/AmbientLight.hlsl"	 
     
-    // wat
-	CreateInputTexture2D( RustData, Srgb, 8, "", "_rustdata", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) ); 
-    CreateTexture2D( g_tRustData ) < Channel( RGB, Box( RustData ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;
+    CreateInputTexture3D( RustDataRead, Srgb, 8, "", "_rustdata_read", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) );
+    CreateTexture3D( g_tRustDataRead ) < Channel( RGB, Box( RustDataRead ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;
 }
 
 struct VertexInput
@@ -28,8 +27,7 @@ struct VertexInput
 struct PixelInput
 {
 	#include "common/pixelinput.hlsl"
-    float3 vPositionOs : TEXCOORD8;    // Add object space position
-    float3 vNormalOs : TEXCOORD9;    // Add object space normal - TODO Verify the include - maybe it's there already
+    float3 vPositionOs : TEXCOORD8;
 };
 
 VS
@@ -38,11 +36,9 @@ VS
 
 	PixelInput MainVs( VertexInput i )
 	{
-        // Pass object space position and normal to pixel shader
-		PixelInput o = ProcessVertex( i );
-		o.vPositionOs = i.vPositionOs.xyz;  
-        o.vNormalOs = i.vNormalOs.xyz;
-		return FinalizeVertex( o );
+        PixelInput o = ProcessVertex( i );
+        o.vPositionOs = i.vPositionOs.xyz;
+        return FinalizeVertex( o );
 	}
 }
 
@@ -94,29 +90,15 @@ PS
         return reflectionColor;
     }
 
-    float3 SampleTriplanar(float3 objectPos, float3 objectNormal)
-    {
-        const float maxSize = 100.0;
-        float3 uvw = objectPos / maxSize + 0.5;
-
-        // Calculate blend weights
-        float3 blendWeights = abs(objectNormal);
-        blendWeights = pow(blendWeights, 2.0);
-        blendWeights = blendWeights / (blendWeights.x + blendWeights.y + blendWeights.z + 1e-5);
-
-        // Sample the texture for each axis
-        float3 xSample = g_tRustData.Sample(g_sBilinearClamp, uvw.yz).rgb; // YZ plane
-        float3 ySample = g_tRustData.Sample(g_sBilinearClamp, uvw.xz).rgb; // XZ plane
-        float3 zSample = g_tRustData.Sample(g_sBilinearClamp, uvw.xy).rgb; // XY plane
-
-        // Blend the samples based on the weights
-        return xSample * blendWeights.x + 
-            ySample * blendWeights.y +  
-            zSample * blendWeights.z;
-    }
-
-
     #include "common/pixel.hlsl"
+
+    float rand()
+    {
+        float t = g_flTime;
+
+        // Nice random function
+        return frac(sin(dot(t, float3(12.345, 67.89, 123.456))) * 45678.9);
+    }
 
 	float4 MainPs( PixelInput i ) : SV_Target0
 	{
@@ -134,7 +116,13 @@ PS
 		// m.Albedo.rgb = triplanarSample;
 		// return ShadingModelStandard::Shade( i, m );
 
-		float3 triplanarSample = SampleTriplanar(i.vPositionOs, i.vNormalOs);
-		return float4(triplanarSample, 1.0);
+        // DEBUG: Read from the texture at given local position
+        float3 samplePos = i.vPositionOs / 50.0 + 0.5;
+
+        // sample at random value between 0 and 1
+        // float3 randV = float3(rand(), rand(), rand());
+        float3 rustData = g_tRustDataRead.Sample(g_sPointClamp, samplePos);
+        
+        return float4(rustData.rgb, 1.0);
 	}
 }

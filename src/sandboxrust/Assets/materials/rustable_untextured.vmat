@@ -5,7 +5,7 @@ Layer0
 	shader "materials/rustable.shader"
 
 	//---- Material ----
-	RustData "materials/default/default.tga"
+	RustDataRead "materials/default/default.tga"
 	TextureColor "materials/default/default_color.tga"
 	TextureTranslucency "materials/default/default_trans.tga"
 }

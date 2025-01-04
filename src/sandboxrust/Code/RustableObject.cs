@@ -7,17 +7,19 @@ using Sandbox.Diagnostics;
 /// </summary>
 public sealed class RustableObject : Component
 {
-	public const float MaxSize = 100.0f;
+	// We could create an optimized variant that 
+	// - uses precomputed data maps projected onto the object, similarly to UVs
+	// - for a cube, uses 6-sheet texture at higher resolution instead of 3D texture
+	// but let's do it stupidly simple for now - with a 3D texture representing data stretched across the object bbox (const 50 for now)
+	public const float MaxSize = 50.0f;
 
 	ModelRenderer modelRenderer;
 
-	/// <summary>
-	/// Texture that holds all the data related to rusting in three channels.
-	/// R represents rusting factor - how much rust is on surface in this spot.
-	/// G represents moisture factor - how wet the surface is in this spot.
-	/// B represents structural integrity - starts at 1, decreases when rusty surface is hit by some projectile.
-	/// </summary>
-	public Texture RustData { get; set; }
+	private Texture RustData { get; set; }
+	private Texture RustDataSimBuffer { get; set; }
+
+	private ComputeShader impactShader;
+	private ComputeShader simulationShader;
 
 	/// <summary>
 	/// If set to true, the object will move around a bit to verify coord mappings. Don't use with actual physics.
@@ -25,64 +27,73 @@ public sealed class RustableObject : Component
 	[Property]
 	public bool TestWiggle { get; set; }
 
+	private Material instanceMaterial;
+
 	private SurfaceImpactHandler impactHandler;
 
+	private const int TextureSize = 64;
 	protected override void OnStart()
 	{
 		base.OnStart();
-		RustData = CreateDebugTexture( 1024, 1024 );
+
+		// Create two 3D textures for ping-pong simulation
+		RustData = CreateVolumeTexture(64);
+		RustDataSimBuffer = CreateVolumeTexture(64);
 
 		modelRenderer = GetComponent<ModelRenderer>();
 
 		// Create per-instance material - TODO: does it load already as an instance or is it shared?
-		var instanceMaterial = Material.Load( "materials/rustable_untextured.vmat" ).CreateCopy();
+		instanceMaterial = Material.Load( "materials/rustable_untextured.vmat" ).CreateCopy();
 		modelRenderer.MaterialOverride = instanceMaterial;
-		instanceMaterial.Set( "RustData", RustData );
+		instanceMaterial.Set("RustDataRead", RustData);
+
+		impactShader = new ComputeShader("shaders/rust_impact");
+		simulationShader = new ComputeShader("shaders/rust_simulation");
 
 		impactHandler = GameObject.GetOrAddComponent<SurfaceImpactHandler>();
 		impactHandler.OnImpact += ProcessImpact;
 	}
 
-	/// <summary>
-	/// Create a texture that will hold rusting data.
-	/// </summary>
-	private Texture CreateDebugTexture( int width, int height )
+	private Texture CreateVolumeTexture(int size)
 	{
 		// Random garbage to check if it's even getting to the shader
-		var data = new byte[width * height * 3];
-		const int globalMultiplier = 4;
-		const int checkerboardSizeR = 32 * globalMultiplier;
-		const int checkerboardSizeG = 16 * globalMultiplier;
-		const int checkerboardSizeB = 8 * globalMultiplier;
+		var data = new byte[size * size * size * 3];
+		const int globalMultiplier = 1;
+		const int checkerboardSizeR = 16 * globalMultiplier;
+		const int checkerboardSizeG = 4 * globalMultiplier;
+		const int checkerboardSizeB = 1 * globalMultiplier;
 
 		const int dark = 10;
 		const int light = 60;
-		for ( int y = 0; y < height; y++ )
+
+		for (int z = 0; z < size; z++)
 		{
-			for ( int x = 0; x < width; x++ )
+			for (int y = 0; y < size; y++)
 			{
+				for (int x = 0; x < size; x++)
+				{
+					int index = (z * size * size + y * size + x) * 3;
 
-				int index = (y * width + x) * 3;
+					// Red channel: large checkerboard
+					bool darkOrLightR = ((x / checkerboardSizeR) + (y / checkerboardSizeR) + (z / checkerboardSizeR)) % 2 == 0;
+					data[index] = darkOrLightR ? (byte)dark : (byte)light;
 
-				// Red channel: checkerboard size of 32
-				bool darkOrLightR = ((x / checkerboardSizeR) + (y / checkerboardSizeR)) % 2 == 0;
-				data[index] = darkOrLightR ? (byte)dark : (byte)light;
+					// Green channel: medium checkerboard
+					bool darkOrLightG = ((x / checkerboardSizeG) + (y / checkerboardSizeG) + (z / checkerboardSizeG)) % 2 == 0;
+					data[index + 1] = darkOrLightG ? (byte)dark : (byte)light;
 
-				// Green channel: checkerboard size of 16
-				bool darkOrLightG = ((x / checkerboardSizeG) + (y / checkerboardSizeG)) % 2 == 0;
-				data[index + 1] = darkOrLightG ? (byte)dark : (byte)light;
-
-				// Blue channel: checkerboard size of 8
-				bool darkOrLightB = ((x / checkerboardSizeB) + (y / checkerboardSizeB)) % 2 == 0;
-				data[index + 2] = darkOrLightB ? (byte)dark : (byte)light;
-
-
+					// Blue channel: small checkerboard
+					bool darkOrLightB = ((x / checkerboardSizeB) + (y / checkerboardSizeB) + (z / checkerboardSizeB)) % 2 == 0;
+					data[index + 2] = darkOrLightB ? (byte)dark : (byte)light;
+				}
 			}
 		}
 
-		return Texture.Create( width, height, ImageFormat.RGB888 )
+		// https://wiki.facepunch.com/sbox/Compute_Shaders
+		return Texture.CreateVolume(size, size, size, ImageFormat.RGB888)
 			.WithDynamicUsage()
-			.WithData( data, data.Length )
+			.WithUAVBinding()
+			.WithData(data)
 			.Finish();
 	}
 
@@ -95,134 +106,41 @@ public sealed class RustableObject : Component
 			Transform.Local = Transform.Local
 				.WithRotation( Transform.Local.Rotation * Rotation.FromAxis( Vector3.Up, Time.Now / 15f ) );
 		}
+
+		
 	}
 
-	private void ProcessImpact( Vector3 positionWs, Vector3 normalWs, WeaponType weaponType )
+	private void RunSimulation()
 	{
-		var positionOs = Transform.World.PointToLocal( positionWs );
-		var normalOs = Transform.World.NormalToLocal( normalWs );
+		// TODO: fix ping-pong swaps
+		// Run simulation step
+		// simulationShader.Attributes.Set("Source", usingTextureA ? RustDataA : RustDataB);
+		// simulationShader.Attributes.Set("Target", usingTextureA ? RustDataB : RustDataA);
 
-		if ( weaponType == WeaponType.Spray )
-		{
-			SprayWater( positionOs, normalOs, 1f );
-		}
+		// simulationShader.Dispatch(TextureSize, TextureSize, TextureSize);
+
+		// Swap textures
+		// readingTextureA = !readingTextureA;
 	}
 
-	/// <summary>
-	/// Writes a value to texture data using triplanar projection
-	/// </summary>
-	private void WriteTriplanarValue( Span<Color3> textureData, int width, int height,
-		Vector3 objectPos, Vector3 objectNormal, Color3 valueToBlend )
+	private void ProcessImpact(Vector3 positionWs, Vector3 normalWs, WeaponType weaponType)
 	{
-		// Get the triplanar mapping in the same fashion as we do it in the rustable.shader
-		var (yzCoord, xzCoord, xyCoord, weights) = GetTriplanarMapping( objectPos, objectNormal );
+		var positionOs = Transform.World.PointToLocal(positionWs);
 
-		// Convert UV to pixel coordinates for each projection
-		var yzPixel = new Vector2(
-			(int)(yzCoord.x * width).Clamp( 0, width - 1 ),
-			(int)(yzCoord.y * height).Clamp( 0, height - 1 )
-		);
-		var xzPixel = new Vector2(
-			(int)(xzCoord.x * width).Clamp( 0, width - 1 ),
-			(int)(xzCoord.y * height).Clamp( 0, height - 1 )
-		);
-		var xyPixel = new Vector2(
-			(int)(xyCoord.x * width).Clamp( 0, width - 1 ),
-			(int)(xyCoord.y * height).Clamp( 0, height - 1 )
-		);
+		// Convert to 0-1 space for texture sampling
+		var texPos = (positionOs / MaxSize) + Vector3.One * 0.5f;
 
-		// Write weighted values to each projection
-		if ( weights.x > 0.01f )
+		if (true || weaponType == WeaponType.Spray)
 		{
-			int yzIndex = (int)(yzPixel.y * width + yzPixel.x);
-			BlendColorAtIndex( textureData, yzIndex, valueToBlend, weights.x );
+			impactShader.Attributes.Set("DataTexture", RustData);
+			impactShader.Attributes.Set("ImpactPosition", texPos);
+			impactShader.Attributes.Set("ImpactRadius", 0.1f);
+			impactShader.Attributes.Set("ImpactStrength", 1.0f);
+			
+			// Calculate dispatch size to cover the entire texture
+			// int dispatchSize = (TextureSize + ThreadGroupSize - 1) / 8;
+			// Note: It seems that this dispatch method already calculates the thread group size and expects total size
+			impactShader.Dispatch(TextureSize, TextureSize, TextureSize);
 		}
-		if ( weights.y > 0.01f )
-		{
-			int xzIndex = (int)(xzPixel.y * width + xzPixel.x);
-			BlendColorAtIndex( textureData, xzIndex, valueToBlend, weights.y );
-		}
-		if ( weights.z > 0.01f )
-		{
-			int xyIndex = (int)(xyPixel.y * width + xyPixel.x);
-			BlendColorAtIndex( textureData, xyIndex, valueToBlend, weights.z );
-		}
-	}
-
-	/// <summary>
-	/// Blends a color into the texture at a specific index.
-	/// </summary>
-	private void BlendColorAtIndex( Span<Color3> textureData, int index, Color3 valueToBlend, float weight )
-	{
-		var current = textureData[index];
-		textureData[index] = new Color3(
-			(byte)((current.r + valueToBlend.r * weight) / 2),
-			(byte)((current.g + valueToBlend.g * weight) / 2),
-			(byte)((current.b + valueToBlend.b * weight) / 2)
-		);
-	}
-
-	private void SprayWater( Vector3 impactOs, Vector3 impactNormalOs, float sprayRadius )
-	{
-		// TODO: Terribly inefficient - this should be done in a compute shader
-		// but let's keep it here for now so we can debug and see if this idea has potential
-
-		// First, copy the entire texture to a local buffer
-		Span<Color3> data = new Color3[RustData.Width * RustData.Height];
-		var srcRect = (0, 0, RustData.Width, RustData.Height);
-		RustData.GetPixels( srcRect, 0, 0, data, ImageFormat.RGB888 );
-
-		// Then, execute the spray logic - for now only a boundaries of the spray radius
-		// to see if we are even hitting the correct texels
-		// TODO: Fill in the circle or better yet, do something smarter in the shader
-		const int samples = 64;
-		for ( int n = 0; n < samples; n++ )
-		{
-			// Map circle to offsets
-			float angle = 2f * MathF.PI * n / samples;
-			float xOff = MathF.Cos( angle ) * sprayRadius;
-			float yOff = MathF.Sin( angle ) * sprayRadius;
-			var offset = new Vector3( xOff, 0, yOff );
-
-			// Write to the texture
-			WriteTriplanarValue( data, RustData.Width, RustData.Height,
-				impactOs + offset,
-				impactNormalOs,
-				new Color3( 0, 255, 0 )
-			);
-		}
-
-		RustData.Update<Color3>( data );
-	}
-
-	/// <summary>
-	/// Converts object-space position and normal to triplanar texture coordinates and blend weights in the same way as the shader
-	/// uses them.
-	/// </summary>
-	private static (Vector2 YzCoord, Vector2 XzCoord, Vector2 XyCoord, Vector3 BlendWeights) GetTriplanarMapping( Vector3 objectPos, Vector3 objectNormal )
-	{
-		// Normalize position same as shader
-		var uvw = objectPos / MaxSize + new Vector3( 0.5f );
-
-		// Calculate blend weights matching shader exactly
-		var blendWeights = new Vector3(
-			MathF.Abs( objectNormal.x ),
-			MathF.Abs( objectNormal.y ),
-			MathF.Abs( objectNormal.z )
-		);
-
-		// Square the weights
-		blendWeights *= blendWeights;
-
-		// Normalize weights with small extra to avoid div/0 in some edge cases (literally...)
-		float sum = blendWeights.x + blendWeights.y + blendWeights.z + 1e-5f;
-		blendWeights /= sum;
-
-		return (
-			new Vector2( uvw.y, uvw.z ),  // YZ plane
-			new Vector2( uvw.x, uvw.z ),  // XZ plane
-			new Vector2( uvw.x, uvw.y ),  // XY plane
-			blendWeights
-		);
 	}
 }
