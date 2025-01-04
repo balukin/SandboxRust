@@ -18,7 +18,8 @@ public sealed class RustableObject : Component
 	private Texture RustData { get; set; }
 	private Texture RustDataSimBuffer { get; set; }
 
-	private ComputeShader impactShader;
+	private ComputeShader getSprayedShader;
+	private ComputeShader getHitShader;
 	private ComputeShader simulationShader;
 
 	/// <summary>
@@ -37,27 +38,40 @@ public sealed class RustableObject : Component
 		base.OnStart();
 
 		// Create two 3D textures for ping-pong simulation
-		RustData = CreateVolumeTexture(64);
-		RustDataSimBuffer = CreateVolumeTexture(64);
+		RustData = CreateVolumeTexture( 64 );
+		RustDataSimBuffer = CreateVolumeTexture( 64 );
 
 		modelRenderer = GetComponent<ModelRenderer>();
 
 		// Create per-instance material - TODO: does it load already as an instance or is it shared?
 		instanceMaterial = Material.Load( "materials/rustable_untextured.vmat" ).CreateCopy();
 		modelRenderer.MaterialOverride = instanceMaterial;
-		instanceMaterial.Set("RustDataRead", RustData);
+		instanceMaterial.Set( "RustDataRead", RustData );
 
-		impactShader = new ComputeShader("shaders/rust_impact");
-		simulationShader = new ComputeShader("shaders/rust_simulation");
+		getSprayedShader = new ComputeShader( "shaders/getsprayed" );
+		getHitShader = new ComputeShader( "shaders/gethit" );
+		simulationShader = new ComputeShader( "shaders/rust_simulation" );
 
 		impactHandler = GameObject.GetOrAddComponent<SurfaceImpactHandler>();
 		impactHandler.OnImpact += ProcessImpact;
 	}
 
-	private Texture CreateVolumeTexture(int size)
+	private Texture CreateVolumeTexture( int size )
 	{
 		// Random garbage to check if it's even getting to the shader
 		var data = new byte[size * size * size * 3];
+		// FillInitialData( size, data );
+
+		// https://wiki.facepunch.com/sbox/Compute_Shaders
+		return Texture.CreateVolume( size, size, size, ImageFormat.RGB888 )
+			.WithDynamicUsage()
+			.WithUAVBinding()
+			.WithData( data )
+			.Finish();
+	}
+
+	private static void FillInitialData( int size, byte[] data )
+	{
 		const int globalMultiplier = 1;
 		const int checkerboardSizeR = 16 * globalMultiplier;
 		const int checkerboardSizeG = 4 * globalMultiplier;
@@ -66,11 +80,11 @@ public sealed class RustableObject : Component
 		const int dark = 10;
 		const int light = 60;
 
-		for (int z = 0; z < size; z++)
+		for ( int z = 0; z < size; z++ )
 		{
-			for (int y = 0; y < size; y++)
+			for ( int y = 0; y < size; y++ )
 			{
-				for (int x = 0; x < size; x++)
+				for ( int x = 0; x < size; x++ )
 				{
 					int index = (z * size * size + y * size + x) * 3;
 
@@ -88,13 +102,6 @@ public sealed class RustableObject : Component
 				}
 			}
 		}
-
-		// https://wiki.facepunch.com/sbox/Compute_Shaders
-		return Texture.CreateVolume(size, size, size, ImageFormat.RGB888)
-			.WithDynamicUsage()
-			.WithUAVBinding()
-			.WithData(data)
-			.Finish();
 	}
 
 	protected override void OnUpdate()
@@ -107,7 +114,7 @@ public sealed class RustableObject : Component
 				.WithRotation( Transform.Local.Rotation * Rotation.FromAxis( Vector3.Up, Time.Now / 15f ) );
 		}
 
-		
+
 	}
 
 	private void RunSimulation()
@@ -123,24 +130,37 @@ public sealed class RustableObject : Component
 		// readingTextureA = !readingTextureA;
 	}
 
-	private void ProcessImpact(Vector3 positionWs, Vector3 normalWs, WeaponType weaponType)
+	private void ProcessImpact( Vector3 positionWs, Vector3 normalWs, WeaponType weaponType )
 	{
-		var positionOs = Transform.World.PointToLocal(positionWs);
+		var positionOs = Transform.World.PointToLocal( positionWs );
+		var normalOs = Transform.World.NormalToLocal( normalWs ).Normal;
 
 		// Convert to 0-1 space for texture sampling
 		var texPos = (positionOs / MaxSize) + Vector3.One * 0.5f;
 
-		if (true || weaponType == WeaponType.Spray)
+		var shader = weaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
+
+		var impactRadius = weaponType == WeaponType.Spray ? 0.3f : 0.1f;
+		var impactStrength = weaponType == WeaponType.Spray ? 0.2f : 0.4f;
+
+		// Set common properties
+		shader.Attributes.Set( "DataTexture", RustData );
+		shader.Attributes.Set( "ImpactPosition", texPos );
+		shader.Attributes.Set( "ImpactRadius", impactRadius );
+		shader.Attributes.Set( "ImpactStrength", impactStrength );
+
+		if ( weaponType == WeaponType.Gun )
 		{
-			impactShader.Attributes.Set("DataTexture", RustData);
-			impactShader.Attributes.Set("ImpactPosition", texPos);
-			impactShader.Attributes.Set("ImpactRadius", 0.1f);
-			impactShader.Attributes.Set("ImpactStrength", 1.0f);
-			
-			// Calculate dispatch size to cover the entire texture
-			// int dispatchSize = (TextureSize + ThreadGroupSize - 1) / 8;
-			// Note: It seems that this dispatch method already calculates the thread group size and expects total size
-			impactShader.Dispatch(TextureSize, TextureSize, TextureSize);
+			// Those probably could be weapon or ammo properties
+			const float coneAngleDeg = 20;
+			const float coneAngleRadians = coneAngleDeg * MathF.PI / 180.0f;	
+			const float maxPenOs = 2f; // fully through the object and then some more
+
+			shader.Attributes.Set( "ImpactDirection", -normalOs );
+			shader.Attributes.Set( "ConeAngleRad", coneAngleRadians );
+			shader.Attributes.Set( "MaxPenetration", maxPenOs );
 		}
+
+		shader.Dispatch( TextureSize, TextureSize, TextureSize );
 	}
 }

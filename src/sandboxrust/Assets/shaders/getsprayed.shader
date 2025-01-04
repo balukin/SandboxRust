@@ -10,7 +10,6 @@ COMMON
 
 CS
 {
-    // Output texture needs to use the g_t prefix and Attribute syntax
     RWTexture3D<float3> g_tDataTexture < Attribute("DataTexture"); >;
     float3 g_vImpactPosition < Attribute("ImpactPosition"); >;
     float g_flImpactRadius < Attribute("ImpactRadius"); >;
