@@ -465,7 +465,8 @@
             },
             {
               "__type": "RustableObject",
-              "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6"
+              "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6",
+              "SimulationFrameInterval": 30
             },
             {
               "__type": "Sandbox.BoxCollider",

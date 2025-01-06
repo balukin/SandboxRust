@@ -1,6 +1,8 @@
 using System;
 using Sandbox;
 using Sandbox.Diagnostics;
+using Sandbox.Rendering;
+using Sandbox.UI;
 
 /// <summary>
 /// Component for objects that can have rust applied to them.
@@ -13,11 +15,17 @@ public sealed class RustableObject : Component
 	// but let's do it stupidly simple for now - with a 3D texture representing data stretched across the object bbox (const 50 for now)
 	public const float MaxSize = 50.0f;
 
+	// Counter for simulation ticks
+	private long simTicks = 0;
+
+	private SceneCustomObject sceneCustomObject;
+
 	ModelRenderer modelRenderer;
 
 	private Texture RustData { get; set; }
-	private Texture RustDataSimBuffer { get; set; }
+	private Texture RustDataReadBuffer { get; set; }
 
+	private ComputeShader clone3dTexShader;
 	private ComputeShader getSprayedShader;
 	private ComputeShader getHitShader;
 	private ComputeShader simulationShader;
@@ -27,17 +35,44 @@ public sealed class RustableObject : Component
 	private SurfaceImpactHandler impactHandler;
 
 	private const int TextureSize = 64;
+
+	private ImpactData? storedImpactData;
+
+	// TODO: Coordinate spread across all rustable objects to avoid frame spikes
+	[Property]
+	public int SimulationFrameInterval = 15;
+
+	protected override void OnEnabled()
+	{
+		base.OnEnabled();
+		// Using SceneCustomObject with custom render hook
+		// seems to be correct way to access CopyResource
+		sceneCustomObject = new SceneCustomObject( Scene.SceneWorld );
+		sceneCustomObject.RenderOverride = RunSimulation;
+	}
+
+	protected override void OnDisabled()
+	{
+		base.OnDisabled();
+		sceneCustomObject.RenderOverride = null;
+		if ( sceneCustomObject.IsValid() )
+		{
+			sceneCustomObject.Delete();
+		}
+		sceneCustomObject = null;
+	}
+
 	protected override void OnStart()
 	{
 		base.OnStart();
 
 		// Create two 3D textures for ping-pong simulation
-		RustData = CreateVolumeTexture( 64 );
-		RustDataSimBuffer = CreateVolumeTexture( 64 );
+		RustData = CreateVolumeTexture( TextureSize );
+		RustDataReadBuffer = CreateVolumeTexture( TextureSize );
 
 		modelRenderer = GetComponent<ModelRenderer>();
 
-		// Create per-instance material - TODO: does it load already as an instance or is it shared?
+		// Create per-instance material - TODO: maybe it loads already as an instance or is it shared?
 		instanceMaterial = Material.Load( "materials/rustable_untextured.vmat" ).CreateCopy();
 		modelRenderer.MaterialOverride = instanceMaterial;
 		instanceMaterial.Set( "RustDataRead", RustData );
@@ -45,9 +80,10 @@ public sealed class RustableObject : Component
 		getSprayedShader = new ComputeShader( "shaders/getsprayed" );
 		getHitShader = new ComputeShader( "shaders/gethit" );
 		simulationShader = new ComputeShader( "shaders/rust_simulation" );
+		clone3dTexShader = new ComputeShader( "shaders/clone3dtex" );
 
 		impactHandler = GameObject.GetOrAddComponent<SurfaceImpactHandler>();
-		impactHandler.OnImpact += ProcessImpact;
+		impactHandler.OnImpact += StoreImpact;
 	}
 
 	private Texture CreateVolumeTexture( int size )
@@ -103,21 +139,52 @@ public sealed class RustableObject : Component
 		base.OnUpdate();
 	}
 
-	private void RunSimulation()
+	private void RunSimulation( SceneObject o )
 	{
-		// TODO: fix ping-pong swaps
-		// Run simulation step
-		// simulationShader.Attributes.Set("Source", usingTextureA ? RustDataA : RustDataB);
-		// simulationShader.Attributes.Set("Target", usingTextureA ? RustDataB : RustDataA);
+		// Optimization opportunities:
+		// - use ping-pong swap to avoid resource barrier mess (do I even need it? better safe than crash)
+		// - generate mipmaps and sample from lower-resolution resource to reduce total computation with some nice downsampling filter
 
-		// simulationShader.Dispatch(TextureSize, TextureSize, TextureSize);
+		// First, apply impact if it happened this frame
+		Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
+		ApplyImpact();
 
-		// Swap textures
-		// readingTextureA = !readingTextureA;
+		if ( simTicks++ % SimulationFrameInterval == 0 )
+		{
+			// Copy the data to the read-only buffer to avoid race condition on R/W in the same resource
+
+			// For some reason Graphics.CopyTexture( RustData, RustDataReadBuffer ); 
+			// Only one slice was being copied and changing slice indices had no effect
+			// We're gonna do it the stupid way
+			Graphics.ResourceBarrierTransition( RustData, ResourceState.CopySource );
+			Graphics.ResourceBarrierTransition( RustDataReadBuffer, ResourceState.CopyDestination );
+			clone3dTexShader.Attributes.Set( "SourceTexture", RustData );
+			clone3dTexShader.Attributes.Set( "TargetTexture", RustDataReadBuffer );
+			clone3dTexShader.Dispatch( TextureSize, TextureSize, TextureSize );
+
+			Graphics.ResourceBarrierTransition( RustDataReadBuffer, ResourceState.UnorderedAccess );
+			Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
+			simulationShader.Attributes.Set( "SourceTexture", RustDataReadBuffer );
+			simulationShader.Attributes.Set( "TargetTexture", RustData );
+			simulationShader.Dispatch( TextureSize, TextureSize, TextureSize );
+		}
 	}
 
-	private void ProcessImpact( ImpactData impactData )
+	private void StoreImpact( ImpactData impactData )
 	{
+		storedImpactData = impactData;
+	}
+
+	private void ApplyImpact()
+	{
+		if ( storedImpactData == null )
+		{
+			return;
+		}
+
+		var impactData = storedImpactData.Value;
+		storedImpactData = null;
+
 		var positionOs = Transform.World.PointToLocal( impactData.position );
 		var impactDirOs = Transform.World.NormalToLocal( impactData.impactDirection ).Normal;
 
@@ -126,7 +193,7 @@ public sealed class RustableObject : Component
 
 		var shader = impactData.weaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
 
-		var impactRadius = impactData.weaponType == WeaponType.Spray ? 0.3f : 0.1f;
+		var impactRadius = impactData.weaponType == WeaponType.Spray ? 0.15f : 0.1f;
 		var impactStrength = impactData.weaponType == WeaponType.Spray ? 0.2f : 0.4f;
 
 		// Set common properties
@@ -139,7 +206,7 @@ public sealed class RustableObject : Component
 		{
 			// Those probably could be weapon or ammo properties
 			const float coneAngleDeg = 20;
-			const float coneAngleRadians = coneAngleDeg * MathF.PI / 180.0f;	
+			const float coneAngleRadians = coneAngleDeg * MathF.PI / 180.0f;
 			const float maxPenOs = 2f; // fully through the object and then some more
 
 			shader.Attributes.Set( "ImpactDirection", impactDirOs );
