@@ -36,6 +36,8 @@ public sealed class RustableObject : Component
 
 	private const int TextureSize = 64;
 
+	private Atmosphere atmosphere;
+
 	private ImpactData? storedImpactData;
 
 	// TODO: Coordinate spread across all rustable objects to avoid frame spikes
@@ -49,6 +51,13 @@ public sealed class RustableObject : Component
 		// seems to be correct way to access CopyResource
 		sceneCustomObject = new SceneCustomObject( Scene.SceneWorld );
 		sceneCustomObject.RenderOverride = RunSimulation;
+
+		atmosphere = GameObject.GetComponentInParent<Atmosphere>();
+
+		if(atmosphere == null)
+		{
+			Log.Error( $"Atmosphere component not found in {GameObject.Name} parent hierarchy. Will use defaults." );
+		}
 	}
 
 	protected override void OnDisabled()
@@ -141,10 +150,10 @@ public sealed class RustableObject : Component
 
 	private void RunSimulation( SceneObject o )
 	{
+
 		// Optimization opportunities:
 		// - use ping-pong swap to avoid resource barrier mess (do I even need it? better safe than crash)
 		// - generate mipmaps and sample from lower-resolution resource to reduce total computation with some nice downsampling filter
-
 		Matrix worldToObject = Matrix.CreateRotation(Transform.World.Rotation.Inverse) * Matrix.CreateTranslation(-Transform.World.Position);
 
 		// First, apply impact if it happened this frame
@@ -169,6 +178,19 @@ public sealed class RustableObject : Component
 			simulationShader.Attributes.Set( "SourceTexture", RustDataReadBuffer );
 			simulationShader.Attributes.Set( "TargetTexture", RustData );
 			simulationShader.Attributes.Set( "WorldToObject", worldToObject );
+
+			if (atmosphere != null)
+			{
+				simulationShader.Attributes.Set("OxygenLevel", atmosphere.OxygenLevel);
+				simulationShader.Attributes.Set("WaterVapor", atmosphere.WaterVapor);
+			}
+			else
+			{
+				// Use default values if no Atmosphere component is present
+				simulationShader.Attributes.Set("OxygenLevel", 0.2f);
+				simulationShader.Attributes.Set("WaterVapor", 0.5f);
+			}
+
 			simulationShader.Dispatch( TextureSize, TextureSize, TextureSize );
 		}
 	}

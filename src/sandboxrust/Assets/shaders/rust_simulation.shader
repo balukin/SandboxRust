@@ -1,10 +1,18 @@
 // RGB Reminder: R for rust, G for moisture, B for structural strength
 // Simulation rules:
 // - ignore the fact that object may be concave, simulation can run across the gaps of the mesh as if it was a box
-// - treat everyting as water-permeable 
+// - treat everything as water-permeable 
 // MOISURE
 // - Water drips from the top of the object down (z axis) in world space
-// - 
+// CORROSION
+// - Rust begins to grow on the surface of the object that is wet
+// - Simplified rust growth is a function of
+//     - surface moisture
+//     - atmospheric oxygen 
+//     - amount of water vapor in the air (sort of a global rustability factor)
+//     - neighboring rust (made-up physics: rust-damaged surface exposes more iron to the air)
+// - We ignore time factor, oxygen amount is linearly related to rusting speed so adding more oxygen will speed up the rusting process without
+//   having to implement time control (which would have to affect physics simulation speed, too)
 MODES
 {
     Default();
@@ -31,6 +39,20 @@ CS
     
     // Gonna need that to find out where the gravational up is for the water to drip down
     float4x4 g_matWorldToObject < Attribute("WorldToObject"); >;
+
+    // Global parameters for rust simulation
+    float g_flOxygenLevel < Attribute("OxygenLevel"); Range(0.0, 1.0); Default(0.2); >;
+    float g_flWaterVapor < Attribute("WaterVapor"); Range(0.0, 1.0); Default(0.5); >;
+
+    // Rust growth simulation constants
+    // TODO: Expose those with some UI sliders or something
+    static const float WATER_DRIP_EVAPORATION_RATE = 0.12;
+    static const float WATER_GLOBAL_EVAPORATION_RATE = 0.01; // Maybe this should be based on the amount of water vapor in the air?
+    static const float RUST_SPREAD_RADIUS = 1.5;             // How far rust spreads in texels
+    static const float MIN_MOISTURE = 0.1;                   // Minimum moisture needed for rust to form
+    static const float RUST_GROWTH_RATE = 0.05;              // Base rate of rust formation
+    static const float NEIGHBOR_RUST_INFLUENCE = 0.3;        // How much nearby rust accelerates growth
+    static const int SAMPLE_COUNT = 6;                       // Number of neighboring points to check
 
     // Get texture-space direction that corresponds to world-space up
     float3 GetTextureSpaceUp()
@@ -85,7 +107,62 @@ CS
         float averageMoisture = totalMoisture / 4.0;
 
         // Attenuate the drip to simulate evaporation or something
-        return averageMoisture * 0.90;
+        return averageMoisture * (1.0 - WATER_DRIP_EVAPORATION_RATE);
+    }
+
+    // Simulates rust growth based on moisture, oxygen, and neighboring rust
+    float SimulateRustGrowth(uint3 vThreadId)
+    {
+        float3 currentState = g_tSource[vThreadId];
+        float currentRust = currentState.r;
+        float currentMoisture = currentState.g;
+
+        // No rust growth if moisture is below threshold
+        if (currentMoisture < MIN_MOISTURE)
+            return currentRust;
+
+        // Sample neighboring points in a cube pattern
+        float neighboringRust = 0.0;
+        static const int3 offsets[SAMPLE_COUNT] = {
+            int3(-1,  0,  0),
+            int3( 1,  0,  0),
+            int3( 0, -1,  0),
+            int3( 0,  1,  0),
+            int3( 0,  0, -1),
+            int3( 0,  0,  1)
+        };
+
+        // Accumulate rust values from neighbors
+        for (int i = 0; i < SAMPLE_COUNT; i++)
+        {
+            int3 samplePos = int3(vThreadId) + offsets[i];
+            
+            // Check texture bounds
+            if (all(samplePos >= 0) && all(samplePos < int3(TextureSize, TextureSize, TextureSize)))
+            {
+                neighboringRust += g_tSource[samplePos].r;
+            }
+        }
+        
+        // Average the neighboring rust
+        neighboringRust /= float(SAMPLE_COUNT);
+
+        // Calculate rust growth based on all factors:
+        // - Base growth rate
+        // - Moisture level (direct multiplier)
+        // - Oxygen level (controls reaction speed)
+        // - Water vapor (environmental factor)
+        // - Neighboring rust (... some physical explanation here)
+        float rustGrowth = currentRust + (
+            RUST_GROWTH_RATE *  
+            currentMoisture * 
+            g_flOxygenLevel * 
+            g_flWaterVapor * 
+            (1.0 + neighboringRust * NEIGHBOR_RUST_INFLUENCE)
+        );
+
+        // Clamp the result to valid range
+        return saturate(rustGrowth);
     }
 
     [numthreads(8, 8, 8)]
@@ -95,14 +172,20 @@ CS
 
         float3 center = g_tSource[vThreadId];
 
+        float prevMoisture = center.g;
+        
         // Simulate water dripping and update moisture (G channel)
+        // Note: If it was ever >0, it will never reach absolute 0
         float dripMoisture = SimulateWaterDrip(vThreadId);
-        center.g = dripMoisture > center.g ? dripMoisture : center.g;
+        float moisture = max(
+            prevMoisture * (1.0 - WATER_GLOBAL_EVAPORATION_RATE),  // Natural evaporation of existing moisture
+            dripMoisture                                           // New moisture from dripping
+        );
 
-        // Simulate rust growth and update rust (R channel)
-        // float rustGrowth = SimulateRustGrowth(vThreadId);
-        // center.r = rustGrowth > center.r ? rustGrowth : center.r;
+        // Simulate rust growth (R channel)
+        float rustGrowth = SimulateRustGrowth(vThreadId);
+        float rust = rustGrowth > center.r ? rustGrowth : center.r;
 
-        g_tTarget[vThreadId] = center;
+        g_tTarget[vThreadId] = float3(rust, moisture, center.b);
     }
 }

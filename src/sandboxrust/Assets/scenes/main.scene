@@ -315,68 +315,6 @@
       "Children": []
     },
     {
-      "__guid": "e71f3883-a6af-4ac4-9667-d498a017d147",
-      "Flags": 0,
-      "Name": "Barrels",
-      "Position": "264.7722,-215.1575,132.3204",
-      "Enabled": true,
-      "Children": [
-        {
-          "__guid": "b61417c6-a125-484f-a943-40e0493f026c",
-          "Flags": 0,
-          "Name": "barrel (3)",
-          "Position": "-90,0,0",
-          "Enabled": true,
-          "__Prefab": "props/barrel.prefab",
-          "__PrefabVariables": {}
-        },
-        {
-          "__guid": "78ad0680-5e14-46ff-b46d-78950a3d7485",
-          "Flags": 0,
-          "Name": "barrel (6)",
-          "Position": "-45,0,94.84851",
-          "Enabled": true,
-          "__Prefab": "props/barrel.prefab",
-          "__PrefabVariables": {}
-        },
-        {
-          "__guid": "c371d931-4ac5-4b6a-8a2f-90cec40f3160",
-          "Flags": 0,
-          "Name": "barrel (4)",
-          "Position": "-22.5,0,47.49997",
-          "Enabled": true,
-          "__Prefab": "props/barrel.prefab",
-          "__PrefabVariables": {}
-        },
-        {
-          "__guid": "dc3fa2f2-a115-4a1b-93da-24c2c80c7829",
-          "Flags": 0,
-          "Name": "barrel (5)",
-          "Position": "-67.5,0,47.49997",
-          "Enabled": true,
-          "__Prefab": "props/barrel.prefab",
-          "__PrefabVariables": {}
-        },
-        {
-          "__guid": "9f72f1c2-fc9b-4dd8-bdb9-8ac105ce2ffb",
-          "Flags": 0,
-          "Name": "barrel (2)",
-          "Enabled": true,
-          "__Prefab": "props/barrel.prefab",
-          "__PrefabVariables": {}
-        },
-        {
-          "__guid": "1afe6efe-df05-4329-b790-0d2f9004ed3e",
-          "Flags": 0,
-          "Name": "barrel (1)",
-          "Position": "-45,0,0",
-          "Enabled": true,
-          "__Prefab": "props/barrel.prefab",
-          "__PrefabVariables": {}
-        }
-      ]
-    },
-    {
       "__guid": "f483c6d7-b374-4530-977f-52158dfea7b6",
       "Flags": 0,
       "Name": "Cubemap",
@@ -406,93 +344,163 @@
       ]
     },
     {
-      "__guid": "bb845221-fe5f-4ef9-af42-12703a98b409",
+      "__guid": "a229aaca-417c-485d-8e69-1e1ec126fff0",
       "Flags": 0,
-      "Name": "Boxes",
-      "Position": "264.4928,-8.556137,158.9301",
+      "Name": "SimulationWorld",
       "Enabled": true,
+      "Components": [
+        {
+          "__type": "Atmosphere",
+          "__guid": "b7e596e8-fdcf-4f7f-89a1-87c9a98e7155",
+          "OxygenLevel": 0.2,
+          "WaterVapor": 0.5
+        }
+      ],
       "Children": [
         {
-          "__guid": "93759109-9f66-4297-a785-58ec4edc793d",
+          "__guid": "bb845221-fe5f-4ef9-af42-12703a98b409",
           "Flags": 0,
-          "Name": "box",
-          "Position": "-36.25017,0,52.09076",
+          "Name": "Boxes",
+          "Position": "264.4928,-8.556137,158.9301",
           "Enabled": true,
-          "__Prefab": "props/box.prefab",
-          "__PrefabVariables": {}
-        },
-        {
-          "__guid": "74d95c54-70c4-4a54-965c-99b6236522ec",
-          "Flags": 0,
-          "Name": "box",
-          "Position": "-61.4256,0,115.0666",
-          "Enabled": true,
-          "__Prefab": "props/box.prefab",
-          "__PrefabVariables": {}
-        },
-        {
-          "__guid": "254c832e-c014-48d6-a18a-16b599c87546",
-          "Flags": 0,
-          "Name": "wigglybox",
-          "Position": "0,-101.9679,41.35701",
-          "Enabled": true,
-          "Components": [
+          "Children": [
             {
-              "__type": "Sandbox.ModelRenderer",
-              "__guid": "cc2c92ec-41e1-4dd5-9507-dd94df5ee6c8",
-              "BodyGroups": 18446744073709551615,
-              "CreateAttachments": false,
-              "MaterialOverride": "materials/rustable_untextured.vmat",
-              "Model": "models/dev/box.vmdl",
-              "RenderOptions": {
-                "GameLayer": true,
-                "OverlayLayer": false,
-                "BloomLayer": false,
-                "AfterUILayer": false
-              },
-              "RenderType": "On",
-              "Tint": "1,1,1,1"
+              "__guid": "93759109-9f66-4297-a785-58ec4edc793d",
+              "Flags": 0,
+              "Name": "box",
+              "Position": "-36.25017,0,52.09076",
+              "Enabled": true,
+              "__Prefab": "props/box.prefab",
+              "__PrefabVariables": {}
             },
             {
-              "__type": "Sandbox.BoxCollider",
-              "__guid": "73211632-deb9-4356-9bd5-e839cc33a7b8",
-              "Center": "0,0,0",
-              "IsTrigger": false,
-              "Scale": "50,50,50",
-              "Static": false,
-              "Surface": "props/hittable_surface.surface",
-              "SurfaceVelocity": "0,0,0"
+              "__guid": "74d95c54-70c4-4a54-965c-99b6236522ec",
+              "Flags": 0,
+              "Name": "box",
+              "Position": "-61.4256,0,115.0666",
+              "Enabled": true,
+              "__Prefab": "props/box.prefab",
+              "__PrefabVariables": {}
             },
             {
-              "__type": "RustableObject",
-              "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6",
-              "SimulationFrameInterval": 30
-            },
-            {
-              "__type": "Sandbox.BoxCollider",
-              "__guid": "267d4f1d-3bb3-4da1-ba9d-13907964105a",
-              "Center": "0,0,0",
-              "IsTrigger": false,
-              "Scale": "50,50,50",
-              "Static": false,
-              "Surface": "props/hittable_surface.surface",
-              "SurfaceVelocity": "0,0,0"
-            },
-            {
-              "__type": "TestMovement",
-              "__guid": "06b18f60-dc56-47a9-a9b9-b20b994fd58e",
-              "IsRotating": true,
-              "RotationSpeedDegPerSec": 30
+              "__guid": "254c832e-c014-48d6-a18a-16b599c87546",
+              "Flags": 0,
+              "Name": "wigglybox",
+              "Position": "0,-101.9679,41.35701",
+              "Enabled": true,
+              "Components": [
+                {
+                  "__type": "Sandbox.ModelRenderer",
+                  "__guid": "cc2c92ec-41e1-4dd5-9507-dd94df5ee6c8",
+                  "BodyGroups": 18446744073709551615,
+                  "CreateAttachments": false,
+                  "MaterialOverride": "materials/rustable_untextured.vmat",
+                  "Model": "models/dev/box.vmdl",
+                  "RenderOptions": {
+                    "GameLayer": true,
+                    "OverlayLayer": false,
+                    "BloomLayer": false,
+                    "AfterUILayer": false
+                  },
+                  "RenderType": "On",
+                  "Tint": "1,1,1,1"
+                },
+                {
+                  "__type": "Sandbox.BoxCollider",
+                  "__guid": "73211632-deb9-4356-9bd5-e839cc33a7b8",
+                  "Center": "0,0,0",
+                  "IsTrigger": false,
+                  "Scale": "50,50,50",
+                  "Static": false,
+                  "Surface": "props/hittable_surface.surface",
+                  "SurfaceVelocity": "0,0,0"
+                },
+                {
+                  "__type": "RustableObject",
+                  "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6",
+                  "SimulationFrameInterval": 30
+                },
+                {
+                  "__type": "Sandbox.BoxCollider",
+                  "__guid": "267d4f1d-3bb3-4da1-ba9d-13907964105a",
+                  "Center": "0,0,0",
+                  "IsTrigger": false,
+                  "Scale": "50,50,50",
+                  "Static": false,
+                  "Surface": "props/hittable_surface.surface",
+                  "SurfaceVelocity": "0,0,0"
+                },
+                {
+                  "__type": "TestMovement",
+                  "__guid": "06b18f60-dc56-47a9-a9b9-b20b994fd58e",
+                  "IsRotating": true,
+                  "RotationSpeedDegPerSec": 30
+                }
+              ]
             }
           ]
         },
         {
-          "__guid": "3f35a973-6680-41e0-907f-77505fbc2898",
+          "__guid": "e71f3883-a6af-4ac4-9667-d498a017d147",
           "Flags": 0,
-          "Name": "box",
+          "Name": "Barrels",
+          "Position": "264.7722,-215.1575,132.3204",
           "Enabled": true,
-          "__Prefab": "props/box.prefab",
-          "__PrefabVariables": {}
+          "Children": [
+            {
+              "__guid": "b61417c6-a125-484f-a943-40e0493f026c",
+              "Flags": 0,
+              "Name": "barrel (3)",
+              "Position": "-90,0,0",
+              "Enabled": true,
+              "__Prefab": "props/barrel.prefab",
+              "__PrefabVariables": {}
+            },
+            {
+              "__guid": "78ad0680-5e14-46ff-b46d-78950a3d7485",
+              "Flags": 0,
+              "Name": "barrel (6)",
+              "Position": "-45,0,94.84851",
+              "Enabled": true,
+              "__Prefab": "props/barrel.prefab",
+              "__PrefabVariables": {}
+            },
+            {
+              "__guid": "c371d931-4ac5-4b6a-8a2f-90cec40f3160",
+              "Flags": 0,
+              "Name": "barrel (4)",
+              "Position": "-22.5,0,47.49997",
+              "Enabled": true,
+              "__Prefab": "props/barrel.prefab",
+              "__PrefabVariables": {}
+            },
+            {
+              "__guid": "dc3fa2f2-a115-4a1b-93da-24c2c80c7829",
+              "Flags": 0,
+              "Name": "barrel (5)",
+              "Position": "-67.5,0,47.49997",
+              "Enabled": true,
+              "__Prefab": "props/barrel.prefab",
+              "__PrefabVariables": {}
+            },
+            {
+              "__guid": "9f72f1c2-fc9b-4dd8-bdb9-8ac105ce2ffb",
+              "Flags": 0,
+              "Name": "barrel (2)",
+              "Enabled": true,
+              "__Prefab": "props/barrel.prefab",
+              "__PrefabVariables": {}
+            },
+            {
+              "__guid": "1afe6efe-df05-4329-b790-0d2f9004ed3e",
+              "Flags": 0,
+              "Name": "barrel (1)",
+              "Position": "-45,0,0",
+              "Enabled": true,
+              "__Prefab": "props/barrel.prefab",
+              "__PrefabVariables": {}
+            }
+          ]
         }
       ]
     }
