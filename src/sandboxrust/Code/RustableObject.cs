@@ -145,6 +145,8 @@ public sealed class RustableObject : Component
 		// - use ping-pong swap to avoid resource barrier mess (do I even need it? better safe than crash)
 		// - generate mipmaps and sample from lower-resolution resource to reduce total computation with some nice downsampling filter
 
+		Matrix worldToObject = Matrix.CreateRotation(Transform.World.Rotation.Inverse) * Matrix.CreateTranslation(-Transform.World.Position);
+
 		// First, apply impact if it happened this frame
 		Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
 		ApplyImpact();
@@ -166,6 +168,7 @@ public sealed class RustableObject : Component
 			Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
 			simulationShader.Attributes.Set( "SourceTexture", RustDataReadBuffer );
 			simulationShader.Attributes.Set( "TargetTexture", RustData );
+			simulationShader.Attributes.Set( "WorldToObject", worldToObject );
 			simulationShader.Dispatch( TextureSize, TextureSize, TextureSize );
 		}
 	}
