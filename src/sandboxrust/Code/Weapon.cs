@@ -68,7 +68,8 @@ public class Weapon : Component
             return;
         }
 
-        impactHandler.HandleImpact( tr.HitPosition, tr.Normal, switcher.CurrentWeapon );
+        // Assume no other actors can cause impact - use eye forward
+        impactHandler.HandleImpact( new ImpactData( tr.HitPosition, tr.Normal, player.EyeTransform.Forward.Normal, switcher.CurrentWeapon ) );
 
         if ( VisualizeHits )
         {

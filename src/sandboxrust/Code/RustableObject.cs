@@ -116,18 +116,18 @@ public sealed class RustableObject : Component
 		// readingTextureA = !readingTextureA;
 	}
 
-	private void ProcessImpact( Vector3 positionWs, Vector3 normalWs, WeaponType weaponType )
+	private void ProcessImpact( ImpactData impactData )
 	{
-		var positionOs = Transform.World.PointToLocal( positionWs );
-		var normalOs = Transform.World.NormalToLocal( normalWs ).Normal;
+		var positionOs = Transform.World.PointToLocal( impactData.position );
+		var impactDirOs = Transform.World.NormalToLocal( impactData.impactDirection ).Normal;
 
 		// Convert to 0-1 space for texture sampling
 		var texPos = (positionOs / MaxSize) + Vector3.One * 0.5f;
 
-		var shader = weaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
+		var shader = impactData.weaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
 
-		var impactRadius = weaponType == WeaponType.Spray ? 0.3f : 0.1f;
-		var impactStrength = weaponType == WeaponType.Spray ? 0.2f : 0.4f;
+		var impactRadius = impactData.weaponType == WeaponType.Spray ? 0.3f : 0.1f;
+		var impactStrength = impactData.weaponType == WeaponType.Spray ? 0.2f : 0.4f;
 
 		// Set common properties
 		shader.Attributes.Set( "DataTexture", RustData );
@@ -135,14 +135,14 @@ public sealed class RustableObject : Component
 		shader.Attributes.Set( "ImpactRadius", impactRadius );
 		shader.Attributes.Set( "ImpactStrength", impactStrength );
 
-		if ( weaponType == WeaponType.Gun )
+		if ( impactData.weaponType == WeaponType.Gun )
 		{
 			// Those probably could be weapon or ammo properties
 			const float coneAngleDeg = 20;
 			const float coneAngleRadians = coneAngleDeg * MathF.PI / 180.0f;	
 			const float maxPenOs = 2f; // fully through the object and then some more
 
-			shader.Attributes.Set( "ImpactDirection", -normalOs );
+			shader.Attributes.Set( "ImpactDirection", impactDirOs );
 			shader.Attributes.Set( "ConeAngleRad", coneAngleRadians );
 			shader.Attributes.Set( "MaxPenetration", maxPenOs );
 		}
