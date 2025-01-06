@@ -22,12 +22,6 @@ public sealed class RustableObject : Component
 	private ComputeShader getHitShader;
 	private ComputeShader simulationShader;
 
-	/// <summary>
-	/// If set to true, the object will move around a bit to verify coord mappings. Don't use with actual physics.
-	/// </summary>
-	[Property]
-	public bool TestWiggle { get; set; }
-
 	private Material instanceMaterial;
 
 	private SurfaceImpactHandler impactHandler;
@@ -107,14 +101,6 @@ public sealed class RustableObject : Component
 	protected override void OnUpdate()
 	{
 		base.OnUpdate();
-
-		if ( TestWiggle )
-		{
-			Transform.Local = Transform.Local
-				.WithRotation( Transform.Local.Rotation * Rotation.FromAxis( Vector3.Up, Time.Now / 15f ) );
-		}
-
-
 	}
 
 	private void RunSimulation()

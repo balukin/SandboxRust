@@ -161,6 +161,7 @@
           "UseAnimatorControls": true,
           "UseButton": "use",
           "UseCameraControls": true,
+          "UseFovFromPreferences": true,
           "UseInputControls": true,
           "WalkSpeed": 110
         },
@@ -464,8 +465,7 @@
             },
             {
               "__type": "RustableObject",
-              "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6",
-              "TestWiggle": true
+              "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6"
             },
             {
               "__type": "Sandbox.BoxCollider",
@@ -476,6 +476,12 @@
               "Static": false,
               "Surface": "props/hittable_surface.surface",
               "SurfaceVelocity": "0,0,0"
+            },
+            {
+              "__type": "TestMovement",
+              "__guid": "06b18f60-dc56-47a9-a9b9-b20b994fd58e",
+              "IsRotating": true,
+              "RotationSpeedDegPerSec": 30
             }
           ]
         },
