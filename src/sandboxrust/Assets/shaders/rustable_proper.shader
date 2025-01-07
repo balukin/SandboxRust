@@ -175,10 +175,42 @@ PS
         return baseColor * rustAmount;
     }
 
-    float3 CalculateFlashlightLighting(float3 worldPos, float3 normal, float3 baseColor, float baseRust)
+    struct MoistureEffect
     {
-        // fragment to light -->
+        float specularIntensity;
+        float specularSharpness;
+        float3 colorTint;
+    };
+
+    MoistureEffect CalculateMoistureEffect(float moisture)
+    {
+        MoistureEffect effect;
+        
+        // Increase reflectivity with moisture
+        effect.specularIntensity = lerp(1.0, 2.0, moisture);
+        
+        // Make reflections sharper/more focused when wet
+        effect.specularSharpness = lerp(1.0, 1.5, moisture);
+        
+        // Add slight blue tint that darkens the surface when wet
+        // Hard to get right since most of the effect comes from blend factor
+        float3 dryColor = float3(1.0, 1.0, 1.0);
+        float3 wetColor = float3(0.85, 0.85, 0.95);
+        effect.colorTint = lerp(dryColor, wetColor, moisture * 4);
+        
+        return effect;
+    }
+
+    float3 CalculateFlashlightLighting(float3 worldPos, float3 normal, float3 baseColor, float baseRust, float moisture)
+    {
+        // fragment --> light 
         float3 toLight = normalize(g_fFlashlightPosition - worldPos);
+        
+        // Get moisture effects
+        MoistureEffect moistureEffect = CalculateMoistureEffect(moisture);
+        
+        // Apply moisture tint to base color
+        baseColor *= moistureEffect.colorTint;
         
         // Lambert-ish diffuse lighting
         float diffuseFactor = saturate(dot(toLight, normal)) * g_fFlashlightIntensity;
@@ -193,14 +225,17 @@ PS
         {
             // Ramp up specular intensity based on how centered in the flashlight beam we are
             float specIntensity = saturate((angle - coneEdge) / (1.0 - coneEdge)) * (g_fFlashlightIntensity / 10);
-            specularLight = float3(1.0, 1.0, 1.0) * specIntensity * 2.0 * baseRust;
+            
+            // Apply moisture effects to specular, too
+            specIntensity = pow(specIntensity, 1.0 / moistureEffect.specularSharpness);
+            specularLight = float3(1.0, 1.0, 1.0) * specIntensity * 2.0 * moistureEffect.specularIntensity;
         }
         
         return baseColor + diffuseLight + specularLight;
     }
 
 	float4 MainPs( PixelInput i ) : SV_Target0
-	{   
+	{  
         float3 samplePos = ObjectToTextureSpace(i.vPositionOs, g_vBoundsMin, g_vBoundsScale);
         float3 absoluteWorldPos = i.vPositionWithOffsetWs + g_vCameraPositionWs;
 
@@ -209,11 +244,18 @@ PS
         float baseRust = rustData.r; 
         float moisture = rustData.g;
 
+        // // DEBUG
+        // MoistureEffect effect = CalculateMoistureEffect(moisture);
+        // return float4(effect.colorTint, 1.0);
+        // // END DEBUG
+
         float alpha = saturate(baseRust * 2.0f);
 
         float3 finalRustColor = GenerateRustDetail(i.vPositionOs, baseRust, i.vNormalWs);
-        finalRustColor = CalculateFlashlightLighting(absoluteWorldPos, i.vNormalWs, finalRustColor, baseRust);
+        finalRustColor = CalculateFlashlightLighting(absoluteWorldPos, i.vNormalWs, finalRustColor, baseRust, moisture);
 
-        return float4(finalRustColor, 1.0);
+        // Blend it with rust clearly overlaying the base color and moisture a tiny bit more transparent
+        // Probably could use a more sophisticated blend mode config instead
+        return float4(finalRustColor, max(baseRust, moisture/1.6));
 	}
 }

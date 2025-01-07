@@ -521,7 +521,7 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "OxygenLevel": 1,
+          "OxygenLevel": 0.21,
           "WaterVapor": 0.5
         },
         {
