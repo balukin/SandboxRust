@@ -63,6 +63,14 @@ public sealed class RustableObject : Component
 		{
 			Log.Error( $"Atmosphere component not found in {GameObject.Name} parent hierarchy. Will use defaults." );
 		}
+
+		if ( RustData != null )
+		{
+			Log.Error( "Re-creating texture before previous was disposed, why?" );
+		}
+
+		RustData = CreateVolumeTexture( TextureSize );
+		RustDataReadBuffer = CreateVolumeTexture( TextureSize );
 	}
 
 	protected override void OnDisabled()
@@ -74,14 +82,19 @@ public sealed class RustableObject : Component
 			sceneCustomObject.Delete();
 		}
 		sceneCustomObject = null;
+
+		RustData.Dispose();
+		RustDataReadBuffer.Dispose();
+		RustData = null;
+		RustDataReadBuffer = null;
 	}
 
 	protected override void OnStart()
 	{
 		base.OnStart();
 
-		RustData = CreateVolumeTexture( TextureSize );
-		RustDataReadBuffer = CreateVolumeTexture( TextureSize );
+
+
 
 		modelRenderer = GetComponent<ModelRenderer>();
 
@@ -131,8 +144,6 @@ public sealed class RustableObject : Component
 	{
 		base.OnDestroy();
 		impactHandler.OnImpact -= StoreImpact;
-		RustData.Dispose();
-		RustDataReadBuffer.Dispose();
 	}
 
 
