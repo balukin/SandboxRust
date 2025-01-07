@@ -10,11 +10,10 @@ using System.Linq;
 /// </summary>
 public sealed class RustableObject : Component
 {
-	// We could create an optimized variant that 
-	// - uses precomputed data maps projected onto the object, similarly to UVs
-	// - for a cube, uses 6-sheet texture at higher resolution instead of 3D texture
-	// but let's do it stupidly simple for now - with a 3D texture representing data stretched across the object bbox (const 50 for now)
-	public const float MaxSize = 50.0f;
+	private BBox objectBounds;
+	private Vector3 boundsSize;
+	private Vector3 boundsMin;
+	private Vector3 boundsScale;
 
 	// Counter for simulation ticks
 	private long simTicks = 0;
@@ -61,7 +60,7 @@ public sealed class RustableObject : Component
 
 		atmosphere = GameObject.GetComponentInParent<Atmosphere>();
 
-		if(atmosphere == null)
+		if ( atmosphere == null )
 		{
 			Log.Error( $"Atmosphere component not found in {GameObject.Name} parent hierarchy. Will use defaults." );
 		}
@@ -82,7 +81,6 @@ public sealed class RustableObject : Component
 	{
 		base.OnStart();
 
-		// Create two 3D textures for ping-pong simulation
 		RustData = CreateVolumeTexture( TextureSize );
 		RustDataReadBuffer = CreateVolumeTexture( TextureSize );
 
@@ -93,18 +91,30 @@ public sealed class RustableObject : Component
 		rustMaterial.Set( "RustDataRead", RustData );
 
 		// Cache the model's mesh for overlay rendering
-		if (modelRenderer.Model != null)
-		{			
+		if ( modelRenderer.Model != null )
+		{
+			// Store aabb so we can map the volume properly for non-unit-sized objects
+			objectBounds = modelRenderer.Model.Bounds;
+			boundsSize = objectBounds.Size;
+			boundsMin = objectBounds.Mins;
+			boundsScale = Vector3.One / boundsSize;
+			// Log.Info( $"Object {GameObject.Name} BoundsMin: {boundsMin}, BoundsSize: {boundsSize}, BoundsScale: {boundsScale}" );
+
+
 			// Why does GetIndices return uint[] but Graphics.Draw expects ushort[]?
 			vertices = modelRenderer.Model.GetVertices().ToArray();
 
 			// Unknown, let's just check if a model will be too big
-			if(vertices.Length > ushort.MaxValue)
+			if ( vertices.Length > ushort.MaxValue )
 			{
 				throw new Exception( $"Model {modelRenderer.Model.Name} has more than {ushort.MaxValue} vertices. This is not supported." );
 			}
 
-			indices = modelRenderer.Model.GetIndices().Select(i => (ushort)i).ToArray();
+			indices = modelRenderer.Model.GetIndices().Select( i => (ushort)i ).ToArray();
+		}
+		else
+		{
+			Log.Error( $"Model {modelRenderer.Model.Name} not found. Will not render." );
 		}
 
 		getSprayedShader = new ComputeShader( "shaders/getsprayed" );
@@ -171,7 +181,7 @@ public sealed class RustableObject : Component
 
 	protected override void OnPreRender()
 	{
-		base.OnPreRender();				
+		base.OnPreRender();
 		sceneCustomObject.Transform = Transform.World;
 	}
 
@@ -181,7 +191,7 @@ public sealed class RustableObject : Component
 		// Optimization opportunities:
 		// - use ping-pong swap to avoid resource barrier mess (do I even need it? better safe than crash)
 		// - generate mipmaps and sample from lower-resolution resource to reduce total computation with some nice downsampling filter
-		Matrix worldToObject = Matrix.CreateRotation(Transform.World.Rotation.Inverse) * Matrix.CreateTranslation(-Transform.World.Position);
+		Matrix worldToObject = Matrix.CreateRotation( Transform.World.Rotation.Inverse ) * Matrix.CreateTranslation( -Transform.World.Position );
 
 		// First, apply impact if it happened this frame
 		Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
@@ -206,32 +216,34 @@ public sealed class RustableObject : Component
 			simulationShader.Attributes.Set( "TargetTexture", RustData );
 			simulationShader.Attributes.Set( "WorldToObject", worldToObject );
 
-			if (atmosphere != null)
+			if ( atmosphere != null )
 			{
-				simulationShader.Attributes.Set("OxygenLevel", atmosphere.OxygenLevel);
-				simulationShader.Attributes.Set("WaterVapor", atmosphere.WaterVapor);
+				simulationShader.Attributes.Set( "OxygenLevel", atmosphere.OxygenLevel );
+				simulationShader.Attributes.Set( "WaterVapor", atmosphere.WaterVapor );
 			}
 			else
 			{
 				// Use default values if no Atmosphere component is present
-				simulationShader.Attributes.Set("OxygenLevel", 0.2f);
-				simulationShader.Attributes.Set("WaterVapor", 0.5f);
+				simulationShader.Attributes.Set( "OxygenLevel", 0.2f );
+				simulationShader.Attributes.Set( "WaterVapor", 0.5f );
 			}
 
 			simulationShader.Dispatch( TextureSize, TextureSize, TextureSize );
 		}
 
 		// After simulation, render the rust overlay
-		if (vertices != null)
-		{					
+		if ( vertices != null )
+		{
 			var attributes = new RenderAttributes();
 
 			// Do I set these in the material or in the RenderAttributes?
-			attributes.Set("RustDataRead", RustData);
-			rustMaterial.Set( "RustDataRead", RustData );
+			attributes.Set( "RustDataRead", RustData );
+			attributes.Set( "BoundsScale", boundsScale );
+			attributes.Set( "BoundsMin", boundsMin );
+
 
 			sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;
-			
+
 			Graphics.Draw(
 				vertices,
 				vertices.Length,
@@ -263,8 +275,7 @@ public sealed class RustableObject : Component
 		var impactDirOs = Transform.World.NormalToLocal( impactData.impactDirection ).Normal;
 
 		// Convert to 0-1 space for texture sampling
-		var texPos = (positionOs / MaxSize) + Vector3.One * 0.5f;
-
+		var texPos = (positionOs - boundsMin) * boundsScale;
 		var shader = impactData.weaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
 
 		var impactRadius = impactData.weaponType == WeaponType.Spray ? 0.15f : 0.1f;

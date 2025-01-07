@@ -14,11 +14,13 @@ COMMON
 {
 	#include "common/shared.hlsl"
 	#include "common/classes/AmbientLight.hlsl"	 
+    #include "common/rust_helpers.hlsl"
 
     #define S_TRANSLUCENT 1
     
     CreateInputTexture3D( RustDataRead, Srgb, 8, "", "_rustdata_read", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) );
-    CreateTexture3D( g_tRustDataRead ) < Channel( RGB, Box( RustDataRead ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;
+    CreateTexture3D( g_tRustDataRead ) < Channel( RGB, Box( RustDataRead ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;    
+
 }
 
 struct VertexInput
@@ -133,12 +135,9 @@ PS
 		// return ShadingModelStandard::Shade( i, m );
 
         // DEBUG: Read from the texture at given local position
-        float3 samplePos = i.vPositionOs / 50.0 + 0.5;
-
-        // sample at random value between 0 and 1
-        // float3 randV = float3(rand(), rand(), rand());
+        float3 samplePos = ObjectToTextureSpace(i.vPositionOs, g_vBoundsMin, g_vBoundsScale);
         float3 rustData = g_tRustDataRead.Sample(g_sPointClamp, samplePos);
         
-        return float4(rustData.rgb, 0.5);
+        return float4(rustData.rgb, 0.66);
 	}
 }
