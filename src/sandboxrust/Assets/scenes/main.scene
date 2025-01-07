@@ -222,7 +222,7 @@
         {
           "__type": "Weapon",
           "__guid": "40459d0a-360e-46f3-992a-2492732f4249",
-          "ShootDelay": 0.1,
+          "ShootDelay": 0.02,
           "VisualizeHits": false
         }
       ],
@@ -385,7 +385,7 @@
             {
               "__guid": "254c832e-c014-48d6-a18a-16b599c87546",
               "Flags": 0,
-              "Name": "wigglybox",
+              "Name": "white_rotating_box",
               "Position": "0,-101.9679,41.35701",
               "Enabled": true,
               "Components": [
@@ -394,7 +394,7 @@
                   "__guid": "cc2c92ec-41e1-4dd5-9507-dd94df5ee6c8",
                   "BodyGroups": 18446744073709551615,
                   "CreateAttachments": false,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": "models/props/furniture/aperture_cube.vmdl",
                   "RenderOptions": {
                     "GameLayer": true,
                     "OverlayLayer": false,
@@ -409,7 +409,7 @@
                   "__guid": "73211632-deb9-4356-9bd5-e839cc33a7b8",
                   "Center": "0,0,0",
                   "IsTrigger": false,
-                  "Scale": "50,50,50",
+                  "Scale": "30,30,30",
                   "Static": false,
                   "Surface": "props/hittable_surface.surface",
                   "SurfaceVelocity": "0,0,0"
@@ -424,7 +424,7 @@
                   "__guid": "267d4f1d-3bb3-4da1-ba9d-13907964105a",
                   "Center": "0,0,0",
                   "IsTrigger": false,
-                  "Scale": "50,50,50",
+                  "Scale": "30,30,30",
                   "Static": false,
                   "Surface": "props/hittable_surface.surface",
                   "SurfaceVelocity": "0,0,0"
@@ -432,12 +432,13 @@
                 {
                   "__type": "TestMovement",
                   "__guid": "06b18f60-dc56-47a9-a9b9-b20b994fd58e",
-                  "IsRotating": false,
+                  "IsRotating": true,
                   "RotationSpeedDegPerSec": 30
                 },
                 {
                   "__type": "Sandbox.Rigidbody",
                   "__guid": "a83a00fa-2b85-462b-a4a5-128c1e9f8760",
+                  "__enabled": false,
                   "AngularDamping": 0,
                   "Gravity": true,
                   "LinearDamping": 0,
@@ -553,6 +554,7 @@
   "Description": null,
   "__references": [
     "jodiscontent.spray1#24114",
+    "mdlresrc.rtx_metalbox#12015",
     "yupigames.viewmodel_usa_colt45_pistol_lod0#61815"
   ],
   "__version": 2
