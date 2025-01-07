@@ -15,9 +15,12 @@ COMMON
 	#include "common/shared.hlsl"
 	#include "common/classes/AmbientLight.hlsl"	 
     #include "common/rust_helpers.hlsl"
+    // https://github.com/Auburn/FastNoiseLite under MIT from Jordan Peck and other contributors
+    #include "common/fast_noise_lite.hlsl" 
 
     #define S_TRANSLUCENT 1
-    
+    static const uint TextureSize = 64;
+    static const uint UsePCF = 1;
     CreateInputTexture3D( RustDataRead, Srgb, 8, "", "_rustdata_read", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) );
     CreateTexture3D( g_tRustDataRead ) < Channel( RGB, Box( RustDataRead ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;    
 
@@ -26,9 +29,9 @@ COMMON
 struct VertexInput
 {
 	#include "common/vertexinput.hlsl"
-};
+}; 
 
-struct PixelInput
+struct PixelInput 
 {
 	#include "common/pixelinput.hlsl"
     float3 vPositionOs : TEXCOORD8;
@@ -109,28 +112,75 @@ PS
     RenderState(DepthBias, 500); 
     RenderState(DepthFunc, GREATER);
 
+    float3 FilteredVolumeSample(float3 pos)
+    {
+        // PCF-like sampling but for 3D texture to make jaggies go away
+        float3 offsets[8] = {
+            float3(-0.5, -0.5, -0.5),
+            float3( 0.5, -0.5, -0.5),
+            float3(-0.5,  0.5, -0.5),
+            float3( 0.5,  0.5, -0.5),
+            float3(-0.5, -0.5,  0.5),
+            float3( 0.5, -0.5,  0.5),
+            float3(-0.5,  0.5,  0.5),
+            float3( 0.5,  0.5,  0.5)
+        };
+
+        float3 sum = 0.0;
+        for (int j = 0; j < 8; j++)
+        {
+            float3 neighborPos = pos + offsets[j] / float3(TextureSize, TextureSize, TextureSize);
+            sum += g_tRustDataRead.Sample(g_sBilinearClamp, neighborPos).rgb;
+        }
+        return sum * 0.125;
+    }
+
+    float3 GenerateRustDetail(float3 pos, float baseRust, float3 normal)
+    {
+        // TODO: maybe use precalculated noise textures to save performance?
+        // Create noise states
+        fnl_state perlinNoise = fnlCreateState(12345);
+        fnl_state cellularNoise = fnlCreateState(67890);
+        
+        // Configure Perlin (low frequency)
+        perlinNoise.frequency = 0.2;  // Lower = larger features
+        perlinNoise.noise_type = FNL_NOISE_PERLIN;
+        
+        // Configure Cellular/Voronoi (high frequency)
+        cellularNoise.frequency = 5.0;  // Higher = smaller features
+        cellularNoise.noise_type = FNL_NOISE_CELLULAR;
+        cellularNoise.cellular_distance_func = FNL_CELLULAR_DISTANCE_EUCLIDEANSQ;
+        cellularNoise.cellular_return_type = FNL_CELLULAR_RETURN_TYPE_DISTANCE2;
+        
+        // Sample noises and remap from [-1,1] to [0,1]
+        float lowFreq = fnlGetNoise3D(perlinNoise, pos.x, pos.y, pos.z) * 0.5 + 0.5;
+        float highFreq = fnlGetNoise3D(cellularNoise, pos.x, pos.y, pos.z) * 0.5 + 0.5;
+        
+        // Blend low and high frequency detail
+        float combined = lerp(lowFreq, highFreq, 0.5);
+        float rustAmount = baseRust * combined;
+        
+        // Add color variation
+        fnl_state colorNoise = fnlCreateState(11111);
+        colorNoise.frequency = 2.0;
+        colorNoise.noise_type = FNL_NOISE_PERLIN;
+        
+        float colorVal = fnlGetNoise3D(colorNoise, pos.x, pos.y, pos.z) * 0.5 + 0.5;
+        float3 baseColor = lerp(float3(1.0, 0.4, 0.0), float3(0.8, 0.0, 0.0), colorVal);
+
+        return baseColor * rustAmount;
+    }
+
 	float4 MainPs( PixelInput i ) : SV_Target0
 	{   
-        // TODO...   
-        return float4(1, 0, 0, 1);
-		float3 absoluteWorldPos = i.vPositionWithOffsetWs + g_vCameraPositionWs;
-		// float3 viewDir = normalize(g_vCameraPositionWs - i.vPositionWithOffsetWs);
-		
-		// float3 reflectionColor = SampleMetallicReflection(absoluteWorldPos, i.vPositionSs.xy / i.vPositionSs.w, i.vNormalWs, viewDir);
-
-		// // TODO: For now testing world pos triplanar sampling - later we're gonna need to move to object space independent of the world transform
-        // float3 triplanarSample = SampleTriplanar(absoluteWorldPos, i.vNormalWs, RustData, RustSampler);
-		// return float4(triplanarSample, 1);
-		
-		// Material m = Material::From( i );
-		// // m.Albedo.rgb = reflectionColor; // disable for now
-		// m.Albedo.rgb = triplanarSample;
-		// return ShadingModelStandard::Shade( i, m );
-
-        // DEBUG: Read from the texture at given local position
         float3 samplePos = ObjectToTextureSpace(i.vPositionOs, g_vBoundsMin, g_vBoundsScale);
-        float3 rustData = g_tRustDataRead.Sample(g_sPointClamp, samplePos);
+
+        float3 rustData = UsePCF ? FilteredVolumeSample(samplePos) : g_tRustDataRead.Sample(g_sBilinearClamp, samplePos).rgb;
         
-        return float4(rustData.rgb, 0.66);
+        float baseRust = rustData.r; 
+        float moisture = rustData.g;
+
+        float alpha = saturate(baseRust * 2.0f);
+        return float4(GenerateRustDetail(i.vPositionOs, baseRust, i.vNormalWs), alpha);
 	}
 }
