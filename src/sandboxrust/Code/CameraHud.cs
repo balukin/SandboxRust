@@ -17,21 +17,21 @@ public sealed class CameraHud : Component
 	protected override void OnUpdate()
 	{
 		var hud = cam.Hud;
-		WriteExplainers(hud);
+		WriteExplainers( hud );
 	}
 
 
 
-	private void WriteExplainers(HudPainter hud)
+	private void WriteExplainers( HudPainter hud )
 	{
 		topLeftCurrentLineOffset = 0;
-		WriteLine(hud, "Hello!");
-		WriteLine(hud, AtmosphereText);
+		WriteLine( hud, "Hello!" );
+		WriteLine( hud, AtmosphereText );
 	}
 
-	private void WriteLine(HudPainter hud, string text)
+	private void WriteLine( HudPainter hud, string text )
 	{
-		hud.DrawText(new TextRendering.Scope(text, Color.Red, lineHeight), new Vector2(10, 10 + topLeftCurrentLineOffset), TextFlag.LeftTop);
+		hud.DrawText( new TextRendering.Scope( text, Color.Red, lineHeight ), new Vector2( 10, 10 + topLeftCurrentLineOffset ), TextFlag.LeftTop );
 		topLeftCurrentLineOffset += lineHeight;
 	}
 }

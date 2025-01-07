@@ -22,19 +22,19 @@ public class DebugObject : Component
 
     protected override void OnUpdate()
     {
-        if (timeout > 0 && timeSinceCreated > timeout)
+        if ( timeout > 0 && timeSinceCreated > timeout )
         {
             GameObject.Destroy();
         }
 
-        if (direction.HasValue) 
+        if ( direction.HasValue )
         {
             var target = WorldPosition + direction.Value * 100;
-            Gizmo.Draw.Arrow(WorldPosition, target, 10, 2);
+            Gizmo.Draw.Arrow( WorldPosition, target, 10, 2 );
         }
         else
         {
-            Gizmo.Draw.SolidSphere(WorldPosition, 5);
+            Gizmo.Draw.SolidSphere( WorldPosition, 5 );
         }
     }
 

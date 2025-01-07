@@ -48,8 +48,6 @@ public sealed class RustableObject : Component
 	private Vertex[] vertices;
 	private ushort[] indices;
 
-	private Rigidbody body;
-
 	protected override void OnEnabled()
 	{
 		base.OnEnabled();
@@ -126,53 +124,15 @@ public sealed class RustableObject : Component
 		impactHandler.OnImpact += StoreImpact;
 	}
 
-	private Texture CreateVolumeTexture( int size )
+	protected override void OnDestroy()
 	{
-		// Random garbage to check if it's even getting to the shader
-		var data = new byte[size * size * size * 3];
-		// FillInitialData( size, data );
-
-		// https://wiki.facepunch.com/sbox/Compute_Shaders
-		return Texture.CreateVolume( size, size, size, ImageFormat.RGB888 )
-			.WithDynamicUsage()
-			.WithUAVBinding()
-			.WithData( data )
-			.Finish();
+		base.OnDestroy();
+		impactHandler.OnImpact -= StoreImpact;
+		RustData.Dispose();
+		RustDataReadBuffer.Dispose();
 	}
 
-	private static void FillInitialData( int size, byte[] data )
-	{
-		const int globalMultiplier = 1;
-		const int checkerboardSizeR = 16 * globalMultiplier;
-		const int checkerboardSizeG = 4 * globalMultiplier;
-		const int checkerboardSizeB = 1 * globalMultiplier;
 
-		const int dark = 10;
-		const int light = 60;
-
-		for ( int z = 0; z < size; z++ )
-		{
-			for ( int y = 0; y < size; y++ )
-			{
-				for ( int x = 0; x < size; x++ )
-				{
-					int index = (z * size * size + y * size + x) * 3;
-
-					// Red channel: large checkerboard
-					bool darkOrLightR = ((x / checkerboardSizeR) + (y / checkerboardSizeR) + (z / checkerboardSizeR)) % 2 == 0;
-					data[index] = darkOrLightR ? (byte)dark : (byte)light;
-
-					// Green channel: medium checkerboard
-					bool darkOrLightG = ((x / checkerboardSizeG) + (y / checkerboardSizeG) + (z / checkerboardSizeG)) % 2 == 0;
-					data[index + 1] = darkOrLightG ? (byte)dark : (byte)light;
-
-					// Blue channel: small checkerboard
-					bool darkOrLightB = ((x / checkerboardSizeB) + (y / checkerboardSizeB) + (z / checkerboardSizeB)) % 2 == 0;
-					data[index + 2] = darkOrLightB ? (byte)dark : (byte)light;
-				}
-			}
-		}
-	}
 
 	protected override void OnUpdate()
 	{
@@ -300,5 +260,53 @@ public sealed class RustableObject : Component
 		}
 
 		shader.Dispatch( TextureSize, TextureSize, TextureSize );
+	}
+
+	private Texture CreateVolumeTexture( int size )
+	{
+		// Random garbage to check if it's even getting to the shader
+		var data = new byte[size * size * size * 3];
+		// FillInitialData( size, data );
+
+		// https://wiki.facepunch.com/sbox/Compute_Shaders
+		return Texture.CreateVolume( size, size, size, ImageFormat.RGB888 )
+			.WithDynamicUsage()
+			.WithUAVBinding()
+			.WithData( data )
+			.Finish();
+	}
+
+	private static void FillInitialData( int size, byte[] data )
+	{
+		const int globalMultiplier = 1;
+		const int checkerboardSizeR = 16 * globalMultiplier;
+		const int checkerboardSizeG = 4 * globalMultiplier;
+		const int checkerboardSizeB = 1 * globalMultiplier;
+
+		const int dark = 10;
+		const int light = 60;
+
+		for ( int z = 0; z < size; z++ )
+		{
+			for ( int y = 0; y < size; y++ )
+			{
+				for ( int x = 0; x < size; x++ )
+				{
+					int index = (z * size * size + y * size + x) * 3;
+
+					// Red channel: large checkerboard
+					bool darkOrLightR = ((x / checkerboardSizeR) + (y / checkerboardSizeR) + (z / checkerboardSizeR)) % 2 == 0;
+					data[index] = darkOrLightR ? (byte)dark : (byte)light;
+
+					// Green channel: medium checkerboard
+					bool darkOrLightG = ((x / checkerboardSizeG) + (y / checkerboardSizeG) + (z / checkerboardSizeG)) % 2 == 0;
+					data[index + 1] = darkOrLightG ? (byte)dark : (byte)light;
+
+					// Blue channel: small checkerboard
+					bool darkOrLightB = ((x / checkerboardSizeB) + (y / checkerboardSizeB) + (z / checkerboardSizeB)) % 2 == 0;
+					data[index + 2] = darkOrLightB ? (byte)dark : (byte)light;
+				}
+			}
+		}
 	}
 }

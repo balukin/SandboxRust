@@ -26,4 +26,4 @@ public sealed class TestMovement : Component
             Transform.Local = Transform.Local.RotateAround( Transform.Local.Position, rotation );
         }
     }
-} 
+}

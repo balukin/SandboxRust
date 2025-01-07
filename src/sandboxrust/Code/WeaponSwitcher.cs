@@ -2,7 +2,7 @@ using Sandbox;
 
 public sealed class WeaponSwitcher : Component
 {
-	
+
 	[Property]
 	public WeaponType CurrentWeapon { get; set; }
 
@@ -29,14 +29,14 @@ public sealed class WeaponSwitcher : Component
 
 	private void HandleInput()
 	{
-		if(Input.Pressed("Slot1"))
+		if ( Input.Pressed( "Slot1" ) )
 		{
-			Log.Info("Switching to Spray");
+			Log.Info( "Switching to Spray" );
 			CurrentWeapon = WeaponType.Spray;
 		}
-		else if(Input.Pressed("Slot2"))
+		else if ( Input.Pressed( "Slot2" ) )
 		{
-			Log.Info("Switching to Gun");
+			Log.Info( "Switching to Gun" );
 			CurrentWeapon = WeaponType.Gun;
 		}
 	}
