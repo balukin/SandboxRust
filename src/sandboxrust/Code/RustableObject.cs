@@ -30,13 +30,12 @@ public sealed class RustableObject : Component
 	private ComputeShader getHitShader;
 	private ComputeShader simulationShader;
 
-	private Material instanceMaterial;
-
 	private SurfaceImpactHandler impactHandler;
 
 	private const int TextureSize = 64;
 
 	private Atmosphere atmosphere;
+	private RustSystem rustSystem;
 
 	private ImpactData? storedImpactData;
 
@@ -44,7 +43,8 @@ public sealed class RustableObject : Component
 	[Property]
 	public int SimulationFrameInterval = 15;
 
-	private Material rustMaterial;
+	private Material rustableDebugMaterial;
+	private Material rustableProperMaterial;
 	private Vertex[] vertices;
 	private ushort[] indices;
 
@@ -57,6 +57,7 @@ public sealed class RustableObject : Component
 		sceneCustomObject.RenderOverride = RunSimulation;
 
 		atmosphere = GameObject.GetComponentInParent<Atmosphere>();
+		rustSystem = GameObject.GetComponentInParent<RustSystem>();
 
 		if ( atmosphere == null )
 		{
@@ -85,8 +86,10 @@ public sealed class RustableObject : Component
 		modelRenderer = GetComponent<ModelRenderer>();
 
 		// Create per-instance material - TODO: maybe it loads already as an instance or is it shared?
-		rustMaterial = Material.Load( "materials/rustable_untextured.vmat" ).CreateCopy();
-		rustMaterial.Set( "RustDataRead", RustData );
+		rustableDebugMaterial = Material.Load( "materials/rustable_debug.vmat" ).CreateCopy();
+		rustableProperMaterial = Material.Load( "materials/rustable_proper.vmat" ).CreateCopy();
+		rustableDebugMaterial.Set( "RustDataRead", RustData );
+		rustableProperMaterial.Set( "RustDataRead", RustData );
 
 		// Cache the model's mesh for overlay rendering
 		if ( modelRenderer.Model != null )
@@ -201,7 +204,7 @@ public sealed class RustableObject : Component
 			attributes.Set( "BoundsScale", boundsScale );
 			attributes.Set( "BoundsMin", boundsMin );
 
-
+			var mode = rustSystem.RenderingMode;
 			sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;
 
 			Graphics.Draw(
@@ -209,7 +212,7 @@ public sealed class RustableObject : Component
 				vertices.Length,
 				indices,
 				indices.Length,
-				rustMaterial,
+				mode == RustRenderingMode.Debug ? rustableDebugMaterial : rustableProperMaterial,
 				attributes,
 				Graphics.PrimitiveType.Triangles
 			);

@@ -109,17 +109,10 @@ PS
     RenderState(DepthBias, 500); 
     RenderState(DepthFunc, GREATER);
 
-    float rand()
-    {
-        float t = g_flTime;
-
-        // Nice random function
-        return frac(sin(dot(t, float3(12.345, 67.89, 123.456))) * 45678.9);
-    }
-
 	float4 MainPs( PixelInput i ) : SV_Target0
-	{    
-        // return float4(1, 0, 0, 1);
+	{   
+        // TODO...   
+        return float4(1, 0, 0, 1);
 		float3 absoluteWorldPos = i.vPositionWithOffsetWs + g_vCameraPositionWs;
 		// float3 viewDir = normalize(g_vCameraPositionWs - i.vPositionWithOffsetWs);
 		

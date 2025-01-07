@@ -2,10 +2,7 @@
 
 Layer0
 {
-	shader "materials/rustable.shader"
-
-	//---- Blending ----
-	F_ADDITIVE_BLEND 1
+	shader "shaders/rustable_debug.shader"
 
 	//---- Material ----
 	RustDataRead "materials/default/default.tga"

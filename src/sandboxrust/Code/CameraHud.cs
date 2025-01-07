@@ -5,8 +5,9 @@ public sealed class CameraHud : Component
 {
 	private CameraComponent cam;
 	public static CameraHud Current { get; private set; }
-	public string AtmosphereText { get; set; }
-	public string FlashlightText { get; set; }
+	public string AtmosphereText { get; set; } = string.Empty;
+	public string FlashlightText { get; set; } = string.Empty;
+	public string RustModeText { get; set; } = string.Empty;
 
 	private int topLeftCurrentLineOffset = 0;
 	private const int lineHeight = 20;
@@ -30,6 +31,7 @@ public sealed class CameraHud : Component
 		WriteLine( hud, "Hello!" );
 		WriteLine( hud, AtmosphereText );
 		WriteLine( hud, FlashlightText );
+		WriteLine( hud, RustModeText );
 	}
 
 	private void WriteLine( HudPainter hud, string text )

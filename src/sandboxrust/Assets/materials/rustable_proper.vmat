@@ -1,0 +1,11 @@
+// THIS FILE IS AUTO-GENERATED
+
+Layer0
+{
+	shader "shaders/rustable_proper.shader"
+
+	//---- Material ----
+	RustDataRead "materials/default/default.tga"
+	TextureColor "materials/default/default_color.tga"
+	TextureTranslucency "materials/default/default_trans.tga"
+}

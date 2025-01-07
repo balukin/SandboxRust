@@ -523,6 +523,17 @@
           "OnComponentUpdate": null,
           "OxygenLevel": 0.2,
           "WaterVapor": 0.5
+        },
+        {
+          "__type": "RustSystem",
+          "__guid": "22e080c3-a42e-449f-b4fe-9dab33243f90",
+          "RenderingMode": "Debug",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
         }
       ],
       "Children": [
