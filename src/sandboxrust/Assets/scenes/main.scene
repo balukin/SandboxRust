@@ -521,13 +521,19 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "OxygenLevel": 0.2,
+          "OxygenLevel": 1,
           "WaterVapor": 0.5
         },
         {
           "__type": "RustSystem",
           "__guid": "22e080c3-a42e-449f-b4fe-9dab33243f90",
           "RenderingMode": "Debug",
+          "Flashlight": {
+            "_type": "component",
+            "component_id": "97706068-f980-4650-aa2f-a7597e0c549f",
+            "go": "7e271c7d-0bd5-47c3-bc31-d38ccad99fb2",
+            "component_type": "Flashlight"
+          },
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,

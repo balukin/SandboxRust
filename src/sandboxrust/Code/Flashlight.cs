@@ -6,8 +6,12 @@ public class Flashlight : Component
     public SoundEvent FlashlightSoundOff;
     private SpotLight spotLight;
 
+    public float Angle => spotLight.ConeInner;
+
+    public bool IsEnabled => spotLight.Enabled;
+
     protected override void OnStart()
-    {
+    {        
         spotLight = GetComponent<SpotLight>();
     }
 

@@ -24,6 +24,10 @@ COMMON
     CreateInputTexture3D( RustDataRead, Srgb, 8, "", "_rustdata_read", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) );
     CreateTexture3D( g_tRustDataRead ) < Channel( RGB, Box( RustDataRead ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;    
 
+    float3 g_fFlashlightPosition < Attribute("FlashlightPosition"); >;
+    float3 g_fFlashlightDirection < Attribute("FlashlightDirection"); >;
+    float g_fFlashlightIntensity < Attribute("FlashlightIntensity"); >;
+    float g_fFlashlightAngle < Attribute("FlashlightAngle"); >;
 }
 
 struct VertexInput
@@ -171,9 +175,34 @@ PS
         return baseColor * rustAmount;
     }
 
+    float3 CalculateFlashlightLighting(float3 worldPos, float3 normal, float3 baseColor, float baseRust)
+    {
+        // fragment to light -->
+        float3 toLight = normalize(g_fFlashlightPosition - worldPos);
+        
+        // Lambert-ish diffuse lighting
+        float diffuseFactor = saturate(dot(toLight, normal)) * g_fFlashlightIntensity;
+        float3 diffuseLight = baseColor * diffuseFactor * 2.0;
+        
+        // Speculars
+        float angle = dot(toLight, normal);
+        float coneEdge = cos(radians(g_fFlashlightAngle));
+        float3 specularLight = float3(0, 0, 0);
+        
+        if(angle > coneEdge)
+        {
+            // Ramp up specular intensity based on how centered in the flashlight beam we are
+            float specIntensity = saturate((angle - coneEdge) / (1.0 - coneEdge)) * (g_fFlashlightIntensity / 10);
+            specularLight = float3(1.0, 1.0, 1.0) * specIntensity * 2.0 * baseRust;
+        }
+        
+        return baseColor + diffuseLight + specularLight;
+    }
+
 	float4 MainPs( PixelInput i ) : SV_Target0
 	{   
         float3 samplePos = ObjectToTextureSpace(i.vPositionOs, g_vBoundsMin, g_vBoundsScale);
+        float3 absoluteWorldPos = i.vPositionWithOffsetWs + g_vCameraPositionWs;
 
         float3 rustData = UsePCF ? FilteredVolumeSample(samplePos) : g_tRustDataRead.Sample(g_sBilinearClamp, samplePos).rgb;
         
@@ -181,6 +210,10 @@ PS
         float moisture = rustData.g;
 
         float alpha = saturate(baseRust * 2.0f);
-        return float4(GenerateRustDetail(i.vPositionOs, baseRust, i.vNormalWs), alpha);
+
+        float3 finalRustColor = GenerateRustDetail(i.vPositionOs, baseRust, i.vNormalWs);
+        finalRustColor = CalculateFlashlightLighting(absoluteWorldPos, i.vNormalWs, finalRustColor, baseRust);
+
+        return float4(finalRustColor, 1.0);
 	}
 }

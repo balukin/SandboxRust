@@ -214,6 +214,10 @@ public sealed class RustableObject : Component
 			attributes.Set( "RustDataRead", RustData );
 			attributes.Set( "BoundsScale", boundsScale );
 			attributes.Set( "BoundsMin", boundsMin );
+			attributes.Set( "FlashlightPosition", rustSystem.Flashlight.Transform.World.Position );
+			attributes.Set( "FlashlightDirection", rustSystem.Flashlight.Transform.World.Rotation.Forward );
+			attributes.Set( "FlashlightIntensity", rustSystem.Flashlight.IsEnabled ? 1.0f : 0.0f );
+			attributes.Set( "FlashlightAngle", rustSystem.Flashlight.Angle );
 
 			var mode = rustSystem.RenderingMode;
 			sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;

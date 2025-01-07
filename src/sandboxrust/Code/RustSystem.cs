@@ -3,6 +3,9 @@ public class RustSystem : Component // Probably could be a GameObjectSystem but 
     [Property]
     public RustRenderingMode RenderingMode = RustRenderingMode.Debug;
 
+    [Property]
+    public Flashlight Flashlight { get; set; }
+
     protected override void OnUpdate()
     {
         if ( Input.Pressed( "reload" ) )
