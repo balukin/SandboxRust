@@ -4,6 +4,9 @@ Layer0
 {
 	shader "materials/rustable.shader"
 
+	//---- Blending ----
+	F_ADDITIVE_BLEND 1
+
 	//---- Material ----
 	RustDataRead "materials/default/default.tga"
 	TextureColor "materials/default/default_color.tga"

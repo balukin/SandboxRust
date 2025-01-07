@@ -394,7 +394,6 @@
                   "__guid": "cc2c92ec-41e1-4dd5-9507-dd94df5ee6c8",
                   "BodyGroups": 18446744073709551615,
                   "CreateAttachments": false,
-                  "MaterialOverride": "materials/rustable_untextured.vmat",
                   "Model": "models/dev/box.vmdl",
                   "RenderOptions": {
                     "GameLayer": true,
@@ -433,8 +432,29 @@
                 {
                   "__type": "TestMovement",
                   "__guid": "06b18f60-dc56-47a9-a9b9-b20b994fd58e",
-                  "IsRotating": true,
+                  "IsRotating": false,
                   "RotationSpeedDegPerSec": 30
+                },
+                {
+                  "__type": "Sandbox.Rigidbody",
+                  "__guid": "a83a00fa-2b85-462b-a4a5-128c1e9f8760",
+                  "AngularDamping": 0,
+                  "Gravity": true,
+                  "LinearDamping": 0,
+                  "Locking": {
+                    "X": false,
+                    "Y": false,
+                    "Z": false,
+                    "Pitch": false,
+                    "Yaw": false,
+                    "Roll": false
+                  },
+                  "MassCenterOverride": "0,0,0",
+                  "MassOverride": 0,
+                  "MotionEnabled": true,
+                  "OverrideMassCenter": false,
+                  "RigidbodyFlags": 0,
+                  "StartAsleep": false
                 }
               ]
             }

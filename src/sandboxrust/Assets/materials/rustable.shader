@@ -14,6 +14,8 @@ COMMON
 {
 	#include "common/shared.hlsl"
 	#include "common/classes/AmbientLight.hlsl"	 
+
+    #define S_TRANSLUCENT 1
     
     CreateInputTexture3D( RustDataRead, Srgb, 8, "", "_rustdata_read", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) );
     CreateTexture3D( g_tRustDataRead ) < Channel( RGB, Box( RustDataRead ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;
@@ -92,6 +94,19 @@ PS
 
     #include "common/pixel.hlsl"
 
+    RenderState(BlendEnable, true);
+    RenderState(SrcBlend, SRC_ALPHA);
+    RenderState(DstBlend, INV_SRC_ALPHA);
+    RenderState(BlendOp, ADD);
+    RenderState(SrcBlendAlpha, ONE);
+    RenderState(DstBlendAlpha, INV_SRC_ALPHA);
+    RenderState(BlendOpAlpha, ADD);
+
+    RenderState(DepthWriteEnable, false);
+    RenderState(DepthEnable, true);
+    RenderState(DepthBias, 500); 
+    RenderState(DepthFunc, GREATER);
+
     float rand()
     {
         float t = g_flTime;
@@ -101,7 +116,8 @@ PS
     }
 
 	float4 MainPs( PixelInput i ) : SV_Target0
-	{
+	{    
+        // return float4(1, 0, 0, 1);
 		float3 absoluteWorldPos = i.vPositionWithOffsetWs + g_vCameraPositionWs;
 		// float3 viewDir = normalize(g_vCameraPositionWs - i.vPositionWithOffsetWs);
 		
@@ -123,6 +139,6 @@ PS
         // float3 randV = float3(rand(), rand(), rand());
         float3 rustData = g_tRustDataRead.Sample(g_sPointClamp, samplePos);
         
-        return float4(rustData.rgb, 1.0);
+        return float4(rustData.rgb, 0.5);
 	}
 }

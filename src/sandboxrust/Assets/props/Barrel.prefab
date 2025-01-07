@@ -10,7 +10,7 @@
         "__guid": "6d2d0b49-0a6e-4a15-bbbb-95f20e3c5271",
         "BodyGroups": 18446744073709551615,
         "CreateAttachments": false,
-        "MaterialOverride": "materials/rustable_untextured.vmat",
+        "MaterialGroup": "default",
         "Model": "models/metalbarrel.vmdl",
         "RenderOptions": {
           "GameLayer": true,
@@ -40,7 +40,28 @@
       {
         "__type": "RustableObject",
         "__guid": "c5d4175f-bc9f-4bdd-a2ac-69c5b9ecfd86",
-        "TestWiggle": false
+        "SimulationFrameInterval": 15
+      },
+      {
+        "__type": "Sandbox.Rigidbody",
+        "__guid": "f070761d-e090-4059-b16a-9275c022b1a1",
+        "AngularDamping": 0,
+        "Gravity": true,
+        "LinearDamping": 0.1,
+        "Locking": {
+          "X": false,
+          "Y": false,
+          "Z": false,
+          "Pitch": false,
+          "Yaw": false,
+          "Roll": false
+        },
+        "MassCenterOverride": "0,0,0",
+        "MassOverride": 0,
+        "MotionEnabled": true,
+        "OverrideMassCenter": false,
+        "RigidbodyFlags": 0,
+        "StartAsleep": false
       }
     ],
     "Children": [],

@@ -3,6 +3,7 @@ using Sandbox;
 using Sandbox.Diagnostics;
 using Sandbox.Rendering;
 using Sandbox.UI;
+using System.Linq;
 
 /// <summary>
 /// Component for objects that can have rust applied to them.
@@ -44,6 +45,12 @@ public sealed class RustableObject : Component
 	[Property]
 	public int SimulationFrameInterval = 15;
 
+	private Material rustMaterial;
+	private Vertex[] vertices;
+	private ushort[] indices;
+
+	private Rigidbody body;
+
 	protected override void OnEnabled()
 	{
 		base.OnEnabled();
@@ -82,9 +89,23 @@ public sealed class RustableObject : Component
 		modelRenderer = GetComponent<ModelRenderer>();
 
 		// Create per-instance material - TODO: maybe it loads already as an instance or is it shared?
-		instanceMaterial = Material.Load( "materials/rustable_untextured.vmat" ).CreateCopy();
-		modelRenderer.MaterialOverride = instanceMaterial;
-		instanceMaterial.Set( "RustDataRead", RustData );
+		rustMaterial = Material.Load( "materials/rustable_untextured.vmat" ).CreateCopy();
+		rustMaterial.Set( "RustDataRead", RustData );
+
+		// Cache the model's mesh for overlay rendering
+		if (modelRenderer.Model != null)
+		{			
+			// Why does GetIndices return uint[] but Graphics.Draw expects ushort[]?
+			vertices = modelRenderer.Model.GetVertices().ToArray();
+
+			// Unknown, let's just check if a model will be too big
+			if(vertices.Length > ushort.MaxValue)
+			{
+				throw new Exception( $"Model {modelRenderer.Model.Name} has more than {ushort.MaxValue} vertices. This is not supported." );
+			}
+
+			indices = modelRenderer.Model.GetIndices().Select(i => (ushort)i).ToArray();
+		}
 
 		getSprayedShader = new ComputeShader( "shaders/getsprayed" );
 		getHitShader = new ComputeShader( "shaders/gethit" );
@@ -148,6 +169,12 @@ public sealed class RustableObject : Component
 		base.OnUpdate();
 	}
 
+	protected override void OnPreRender()
+	{
+		base.OnPreRender();				
+		sceneCustomObject.Transform = Transform.World;
+	}
+
 	private void RunSimulation( SceneObject o )
 	{
 
@@ -192,6 +219,28 @@ public sealed class RustableObject : Component
 			}
 
 			simulationShader.Dispatch( TextureSize, TextureSize, TextureSize );
+		}
+
+		// After simulation, render the rust overlay
+		if (vertices != null)
+		{					
+			var attributes = new RenderAttributes();
+
+			// Do I set these in the material or in the RenderAttributes?
+			attributes.Set("RustDataRead", RustData);
+			rustMaterial.Set( "RustDataRead", RustData );
+
+			sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;
+			
+			Graphics.Draw(
+				vertices,
+				vertices.Length,
+				indices,
+				indices.Length,
+				rustMaterial,
+				attributes,
+				Graphics.PrimitiveType.Triangles
+			);
 		}
 	}
 

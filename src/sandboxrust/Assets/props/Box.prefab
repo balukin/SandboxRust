@@ -10,7 +10,6 @@
         "__guid": "881e7d3c-6b0e-445f-84e7-b10a194d3351",
         "BodyGroups": 18446744073709551615,
         "CreateAttachments": false,
-        "MaterialOverride": "materials/rustable_untextured.vmat",
         "Model": "models/dev/box.vmdl",
         "RenderOptions": {
           "GameLayer": true,
@@ -28,6 +27,7 @@
         "IsTrigger": false,
         "Scale": "50,50,50",
         "Static": false,
+        "Surface": "props/hittable_surface.surface",
         "SurfaceVelocity": "0,0,0"
       },
       {
@@ -53,7 +53,8 @@
       },
       {
         "__type": "RustableObject",
-        "__guid": "a399fbf4-4172-4248-a831-5b8c265aecad"
+        "__guid": "a399fbf4-4172-4248-a831-5b8c265aecad",
+        "SimulationFrameInterval": 15
       }
     ],
     "Children": [],
