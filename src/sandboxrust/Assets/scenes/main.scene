@@ -137,6 +137,46 @@
               "UseAnimGraph": true
             }
           ]
+        },
+        {
+          "__guid": "7e271c7d-0bd5-47c3-bc31-d38ccad99fb2",
+          "Flags": 0,
+          "Name": "Flashlight",
+          "Tags": "light,light_spot",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.SpotLight",
+              "__guid": "036b78c6-7eac-443d-babc-faee465807ee",
+              "Attenuation": 2.04,
+              "ConeInner": 8.21,
+              "ConeOuter": 15.57,
+              "Cookie": null,
+              "FogMode": "Enabled",
+              "FogStrength": 1,
+              "LightColor": "0.91373,0.98039,1,1",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Radius": 351.40018,
+              "Shadows": false
+            },
+            {
+              "__type": "Flashlight",
+              "__guid": "97706068-f980-4650-aa2f-a7597e0c549f",
+              "FlashlightSoundOff": "sounds/click_reverse.sound",
+              "FlashlightSoundOn": "sounds/click.sound",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
+            }
+          ]
         }
       ]
     },

@@ -6,6 +6,8 @@ public sealed class CameraHud : Component
 	private CameraComponent cam;
 	public static CameraHud Current { get; private set; }
 	public string AtmosphereText { get; set; }
+	public string FlashlightText { get; set; }
+
 	private int topLeftCurrentLineOffset = 0;
 	private const int lineHeight = 20;
 
@@ -27,6 +29,7 @@ public sealed class CameraHud : Component
 		topLeftCurrentLineOffset = 0;
 		WriteLine( hud, "Hello!" );
 		WriteLine( hud, AtmosphereText );
+		WriteLine( hud, FlashlightText );
 	}
 
 	private void WriteLine( HudPainter hud, string text )
