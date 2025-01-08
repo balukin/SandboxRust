@@ -20,14 +20,14 @@ public class MeshCutter
 
     private readonly float threshold = 1e-6f;
 
-    public MeshCutter(int initialArraySize)
+    public MeshCutter( int initialArraySize )
     {
-        PositiveMesh = new TempMesh(initialArraySize);
-        NegativeMesh = new TempMesh(initialArraySize);
+        PositiveMesh = new TempMesh( initialArraySize );
+        NegativeMesh = new TempMesh( initialArraySize );
 
-        addedPairs = new List<Vector3>(initialArraySize);
-        ogVertices = new List<Vertex>(initialArraySize);
-        ogTriangles = new List<ushort>(initialArraySize * 3);
+        addedPairs = new List<Vector3>( initialArraySize );
+        ogVertices = new List<Vertex>( initialArraySize );
+        ogTriangles = new List<ushort>( initialArraySize * 3 );
 
         intersectPair = new Vector3[2];
         tempTriangle = new Vector3[3];
@@ -41,58 +41,64 @@ public class MeshCutter
     /// Returns posMesh and negMesh, which are the resuling meshes on both sides of the plane 
     /// (posMesh on the same side as the plane's normal, negMesh on the opposite side)
     /// </summary>
-    public bool SliceMesh(Model mesh, ref Plane slice)
+    public bool SliceMesh( Model mesh, ref Plane slice )
     {
 
         // Note-Migration: We're downsizing the indices to ushort to match S&Box API
         // Let's always fill the vertices array so that we can access it even if the mesh didn't intersect
         ogVertices = mesh.GetVertices().ToList();
-        ogTriangles = mesh.GetIndices().Select(x => (ushort)x).ToList();
+        ogTriangles = mesh.GetIndices().Select( x => (ushort)x ).ToList();
 
         // 1. Verify if the bounds intersect first
-        if (!Intersections.BoundPlaneIntersect(mesh, ref slice))
+        if ( !Intersections.BoundPlaneIntersect( mesh, ref slice ) )
             return false;
 
         PositiveMesh.Clear();
         NegativeMesh.Clear();
         addedPairs.Clear();
 
+        Log.Info( $"[SliceMesh] Plane Normal: {slice.Normal}, Plane Distance: {slice.Distance}" );
+
         // 2. Separate old vertices in new meshes
-        for(int i = 0; i < ogVertices.Count; ++i)
+        for ( int i = 0; i < ogVertices.Count; ++i )
         {
-            if (slice.GetDistance(ogVertices[i].Position) >= 0)
-                PositiveMesh.AddVertex(ogVertices, i);
+            var dist = slice.GetDistance( ogVertices[i].Position );
+            Log.Info( $"[SliceMesh] Vertex {i} => distance {dist}" );
+
+            if ( dist >= 0 )
+                PositiveMesh.AddVertex( ogVertices, i );
             else
-                NegativeMesh.AddVertex(ogVertices, i);
+                NegativeMesh.AddVertex( ogVertices, i );
         }
 
         // 2.5 : If one of the mesh has no vertices, then it doesn't intersect
-        if (NegativeMesh.vertices.Count == 0 || PositiveMesh.vertices.Count == 0)
+        if ( NegativeMesh.vertices.Count == 0 || PositiveMesh.vertices.Count == 0 )
             return false;
 
         // 3. Separate triangles and cut those that intersect the plane
-        for (int i = 0; i < ogTriangles.Count; i += 3)
+        for ( int i = 0; i < ogTriangles.Count; i += 3 )
         {
-            if (intersect.TrianglePlaneIntersect(ogVertices, ogTriangles, i, ref slice, PositiveMesh, NegativeMesh, intersectPair))
-                addedPairs.AddRange(intersectPair);
+            if ( intersect.TrianglePlaneIntersect( ogVertices, ogTriangles, i, ref slice, PositiveMesh, NegativeMesh, intersectPair ) )
+                addedPairs.AddRange( intersectPair );
         }
 
-        if (addedPairs.Count > 0)
+        if ( addedPairs.Count > 0 )
         {
             //FillBoundaryGeneral(addedPairs);
-            FillBoundaryFace(addedPairs);
+            FillBoundaryFace( addedPairs );
             return true;
-        } else
+        }
+        else
         {
-            throw new MeshCutException("Error: if added pairs is empty, we should have returned false earlier");
+            throw new MeshCutException( "Error: if added pairs is empty, we should have returned false earlier" );
         }
     }
 
     public Vector3 GetFirstVertex()
     {
-        if (ogVertices.Count == 0)
+        if ( ogVertices.Count == 0 )
             throw new MeshCutException(
-                "Error: Either the mesh has no vertices or GetFirstVertex was called before SliceMesh.");
+                "Error: Either the mesh has no vertices or GetFirstVertex was called before SliceMesh." );
         else
             return ogVertices[0].Position;
     }
@@ -100,40 +106,40 @@ public class MeshCutter
     #region Boundary fill method
 
 
-    private void FillBoundaryGeneral(List<Vector3> added)
+    private void FillBoundaryGeneral( List<Vector3> added )
     {
         // 1. Reorder added so in order ot their occurence along the perimeter.
-        MeshUtils.ReorderList(added);
+        MeshUtils.ReorderList( added );
 
-        Vector3 center = MeshUtils.FindCenter(added);
+        Vector3 center = MeshUtils.FindCenter( added );
 
         //Create triangle for each edge to the center
         tempTriangle[2] = center;
 
-        for (int i = 0; i < added.Count; i += 2)
+        for ( int i = 0; i < added.Count; i += 2 )
         {
             // Add fronface triangle in meshPositive
             tempTriangle[0] = added[i];
             tempTriangle[1] = added[i + 1];
 
-            PositiveMesh.AddTriangle(tempTriangle);
+            PositiveMesh.AddTriangle( tempTriangle );
 
             // Add backface triangle in meshNegative
             tempTriangle[0] = added[i + 1];
             tempTriangle[1] = added[i];
 
-            NegativeMesh.AddTriangle(tempTriangle);
+            NegativeMesh.AddTriangle( tempTriangle );
         }
     }
 
 
-    private void FillBoundaryFace(List<Vector3> added)
+    private void FillBoundaryFace( List<Vector3> added )
     {
         // 1. Reorder added so in order ot their occurence along the perimeter.
-        MeshUtils.ReorderList(added);
+        MeshUtils.ReorderList( added );
 
         // 2. Find actual face vertices
-        var face = FindRealPolygon(added);
+        var face = FindRealPolygon( added );
 
         // 3. Create triangle fans
         int t_fwd = 0,
@@ -141,11 +147,11 @@ public class MeshCutter
             t_new = 1;
         bool incr_fwd = true;
 
-        while (t_new != t_fwd && t_new != t_bwd)
+        while ( t_new != t_fwd && t_new != t_bwd )
         {
-            AddTriangle(face, t_bwd, t_fwd, t_new);
+            AddTriangle( face, t_bwd, t_fwd, t_new );
 
-            if (incr_fwd) t_fwd = t_new;
+            if ( incr_fwd ) t_fwd = t_new;
             else t_bwd = t_new;
 
             incr_fwd = !incr_fwd;
@@ -157,16 +163,16 @@ public class MeshCutter
     /// Extract polygon from the pairs of vertices.
     /// Per example, two vectors that are colinear is redundant and only forms one side of the polygon
     /// </summary>
-    private List<Vector3> FindRealPolygon(List<Vector3> pairs)
+    private List<Vector3> FindRealPolygon( List<Vector3> pairs )
     {
         List<Vector3> vertices = new List<Vector3>();
         Vector3 edge1, edge2;
 
         // List should be ordered in the correct way
-        for (int i = 0; i < pairs.Count; i += 2)
+        for ( int i = 0; i < pairs.Count; i += 2 )
         {
             edge1 = (pairs[i + 1] - pairs[i]);
-            if (i == pairs.Count - 2)
+            if ( i == pairs.Count - 2 )
                 edge2 = pairs[1] - pairs[0];
             else
                 edge2 = pairs[i + 3] - pairs[i + 2];
@@ -175,25 +181,25 @@ public class MeshCutter
             edge1 = edge1.Normal;
             edge2 = edge2.Normal;
 
-            if (Vector3.GetAngle(edge1, edge2) > threshold)
+            if ( Vector3.GetAngle( edge1, edge2 ) > threshold )
                 // This is a corner
-                vertices.Add(pairs[i + 1]);
+                vertices.Add( pairs[i + 1] );
         }
 
         return vertices;
     }
 
-    private void AddTriangle(List<Vector3> face, int t1, int t2, int t3)
+    private void AddTriangle( List<Vector3> face, int t1, int t2, int t3 )
     {
         tempTriangle[0] = face[t1];
         tempTriangle[1] = face[t2];
         tempTriangle[2] = face[t3];
-        PositiveMesh.AddTriangle(tempTriangle);
+        PositiveMesh.AddTriangle( tempTriangle );
 
         tempTriangle[1] = face[t3];
         tempTriangle[2] = face[t2];
-        NegativeMesh.AddTriangle(tempTriangle);
+        NegativeMesh.AddTriangle( tempTriangle );
     }
     #endregion
-    
+
 }

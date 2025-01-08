@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 public class MouseSlice : Component
@@ -56,7 +57,6 @@ public class MouseSlice : Component
 
     private void OnLineDrawn( Vector3 start, Vector3 end, Vector3 depth )
     {
-        Log.Info( "OnLineDrawn" );
         var planeTangent = (end - start).Normal;
 
         // if we didn't drag, we set tangent to be on x
@@ -67,18 +67,26 @@ public class MouseSlice : Component
 
         if ( drawPlane ) DrawPlane( start, end, normalVec );
 
-        SliceObjects( start, normalVec );
+        try
+        {
+            SliceObjects( start, normalVec );
+        }
+        catch ( MeshCutException e )
+        {
+            // TODO: Remove this exception flow control
+            Log.Warning( e.Message );
+        }
     }
 
 
     void SliceObjects( Vector3 point, Vector3 normal )
     {
         // TODO: Create lookup table for tags
-        var toSlice = Scene.GetAllObjects(true).Where( obj => obj.Tags.Has( "slice_debuggable" ) ).ToArray();
+        var toSlice = Scene.GetAllObjects( true ).Where( obj => obj.Tags.Has( "slice_debuggable" ) ).ToArray();
 
         // Put results in positive and negative array so that we separate all meshes if there was a cut made
-        List<Transform> positive = new List<Transform>(),
-            negative = new List<Transform>();
+        List<GameTransform> positive = new List<GameTransform>(),
+            negative = new List<GameTransform>();
 
         debugPlane.Transform.World = new Transform( point, Rotation.FromToRotation( Vector3.Up, normal ) );
 
@@ -93,64 +101,66 @@ public class MouseSlice : Component
             var transformedNormal = obj.Transform.World.NormalToLocal( normal );
 
             //Convert plane in object's local frame
-            slicePlane = new Plane( transformedPosition, transformedNormal );            
+            slicePlane = new Plane( transformedPosition, transformedNormal );
 
             Log.Info( $"Slice plane position: {transformedPosition}, normal: {transformedNormal}" );
 
-
-            //slicedAny = SliceObject( ref slicePlane, obj, positive, negative ) || slicedAny;
+            slicedAny = SliceObject( ref slicePlane, obj, positive, negative ) || slicedAny;
         }
 
+        Log.Info( $"Sliced any: {slicedAny}" );
         // Separate meshes if a slice was made
-        // if ( slicedAny )
-        //    SeparateMeshes( positive, negative, normal );
+        if ( slicedAny )
+        {
+            // SeparateMeshes( positive, negative, normal );
+        }
     }
 
-    // bool SliceObject( ref Plane slicePlane, GameObject obj, List<Transform> positiveObjects, List<Transform> negativeObjects )
-    // {
-    //     var mesh = obj.GetComponent<MeshFilter>().mesh;
+    bool SliceObject( ref Plane slicePlane, GameObject obj, List<GameTransform> positiveObjects, List<GameTransform> negativeObjects )
+    {
+        var model = obj.GetComponent<ModelRenderer>().Model;
 
-    //     if ( !meshCutter.SliceMesh( mesh, ref slicePlane ) )
-    //     {
-    //         // Put object in the respective list
-    //         if ( slicePlane.GetDistanceToPoint( meshCutter.GetFirstVertex() ) >= 0 )
-    //             positiveObjects.Add( obj.transform );
-    //         else
-    //             negativeObjects.Add( obj.transform );
+        if ( !meshCutter.SliceMesh( model, ref slicePlane ) )
+        {
+            // Put object in the respective list
+            if ( slicePlane.GetDistance( meshCutter.GetFirstVertex() ) >= 0 )
+                positiveObjects.Add( obj.Transform );
+            else
+                negativeObjects.Add( obj.Transform );
 
-    //         return false;
-    //     }
+            return false;
+        }
 
-    //     // TODO: Update center of mass
+        // TODO: Update center of mass
 
-    //     // Silly condition that labels which mesh is bigger to keep the bigger mesh in the original gameobject
-    //     bool posBigger = meshCutter.PositiveMesh.surfacearea > meshCutter.NegativeMesh.surfacearea;
-    //     if ( posBigger )
-    //     {
-    //         biggerMesh = meshCutter.PositiveMesh;
-    //         smallerMesh = meshCutter.NegativeMesh;
-    //     }
-    //     else
-    //     {
-    //         biggerMesh = meshCutter.NegativeMesh;
-    //         smallerMesh = meshCutter.PositiveMesh;
-    //     }
+        // Silly condition that labels which mesh is bigger to keep the bigger mesh in the original gameobject
+        bool posBigger = meshCutter.PositiveMesh.surfacearea > meshCutter.NegativeMesh.surfacearea;
+        if ( posBigger )
+        {
+            biggerMesh = meshCutter.PositiveMesh;
+            smallerMesh = meshCutter.NegativeMesh;
+        }
+        else
+        {
+            biggerMesh = meshCutter.NegativeMesh;
+            smallerMesh = meshCutter.PositiveMesh;
+        }
 
-    //     // Create new Sliced object with the other mesh
-    //     GameObject newObject = Instantiate( obj, ObjectContainer );
-    //     newObject.transform.SetPositionAndRotation( obj.transform.position, obj.transform.rotation );
-    //     var newObjMesh = newObject.GetComponent<MeshFilter>().mesh;
+        // Create new Sliced object with the other mesh
+        // GameObject newObject = Instantiate( obj, ObjectContainer );
+        // newObject.transform.SetPositionAndRotation( obj.transform.position, obj.transform.rotation );
+        // var newObjMesh = newObject.GetComponent<MeshFilter>().mesh;
 
-    //     // Put the bigger mesh in the original object
-    //     // TODO: Enable collider generation (either the exact mesh or compute smallest enclosing sphere)
-    //     ReplaceMesh( mesh, biggerMesh );
-    //     ReplaceMesh( newObjMesh, smallerMesh );
+        // // Put the bigger mesh in the original object
+        // // TODO: Enable collider generation (either the exact mesh or compute smallest enclosing sphere)
+        // ReplaceMesh( mesh, biggerMesh );
+        // ReplaceMesh( newObjMesh, smallerMesh );
 
-    //     (posBigger ? positiveObjects : negativeObjects).Add( obj.transform );
-    //     (posBigger ? negativeObjects : positiveObjects).Add( newObject.transform );
+        // (posBigger ? positiveObjects : negativeObjects).Add( obj.transform );
+        // (posBigger ? negativeObjects : positiveObjects).Add( newObject.transform );
 
-    //     return true;
-    // }
+        return true;
+    }
 
 
     // /// <summary>
