@@ -181,6 +181,38 @@
       ]
     },
     {
+      "__guid": "caa2b16e-a899-45ec-becd-cc61276a5cdc",
+      "Flags": 0,
+      "Name": "DebugPlane",
+      "Position": "-13.12206,-172.617,132.4593",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.ModelRenderer",
+          "__guid": "e48a4f2a-9976-4e39-a1b5-6fa562a9829d",
+          "BodyGroups": 18446744073709551615,
+          "CreateAttachments": false,
+          "MaterialGroup": null,
+          "MaterialOverride": null,
+          "Model": "models/dev/plane.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "RenderOptions": {
+            "GameLayer": true,
+            "OverlayLayer": false,
+            "BloomLayer": false,
+            "AfterUILayer": false
+          },
+          "RenderType": "On",
+          "Tint": "1,1,1,1"
+        }
+      ]
+    },
+    {
       "__guid": "46267e29-e1ab-4602-8065-8ad32284bd85",
       "Flags": 0,
       "Name": "Player",
@@ -193,6 +225,7 @@
           "AimStrengthBody": 1,
           "AimStrengthEyes": 1,
           "AimStrengthHead": 1,
+          "AltMoveButton": "run",
           "Body": {
             "_type": "component",
             "component_id": "857d4a3d-6810-480c-b888-a3769ffd4f06",
@@ -236,6 +269,7 @@
           "RotateWithGround": true,
           "RotationAngleLimit": 45,
           "RotationSpeed": 1,
+          "RunByDefault": false,
           "RunSpeed": 320,
           "ShowColliderComponents": false,
           "ShowRigidbodyComponent": false,
@@ -540,6 +574,36 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null
+        },
+        {
+          "__type": "MouseSlice",
+          "__guid": "4d415ce8-df29-433c-8a0a-56a5e81ed233",
+          "debugPlane": {
+            "_type": "gameobject",
+            "go": "caa2b16e-a899-45ec-becd-cc61276a5cdc"
+          },
+          "lineRenderer": {
+            "_type": "component",
+            "component_id": "0bc611fd-690d-4e6e-b802-9ca989ec0a4d",
+            "go": "a229aaca-417c-485d-8e69-1e1ec126fff0",
+            "component_type": "ScreenLineRenderer"
+          },
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "ScreenLineRenderer",
+          "__guid": "0bc611fd-690d-4e6e-b802-9ca989ec0a4d",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
         }
       ],
       "Children": [
@@ -573,6 +637,7 @@
               "Flags": 0,
               "Name": "white_rotating_box",
               "Position": "0,-101.9679,57.57082",
+              "Tags": "slice_debuggable",
               "Enabled": true,
               "Components": [
                 {
