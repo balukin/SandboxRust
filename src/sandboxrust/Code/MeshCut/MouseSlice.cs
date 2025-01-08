@@ -116,17 +116,18 @@ public class MouseSlice : Component
         }
     }
 
-    bool SliceObject( ref Plane slicePlane, GameObject obj, List<GameTransform> positiveObjects, List<GameTransform> negativeObjects )
+    bool SliceObject( ref Plane slicePlane, GameObject originalObj, List<GameTransform> positiveObjects, List<GameTransform> negativeObjects )
     {
-        var model = obj.GetComponent<ModelRenderer>().Model;
+        var modelRenderer = originalObj.GetComponent<ModelRenderer>();
+        var model = modelRenderer.Model;
 
         if ( !meshCutter.SliceMesh( model, ref slicePlane ) )
         {
             // Put object in the respective list
             if ( slicePlane.GetDistance( meshCutter.GetFirstVertex() ) >= 0 )
-                positiveObjects.Add( obj.Transform );
+                positiveObjects.Add( originalObj.Transform );
             else
-                negativeObjects.Add( obj.Transform );
+                negativeObjects.Add( originalObj.Transform );
 
             return false;
         }
@@ -146,20 +147,68 @@ public class MouseSlice : Component
             smallerMesh = meshCutter.PositiveMesh;
         }
 
-        // Create new Sliced object with the other mesh
-        // GameObject newObject = Instantiate( obj, ObjectContainer );
-        // newObject.transform.SetPositionAndRotation( obj.transform.position, obj.transform.rotation );
-        // var newObjMesh = newObject.GetComponent<MeshFilter>().mesh;
+        // Create new Sliced object with the other mesh and move both of them to a common container
+        var container = new GameObject(true, "Container for " + originalObj.Name );
+        container.Transform.World = originalObj.Transform.World;
+        container.SetParent( originalObj.Parent );
+        originalObj.SetParent( container );
+        originalObj.Name = "Original slice of " + originalObj.Name;
+        var cloneConfig = new CloneConfig( container.WorldTransform, parent: container, name: "New slice of " + originalObj.Name );
+        
+        GameObject newObject = originalObj.Clone( cloneConfig );
+        newObject.Transform.World = originalObj.Transform.World;
 
-        // // Put the bigger mesh in the original object
-        // // TODO: Enable collider generation (either the exact mesh or compute smallest enclosing sphere)
-        // ReplaceMesh( mesh, biggerMesh );
-        // ReplaceMesh( newObjMesh, smallerMesh );
+        
+        var newObjModelRenderer = newObject.GetComponent<ModelRenderer>();
 
-        // (posBigger ? positiveObjects : negativeObjects).Add( obj.transform );
-        // (posBigger ? negativeObjects : positiveObjects).Add( newObject.transform );
+        // Put the bigger mesh in the original object
+        // TODO: Enable collider generation
+        ReplaceModel( modelRenderer, biggerMesh );
+        ReplaceModel( newObjModelRenderer, smallerMesh );
+
+        // TODO: Dispose of the old mesh data
+
+        (posBigger ? positiveObjects : negativeObjects).Add( originalObj.Transform );
+        (posBigger ? negativeObjects : positiveObjects).Add( newObject.Transform );
 
         return true;
+    }
+
+    void ReplaceModel( ModelRenderer modelRenderer, TempMesh tempMesh )
+    {
+        var sandboxMesh = new Mesh();
+
+        // Assume Vertex is the used vertex layout, will probably crash if not
+        // TODO: Add guard clause
+        var vertexList = new List<Vertex>();
+        for ( int i = 0; i < tempMesh.vertices.Count; i++ )
+        {
+            vertexList.Add( new Vertex
+            {
+                Position = tempMesh.vertices[i],
+                Normal = tempMesh.normals[i],
+                TexCoord0 = new Vector4( tempMesh.uvs[i].x, tempMesh.uvs[i].y, 0, 0 )
+            });
+        }
+
+        // Create and set index buffer
+        sandboxMesh.CreateIndexBuffer( tempMesh.triangles.Count, tempMesh.triangles.ToArray() );
+
+        // Calculate and set bounds
+        var bounds = new BBox();
+        foreach ( var vertex in tempMesh.vertices )
+        {
+            bounds = bounds.AddPoint( vertex );
+        }
+        sandboxMesh.Bounds = bounds;
+
+        // Create a new Model using ModelBuilder
+        var modelBuilder = new ModelBuilder();
+        modelBuilder.AddMesh( sandboxMesh );
+
+        var model = modelBuilder.Create();
+
+        modelRenderer.Model = model;
     }
 
 
