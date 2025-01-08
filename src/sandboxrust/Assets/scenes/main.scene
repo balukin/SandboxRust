@@ -633,11 +633,102 @@
               "__PrefabVariables": {}
             },
             {
+              "__guid": "69b0de45-50e4-4113-b48e-5f9a23a01bcf",
+              "Flags": 0,
+              "Name": "slice_debug_box",
+              "Position": "-61.4256,-97.79882,2.887665",
+              "Tags": "slice_debuggable",
+              "Enabled": true,
+              "Components": [
+                {
+                  "__type": "Sandbox.ModelRenderer",
+                  "__guid": "8499e69b-4e53-4b19-8484-8a11006b7423",
+                  "BodyGroups": 18446744073709551615,
+                  "CreateAttachments": false,
+                  "MaterialGroup": null,
+                  "MaterialOverride": null,
+                  "Model": "models/dev/box.vmdl",
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "RenderOptions": {
+                    "GameLayer": true,
+                    "OverlayLayer": false,
+                    "BloomLayer": false,
+                    "AfterUILayer": false
+                  },
+                  "RenderType": "On",
+                  "Tint": "1,1,1,1"
+                },
+                {
+                  "__type": "Sandbox.BoxCollider",
+                  "__guid": "2088ec94-9927-40b5-ba55-026caf17bba4",
+                  "Center": "0,0,0",
+                  "Friction": null,
+                  "IsTrigger": false,
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "OnObjectTriggerEnter": null,
+                  "OnObjectTriggerExit": null,
+                  "OnTriggerEnter": null,
+                  "OnTriggerExit": null,
+                  "Scale": "50,50,50",
+                  "Static": false,
+                  "Surface": "props/hittable_surface.surface",
+                  "SurfaceVelocity": "0,0,0"
+                },
+                {
+                  "__type": "Sandbox.Rigidbody",
+                  "__guid": "10d9ad9d-f02d-4de1-b782-91ae9c65632e",
+                  "AngularDamping": 0,
+                  "Gravity": false,
+                  "LinearDamping": 0,
+                  "Locking": {
+                    "X": false,
+                    "Y": false,
+                    "Z": false,
+                    "Pitch": false,
+                    "Yaw": false,
+                    "Roll": false
+                  },
+                  "MassCenterOverride": "0,0,0",
+                  "MassOverride": 0,
+                  "MotionEnabled": true,
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "OverrideMassCenter": false,
+                  "RigidbodyFlags": 0,
+                  "StartAsleep": false
+                },
+                {
+                  "__type": "RustableObject",
+                  "__guid": "27e20f8d-d02a-4430-b4a3-8776051dabb4",
+                  "SimulationFrameInterval": 15,
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null
+                }
+              ]
+            },
+            {
               "__guid": "254c832e-c014-48d6-a18a-16b599c87546",
               "Flags": 0,
               "Name": "white_rotating_box",
               "Position": "0,-101.9679,57.57082",
-              "Tags": "slice_debuggable",
               "Enabled": true,
               "Components": [
                 {

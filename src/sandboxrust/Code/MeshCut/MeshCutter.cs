@@ -57,13 +57,16 @@ public class MeshCutter
         NegativeMesh.Clear();
         addedPairs.Clear();
 
-        Log.Info( $"[SliceMesh] Plane Normal: {slice.Normal}, Plane Distance: {slice.Distance}" );
+        PositiveMesh.material = mesh.Materials.First();
+        NegativeMesh.material = mesh.Materials.First();
+
+        // Log.Info( $"[SliceMesh] Plane Normal: {slice.Normal}, Plane Distance: {slice.Distance}" );
 
         // 2. Separate old vertices in new meshes
         for ( int i = 0; i < ogVertices.Count; ++i )
         {
             var dist = slice.GetDistance( ogVertices[i].Position );
-            Log.Info( $"[SliceMesh] Vertex {i} => distance {dist}" );
+            // Log.Info( $"[SliceMesh] Vertex {i} => distance {dist}" );
 
             if ( dist >= 0 )
                 PositiveMesh.AddVertex( ogVertices, i );

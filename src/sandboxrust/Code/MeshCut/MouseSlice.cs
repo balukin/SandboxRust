@@ -88,7 +88,8 @@ public class MouseSlice : Component
         List<GameTransform> positive = new List<GameTransform>(),
             negative = new List<GameTransform>();
 
-        debugPlane.Transform.World = new Transform( point, Rotation.FromToRotation( Vector3.Up, normal ) );
+        // Visualize cutting plane at player camera position
+        // debugPlane.Transform.World = new Transform( point, Rotation.FromToRotation( Vector3.Up, normal ) );
 
         GameObject obj;
         bool slicedAny = false;
@@ -118,10 +119,10 @@ public class MouseSlice : Component
 
     bool SliceObject( ref Plane slicePlane, GameObject originalObj, List<GameTransform> positiveObjects, List<GameTransform> negativeObjects )
     {
-        var modelRenderer = originalObj.GetComponent<ModelRenderer>();
-        var model = modelRenderer.Model;
+        var originalModelRenderer = originalObj.GetComponent<ModelRenderer>();
+        var originalModel = originalModelRenderer.Model;
 
-        if ( !meshCutter.SliceMesh( model, ref slicePlane ) )
+        if ( !meshCutter.SliceMesh( originalModel, ref slicePlane ) )
         {
             // Put object in the respective list
             if ( slicePlane.GetDistance( meshCutter.GetFirstVertex() ) >= 0 )
@@ -148,22 +149,23 @@ public class MouseSlice : Component
         }
 
         // Create new Sliced object with the other mesh and move both of them to a common container
-        var container = new GameObject(true, "Container for " + originalObj.Name );
+        var container = new GameObject( true, "Container for " + originalObj.Name );
         container.Transform.World = originalObj.Transform.World;
         container.SetParent( originalObj.Parent );
         originalObj.SetParent( container );
         originalObj.Name = "Original slice of " + originalObj.Name;
         var cloneConfig = new CloneConfig( container.WorldTransform, parent: container, name: "New slice of " + originalObj.Name );
-        
+
         GameObject newObject = originalObj.Clone( cloneConfig );
+        
         newObject.Transform.World = originalObj.Transform.World;
 
-        
+
         var newObjModelRenderer = newObject.GetComponent<ModelRenderer>();
 
         // Put the bigger mesh in the original object
         // TODO: Enable collider generation
-        ReplaceModel( modelRenderer, biggerMesh );
+        ReplaceModel( originalModelRenderer, biggerMesh );
         ReplaceModel( newObjModelRenderer, smallerMesh );
 
         // TODO: Dispose of the old mesh data
@@ -178,81 +180,47 @@ public class MouseSlice : Component
     {
         var sandboxMesh = new Mesh();
 
-        // Assume Vertex is the used vertex layout, will probably crash if not
+        // Assume default Vertex is the used vertex layout, will probably crash if not
         // TODO: Add guard clause
-        var vertexList = new List<Vertex>();
-        for ( int i = 0; i < tempMesh.vertices.Count; i++ )
+
+        VertexBuffer vb = new VertexBuffer();
+        vb.Init( true );
+        for ( int i = 0; i < tempMesh.triangles.Count; i += 3 )
         {
-            vertexList.Add( new Vertex
-            {
-                Position = tempMesh.vertices[i],
-                Normal = tempMesh.normals[i],
-                TexCoord0 = new Vector4( tempMesh.uvs[i].x, tempMesh.uvs[i].y, 0, 0 )
-            });
+            vb.AddTriangle( 
+                 tempMesh.vertices[tempMesh.triangles[i]],
+                 tempMesh.vertices[tempMesh.triangles[i + 1]],
+                 tempMesh.vertices[tempMesh.triangles[i + 2]] );
         }
 
-        // Create and set index buffer
-        sandboxMesh.CreateIndexBuffer( tempMesh.triangles.Count, tempMesh.triangles.ToArray() );
+        // Create and set mesh buffers
+        sandboxMesh.CreateBuffers( vb, true );
+
+        sandboxMesh.Material = tempMesh.material;
+        
+        Log.Info( $"Mesh valid: {sandboxMesh.IsValid}, og material: {modelRenderer.GetMaterial()?.Name}" );
 
         // Calculate and set bounds
-        var bounds = new BBox();
-        foreach ( var vertex in tempMesh.vertices )
-        {
-            bounds = bounds.AddPoint( vertex );
-        }
-        sandboxMesh.Bounds = bounds;
+        // var bounds = new BBox();
+        // foreach ( var vertex in tempMesh.vertices )
+        // {
+        //     bounds = bounds.AddPoint( vertex.Position );
+        // }
+        // sandboxMesh.Bounds = bounds;
 
         // Create a new Model using ModelBuilder
         var modelBuilder = new ModelBuilder();
         modelBuilder.AddMesh( sandboxMesh );
 
+        // modelBuilder.AddCollisionBox( new Vector3( 1, 1, 1 ) );
+
         var model = modelBuilder.Create();
-
+        Log.Info( $"Model valid: {model.IsValid} with tri count: {tempMesh.triangles.Count}" );
         modelRenderer.Model = model;
+
+        // Maybe this way?
+        // var go = modelRenderer.GameObject;
+        // modelRenderer.Destroy();
+        // go.AddComponent<ModelRenderer>().Model = model;
     }
-
-
-    // /// <summary>
-    // /// Replace the mesh with tempMesh.
-    // /// </summary>
-    // void ReplaceMesh( Mesh mesh, TempMesh tempMesh, MeshCollider collider = null )
-    // {
-    //     mesh.Clear();
-    //     mesh.SetVertices( tempMesh.vertices );
-    //     mesh.SetTriangles( tempMesh.triangles, 0 );
-    //     mesh.SetNormals( tempMesh.normals );
-    //     mesh.SetUVs( 0, tempMesh.uvs );
-
-    //     //mesh.RecalculateNormals();
-    //     mesh.RecalculateTangents();
-
-    //     if ( collider != null && collider.enabled )
-    //     {
-    //         collider.sharedMesh = mesh;
-    //         collider.convex = true;
-    //     }
-    // }
-
-    // void SeparateMeshes( Transform posTransform, Transform negTransform, Vector3 localPlaneNormal )
-    // {
-    //     // Bring back normal in world space
-    //     Vector3 worldNormal = ((Vector3)(posTransform.worldToLocalMatrix.transpose * localPlaneNormal)).normalized;
-
-    //     Vector3 separationVec = worldNormal * separation;
-    //     // Transform direction in world coordinates
-    //     posTransform.position += separationVec;
-    //     negTransform.position -= separationVec;
-    // }
-
-    // void SeparateMeshes( List<Transform> positives, List<Transform> negatives, Vector3 worldPlaneNormal )
-    // {
-    //     int i;
-    //     var separationVector = worldPlaneNormal * separation;
-
-    //     for ( i = 0; i < positives.Count; ++i )
-    //         positives[i].transform.position += separationVector;
-
-    //     for ( i = 0; i < negatives.Count; ++i )
-    //         negatives[i].transform.position -= separationVector;
-    // }
 }

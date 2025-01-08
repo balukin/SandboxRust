@@ -4,9 +4,7 @@ using System.Collections.Generic;
 
 public class TempMesh
 {
-    public List<Vector3> vertices;
-    public List<Vector3> normals;
-    public List<Vector2> uvs;
+    public List<Vertex> vertices;
     public List<int> triangles;
 
     // Mappings of indices from original mesh to new mesh
@@ -14,11 +12,11 @@ public class TempMesh
 
     public float surfacearea;
 
+    public Material material;
+
     public TempMesh(int vertexCapacity)
     {
-        vertices = new List<Vector3>(vertexCapacity);
-        normals = new List<Vector3>(vertexCapacity);
-        uvs = new List<Vector2>(vertexCapacity);
+        vertices = new List<Vertex>(vertexCapacity);
         triangles = new List<int>(vertexCapacity * 3);
 
         vMapping = new Dictionary<int, int>(vertexCapacity);
@@ -29,8 +27,6 @@ public class TempMesh
     public void Clear()
     {
         vertices.Clear();
-        normals.Clear();
-        uvs.Clear();
         triangles.Clear();
 
         vMapping.Clear();
@@ -41,12 +37,10 @@ public class TempMesh
     /// <summary>
     /// Add point and normal to arrays if not already present
     /// </summary>
-    private void AddPoint(Vector3 point, Vector3 normal, Vector2 uv)
+    private void AddPoint(Vertex v)
     {
         triangles.Add(vertices.Count);
-        vertices.Add(point);
-        normals.Add(normal);
-        uvs.Add(uv);
+        vertices.Add(v);
     }
 
     /// <summary>
@@ -66,10 +60,10 @@ public class TempMesh
     {
         int v1 = vMapping[i1],
             v3 = vMapping[i3];
-        Vector3 normal = Vector3.Cross(v2 - vertices[v1], vertices[v3] - v2).Normal;
+        Vector3 normal = Vector3.Cross(v2 - vertices[v1].Position, vertices[v3].Position - v2).Normal;
 
         triangles.Add(v1);
-        AddPoint(v2, normal, uv2);
+        AddPoint(new Vertex { Position = v2, Normal = normal, TexCoord0 = uv2 });
         triangles.Add(vMapping[i3]);
 
         //Compute triangle area
@@ -80,11 +74,11 @@ public class TempMesh
     {
         // Compute face normal?
         int v1 = vMapping[i1];
-        Vector3 normal = Vector3.Cross(v2 - vertices[v1], v3 - v2).Normal;
+        Vector3 normal = Vector3.Cross(v2 - vertices[v1].Position, v3 - v2).Normal;
 
         triangles.Add(v1);
-        AddPoint(v2, normal, uv2);
-        AddPoint(v3, normal, uv3);
+        AddPoint(new Vertex { Position = v2, Normal = normal, TexCoord0 = uv2 });
+        AddPoint(new Vertex { Position = v3, Normal = normal, TexCoord0 = uv3 });
 
         //Compute triangle area
         surfacearea += GetTriangleArea(triangles.Count - 3);
@@ -101,7 +95,7 @@ public class TempMesh
         for (int i = 0; i < 3; ++i)
         {
             // TODO: Compute uv values for the new triangle?
-            AddPoint(points[i], normal, Vector2.Zero);
+            AddPoint(new Vertex { Position = points[i], Normal = normal, TexCoord0 = Vector2.Zero });
         }
 
         //Compute triangle area
@@ -121,18 +115,15 @@ public class TempMesh
     public void AddVertex(List<Vertex> ogVertices, int index)
     {
         vMapping[index] = vertices.Count;
-        vertices.Add(ogVertices[index].Position);
-        normals.Add(ogVertices[index].Normal);
+        vertices.Add(ogVertices[index]);
 
-        // TODO-Migration: vector4 to vector2
-        uvs.Add(new Vector2(ogVertices[index].TexCoord0.x, ogVertices[index].TexCoord0.y));
     }
 
 
     private float GetTriangleArea(int i)
     {
-        var va = vertices[triangles[i + 2]] - vertices[triangles[i]];
-        var vb = vertices[triangles[i + 1]] - vertices[triangles[i]];
+        var va = vertices[triangles[i + 2]].Position - vertices[triangles[i]].Position;
+        var vb = vertices[triangles[i + 1]].Position - vertices[triangles[i]].Position;
         float a = va.Length;
         float b = vb.Length;
         float gamma = Deg2Rad(Vector3.GetAngle(vb, va));
