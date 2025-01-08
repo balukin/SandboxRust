@@ -51,12 +51,14 @@ public class Intersections
         // This function sets enter to the distance along the ray, where it intersects the plane. 
         // If the ray is parallel to the plane, function returns false and sets enter to zero.If the ray is pointing in the opposite direction than the plane, function returns false and sets enter to the distance along the ray( negative value ).
 
+        // Log.Info( $"Intersecting ray from {first} to {second}" );
         edgeRay.Position = first;
         edgeRay.Forward = (second - first).Normal;
         Vector3 hitPoint;
         float maxDist = (first - second).Length;
-
-        var result = plane.TryTrace( edgeRay, out hitPoint );
+        
+        bool result = plane.TryTrace( edgeRay, out hitPoint, twosided: true );
+        
         float dist = (first - hitPoint).Length;
         if (result == false)
             // Intersect in wrong direction...
