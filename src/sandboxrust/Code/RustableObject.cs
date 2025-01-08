@@ -175,7 +175,7 @@ public sealed class RustableObject : Component
 		{
 			// Copy the data to the read-only buffer to avoid race condition on R/W in the same resource
 
-			// For some reason Graphics.CopyTexture( RustData, RustDataReadBuffer ); 
+			// For some reason Graphics.CopyTexture( RustData, RustDataReadBuffer ); does NOT work
 			// Only one slice was being copied and changing slice indices had no effect
 			// We're gonna do it the stupid way
 			Graphics.ResourceBarrierTransition( RustData, ResourceState.CopySource );
