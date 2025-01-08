@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 public static class MeshUtils
 {
@@ -9,7 +8,7 @@ public static class MeshUtils
     /// </summary>
     public static Vector3 FindCenter(List<Vector3> pairs)
     {
-        Vector3 center = Vector3.zero;
+        Vector3 center = Vector3.Zero;
         int count = 0;
 
         for (int i = 0; i < pairs.Count; i += 2)
@@ -49,7 +48,7 @@ public static class MeshUtils
             if (i + 3 >= pairs.Count)
             {
                 // Why does this happen?
-                Debug.Log("Huh?");
+                Log.Trace("Huh?");
                 break;
             }
             else if (pairs[i + 3] == pairs[faceStart])

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 
 public class TempMesh
@@ -67,7 +66,7 @@ public class TempMesh
     {
         int v1 = vMapping[i1],
             v3 = vMapping[i3];
-        Vector3 normal = Vector3.Cross(v2 - vertices[v1], vertices[v3] - v2).normalized;
+        Vector3 normal = Vector3.Cross(v2 - vertices[v1], vertices[v3] - v2).Normal;
 
         triangles.Add(v1);
         AddPoint(v2, normal, uv2);
@@ -81,7 +80,7 @@ public class TempMesh
     {
         // Compute face normal?
         int v1 = vMapping[i1];
-        Vector3 normal = Vector3.Cross(v2 - vertices[v1], v3 - v2).normalized;
+        Vector3 normal = Vector3.Cross(v2 - vertices[v1], v3 - v2).Normal;
 
         triangles.Add(v1);
         AddPoint(v2, normal, uv2);
@@ -97,19 +96,19 @@ public class TempMesh
     public void AddTriangle(Vector3[] points)
     {
         // Compute normal
-        Vector3 normal = Vector3.Cross(points[1] - points[0], points[2] - points[1]).normalized;
+        Vector3 normal = Vector3.Cross(points[1] - points[0], points[2] - points[1]).Normal;
 
         for (int i = 0; i < 3; ++i)
         {
             // TODO: Compute uv values for the new triangle?
-            AddPoint(points[i], normal, Vector2.zero);
+            AddPoint(points[i], normal, Vector2.Zero);
         }
 
         //Compute triangle area
         surfacearea += GetTriangleArea(triangles.Count - 3);
     }
 
-    public void ContainsKeys(List<int> triangles, int startIdx, bool[] isTrue)
+    public void ContainsKeys(List<ushort> triangles, int startIdx, bool[] isTrue)
     {
         for (int i = 0; i < 3; ++i)
             isTrue[i] = vMapping.ContainsKey(triangles[startIdx + i]);
@@ -119,12 +118,14 @@ public class TempMesh
     /// Add a vertex from the original mesh 
     /// while storing its old index in the dictionary of index mappings
     /// </summary>
-    public void AddVertex(List<Vector3> ogVertices, List<Vector3> ogNormals, List<Vector2> ogUvs, int index)
+    public void AddVertex(List<Vertex> ogVertices, int index)
     {
         vMapping[index] = vertices.Count;
-        vertices.Add(ogVertices[index]);
-        normals.Add(ogNormals[index]);
-        uvs.Add(ogUvs[index]);
+        vertices.Add(ogVertices[index].Position);
+        normals.Add(ogVertices[index].Normal);
+
+        // TODO-Migration: vector4 to vector2
+        uvs.Add(new Vector2(ogVertices[index].TexCoord0.x, ogVertices[index].TexCoord0.y));
     }
 
 
@@ -132,11 +133,16 @@ public class TempMesh
     {
         var va = vertices[triangles[i + 2]] - vertices[triangles[i]];
         var vb = vertices[triangles[i + 1]] - vertices[triangles[i]];
-        float a = va.magnitude;
-        float b = vb.magnitude;
-        float gamma = Mathf.Deg2Rad * Vector3.Angle(vb, va);
+        float a = va.Length;
+        float b = vb.Length;
+        float gamma = Deg2Rad(Vector3.GetAngle(vb, va));
 
-        return a * b * Mathf.Sin(gamma) / 2;
+        return a * b * MathF.Sin(gamma) / 2;
+    }
+
+    private float Deg2Rad(float degrees)
+    {
+        return MathF.PI * degrees / 180;
     }
 }
 

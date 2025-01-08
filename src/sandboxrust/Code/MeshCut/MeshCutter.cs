@@ -1,6 +1,6 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class MeshCutter
 {
@@ -10,10 +10,8 @@ public class MeshCutter
 
     private List<Vector3> addedPairs;
 
-    private readonly List<Vector3> ogVertices;
-    private readonly List<int> ogTriangles;
-    private readonly List<Vector3> ogNormals;
-    private readonly List<Vector2> ogUvs;
+    private List<Vertex> ogVertices;
+    private List<ushort> ogTriangles;
 
     private readonly Vector3[] intersectPair;
     private readonly Vector3[] tempTriangle;
@@ -28,10 +26,8 @@ public class MeshCutter
         NegativeMesh = new TempMesh(initialArraySize);
 
         addedPairs = new List<Vector3>(initialArraySize);
-        ogVertices = new List<Vector3>(initialArraySize);
-        ogNormals = new List<Vector3>(initialArraySize);
-        ogUvs = new List<Vector2>(initialArraySize);
-        ogTriangles = new List<int>(initialArraySize * 3);
+        ogVertices = new List<Vertex>(initialArraySize);
+        ogTriangles = new List<ushort>(initialArraySize * 3);
 
         intersectPair = new Vector3[2];
         tempTriangle = new Vector3[3];
@@ -45,19 +41,17 @@ public class MeshCutter
     /// Returns posMesh and negMesh, which are the resuling meshes on both sides of the plane 
     /// (posMesh on the same side as the plane's normal, negMesh on the opposite side)
     /// </summary>
-    public bool SliceMesh(Mesh mesh, ref Plane slice)
+    public bool SliceMesh(Model mesh, ref Plane slice)
     {
 
+        // Note-Migration: We're downsizing the indices to ushort to match S&Box API
         // Let's always fill the vertices array so that we can access it even if the mesh didn't intersect
-        mesh.GetVertices(ogVertices);
+        ogVertices = mesh.GetVertices().ToList();
+        ogTriangles = mesh.GetIndices().Select(x => (ushort)x).ToList();
 
         // 1. Verify if the bounds intersect first
         if (!Intersections.BoundPlaneIntersect(mesh, ref slice))
             return false;
-
-        mesh.GetTriangles(ogTriangles, 0);
-        mesh.GetNormals(ogNormals);
-        mesh.GetUVs(0, ogUvs);
 
         PositiveMesh.Clear();
         NegativeMesh.Clear();
@@ -66,10 +60,10 @@ public class MeshCutter
         // 2. Separate old vertices in new meshes
         for(int i = 0; i < ogVertices.Count; ++i)
         {
-            if (slice.GetDistanceToPoint(ogVertices[i]) >= 0)
-                PositiveMesh.AddVertex(ogVertices, ogNormals, ogUvs, i);
+            if (slice.GetDistance(ogVertices[i].Position) >= 0)
+                PositiveMesh.AddVertex(ogVertices, i);
             else
-                NegativeMesh.AddVertex(ogVertices, ogNormals, ogUvs, i);
+                NegativeMesh.AddVertex(ogVertices, i);
         }
 
         // 2.5 : If one of the mesh has no vertices, then it doesn't intersect
@@ -79,7 +73,7 @@ public class MeshCutter
         // 3. Separate triangles and cut those that intersect the plane
         for (int i = 0; i < ogTriangles.Count; i += 3)
         {
-            if (intersect.TrianglePlaneIntersect(ogVertices, ogUvs, ogTriangles, i, ref slice, PositiveMesh, NegativeMesh, intersectPair))
+            if (intersect.TrianglePlaneIntersect(ogVertices, ogTriangles, i, ref slice, PositiveMesh, NegativeMesh, intersectPair))
                 addedPairs.AddRange(intersectPair);
         }
 
@@ -90,17 +84,17 @@ public class MeshCutter
             return true;
         } else
         {
-            throw new UnityException("Error: if added pairs is empty, we should have returned false earlier");
+            throw new MeshCutException("Error: if added pairs is empty, we should have returned false earlier");
         }
     }
 
     public Vector3 GetFirstVertex()
     {
         if (ogVertices.Count == 0)
-            throw new UnityException(
+            throw new MeshCutException(
                 "Error: Either the mesh has no vertices or GetFirstVertex was called before SliceMesh.");
         else
-            return ogVertices[0];
+            return ogVertices[0].Position;
     }
 
     #region Boundary fill method
@@ -178,10 +172,10 @@ public class MeshCutter
                 edge2 = pairs[i + 3] - pairs[i + 2];
 
             // Normalize edges
-            edge1.Normalize();
-            edge2.Normalize();
+            edge1 = edge1.Normal;
+            edge2 = edge2.Normal;
 
-            if (Vector3.Angle(edge1, edge2) > threshold)
+            if (Vector3.GetAngle(edge1, edge2) > threshold)
                 // This is a corner
                 vertices.Add(pairs[i + 1]);
         }
@@ -203,4 +197,3 @@ public class MeshCutter
     #endregion
     
 }
-

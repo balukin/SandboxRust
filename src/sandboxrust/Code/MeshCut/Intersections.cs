@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class Intersections
 {
@@ -9,18 +8,18 @@ public class Intersections
     /// <summary>
     /// Based on https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
     /// </summary>
-    public static bool BoundPlaneIntersect(Mesh mesh, ref Plane plane)
+    public static bool BoundPlaneIntersect(Model mesh, ref Plane plane)
     {
         // Compute projection interval radius
-        float r = mesh.bounds.extents.x * Mathf.Abs(plane.normal.x) +
-            mesh.bounds.extents.y * Mathf.Abs(plane.normal.y) +
-            mesh.bounds.extents.z * Mathf.Abs(plane.normal.z);
+        float r = mesh.Bounds.Extents.x * MathF.Abs(plane.Normal.x) +
+            mesh.Bounds.Extents.y * MathF.Abs(plane.Normal.y) +
+            mesh.Bounds.Extents.z * MathF.Abs(plane.Normal.z);
 
         // Compute distance of box center from plane
-        float s = Vector3.Dot(plane.normal, mesh.bounds.center) - (-plane.distance);
+        float s = Vector3.Dot(plane.Normal, mesh.Bounds.Center) - (-plane.Distance);
 
         // Intersection occurs when distance s falls within [-r,+r] interval
-        return Mathf.Abs(s) <= r;
+        return MathF.Abs(s) <= r;
     }
 
     #endregion
@@ -47,27 +46,36 @@ public class Intersections
     /// </summary>
     public ValueTuple<Vector3, Vector2> Intersect(Plane plane, Vector3 first, Vector3 second, Vector2 uv1, Vector2 uv2)
     {
-        edgeRay.origin = first;
-        edgeRay.direction = (second - first).normalized;
-        float dist;
-        float maxDist = Vector3.Distance(first, second);
+        // Note-Migration: Changing ray cast behavior and general vector calculations
+        // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Plane.Raycast.html:
+        // This function sets enter to the distance along the ray, where it intersects the plane. 
+        // If the ray is parallel to the plane, function returns false and sets enter to zero.If the ray is pointing in the opposite direction than the plane, function returns false and sets enter to the distance along the ray( negative value ).
 
-        if (!plane.Raycast(edgeRay, out dist))
+        edgeRay.Position = first;
+        edgeRay.Forward = (second - first).Normal;
+        Vector3 hitPoint;
+        float maxDist = (first - second).Length;
+
+        var result = plane.TryTrace( edgeRay, out hitPoint );
+        float dist = (first - hitPoint).Length;
+        if (result == false)
             // Intersect in wrong direction...
-            throw new UnityException("Line-Plane intersect in wrong direction");
+            throw new MeshCutException("Line-Plane intersect in wrong direction");
         else if (dist > maxDist)
             // Intersect outside of line segment
-            throw new UnityException("Intersect outside of line");
+            throw new MeshCutException("Intersect outside of line");
 
         var returnVal = new ValueTuple<Vector3, Vector2>
         {
-            Item1 = edgeRay.GetPoint(dist)
+            // Note-Migration: Unity.Ray.GetPoint Returns a point at distance units along the ray.
+            // but we already have a intersection point
+            Item1 = hitPoint
         };
 
         var relativeDist = dist / maxDist;
         // Compute new uv by doing Linear interpolation between uv1 and uv2
-        returnVal.Item2.x = Mathf.Lerp(uv1.x, uv2.x, relativeDist);
-        returnVal.Item2.y = Mathf.Lerp(uv1.y, uv2.y, relativeDist);
+        returnVal.Item2.x = MathX.Lerp(uv1.x, uv2.x, relativeDist);
+        returnVal.Item2.y = MathX.Lerp(uv1.y, uv2.y, relativeDist);
         return returnVal;
     }
 
@@ -85,16 +93,17 @@ public class Intersections
      *       |___________________
      */
 
-    public bool TrianglePlaneIntersect(List<Vector3> vertices, List<Vector2> uvs, List<int> triangles, int startIdx, ref Plane plane, TempMesh posMesh, TempMesh negMesh, Vector3[] intersectVectors)
+    public bool TrianglePlaneIntersect(List<Vertex> vertices, List<ushort> triangles, int startIdx, ref Plane plane, TempMesh posMesh, TempMesh negMesh, Vector3[] intersectVectors)
     {
         int i;
 
         // Store triangle, vertex and uv from indices
         for(i = 0; i < 3; ++i)
         {
+            // TODO-Migration: vector4 to vector2 (again)
             t[i] = triangles[startIdx + i];
-            v[i] = vertices[t[i]];
-            u[i] = uvs[t[i]];
+            v[i] = vertices[t[i]].Position;
+            u[i] = new Vector2(vertices[t[i]].TexCoord0.x, vertices[t[i]].TexCoord0.y);
         }
 
         // Store wether the vertex is on positive mesh
