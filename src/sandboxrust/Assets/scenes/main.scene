@@ -762,6 +762,133 @@
       ]
     },
     {
+      "__guid": "e9d01d49-bdca-4606-8bbb-43516d1a1960",
+      "Flags": 0,
+      "Name": "DensityTester3",
+      "Position": "-23.77076,-269.5499,142.583",
+      "Scale": "3,3,3",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.ModelRenderer",
+          "__guid": "96f1ea1e-46da-462f-b2b4-b1dfd5595c92",
+          "BodyGroups": 18446744073709551615,
+          "CreateAttachments": false,
+          "MaterialGroup": null,
+          "MaterialOverride": null,
+          "Model": "models/food-kit/foodkit_barrel.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "RenderOptions": {
+            "GameLayer": true,
+            "OverlayLayer": false,
+            "BloomLayer": false,
+            "AfterUILayer": false
+          },
+          "RenderType": "On",
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "MeshDensifierTester",
+          "__guid": "ca337d3a-b5f3-4e0e-ba36-01dd4dded3b8",
+          "MaxEdgeLength": 1,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "Sandbox.ModelCollider",
+          "__guid": "d1a60498-9012-464d-82c1-61b54bbc3fbd",
+          "Friction": null,
+          "IsTrigger": false,
+          "Model": "models/dev/box.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnObjectTriggerEnter": null,
+          "OnObjectTriggerExit": null,
+          "OnTriggerEnter": null,
+          "OnTriggerExit": null,
+          "Static": false,
+          "Surface": null,
+          "SurfaceVelocity": "0,0,0"
+        }
+      ]
+    },
+    {
+      "__guid": "e659b4f2-337a-48c5-a72d-af96fcdc09d5",
+      "Flags": 0,
+      "Name": "DensityTester2",
+      "Position": "4.12149,-184.3487,207.7691",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.ModelRenderer",
+          "__guid": "9bb47793-3820-4b8f-8391-cc2e540b02cb",
+          "BodyGroups": 18446744073709551615,
+          "CreateAttachments": false,
+          "MaterialGroup": null,
+          "MaterialOverride": null,
+          "Model": "models/dev/sphere.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "RenderOptions": {
+            "GameLayer": true,
+            "OverlayLayer": false,
+            "BloomLayer": false,
+            "AfterUILayer": false
+          },
+          "RenderType": "On",
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "MeshDensifierTester",
+          "__guid": "800361d6-bfac-48f5-b67a-0ce58ab5c753",
+          "MaxEdgeLength": 1,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "Sandbox.ModelCollider",
+          "__guid": "5ce7c35b-e00f-4037-85bd-12c5b6fab66e",
+          "Friction": null,
+          "IsTrigger": false,
+          "Model": "models/dev/box.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnObjectTriggerEnter": null,
+          "OnObjectTriggerExit": null,
+          "OnTriggerEnter": null,
+          "OnTriggerExit": null,
+          "Static": false,
+          "Surface": null,
+          "SurfaceVelocity": "0,0,0"
+        }
+      ]
+    },
+    {
       "__guid": "03bc8600-d753-4d08-8751-e72354922008",
       "Flags": 0,
       "Name": "DensityTester",
@@ -801,6 +928,26 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null
+        },
+        {
+          "__type": "Sandbox.ModelCollider",
+          "__guid": "2ac8b972-8469-4a4e-9481-6dfe92ddd24e",
+          "Friction": null,
+          "IsTrigger": false,
+          "Model": "models/dev/box.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "OnObjectTriggerEnter": null,
+          "OnObjectTriggerExit": null,
+          "OnTriggerEnter": null,
+          "OnTriggerExit": null,
+          "Static": false,
+          "Surface": null,
+          "SurfaceVelocity": "0,0,0"
         }
       ]
     }
@@ -833,6 +980,7 @@
   "Description": null,
   "__references": [
     "jodiscontent.spray1#24114",
+    "kenneynl.foodkitbarrel#80846",
     "mdlresrc.rtx_metalbox#12015",
     "yupigames.viewmodel_usa_colt45_pistol_lod0#61815"
   ],

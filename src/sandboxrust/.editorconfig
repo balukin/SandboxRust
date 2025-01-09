@@ -35,7 +35,7 @@ csharp_style_prefer_switch_expression = true:suggestion
 csharp_style_conditional_delegate_call = true:suggestion
 
 # Code-block preferences
-csharp_prefer_braces = true:silent
+csharp_prefer_braces = true:suggestion
 
 # Expression-level preferences
 csharp_prefer_simple_default_expression = true:suggestion
