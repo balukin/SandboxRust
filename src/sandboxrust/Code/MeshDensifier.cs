@@ -27,8 +27,23 @@ public class MeshDensifier
     /// <returns>New model with the densified mesh.</returns>
     public static Model Densify( Model original, float maxEdgeLength )
     {
+        // TODO: Let's just assume that the model has only one mesh+material
+        if ( original.MeshCount != 1 )
+        {
+            Log.Error( "MeshDensifier: Model has incorrect more than one mesh. This is not supported yet." );
+            return original;
+        }
+
         var vertices = original.GetVertices().ToList();
         var indices = original.GetIndices().ToList();
+        var materials = original.Materials;
+
+        if ( materials.Count() != 1 )
+        {
+            Log.Error( "MeshDensifier: Model has incorrect material count" );
+            return original;
+        }
+
         var maxLengthSqr = maxEdgeLength * maxEdgeLength;
 
         var splitEdges = new Dictionary<Edge, int>();
@@ -134,10 +149,12 @@ public class MeshDensifier
         }
 
         mesh.Bounds = bounds;
-        Log.Info( $"Mesh vertex count: {mesh.VertexCount}" );
-        Log.Info( $"Mesh index count: {mesh.IndexCount}" );
-        Log.Info( $"Mesh bounds: {bounds}" );
-        Log.Info( "Mesh is valid: " + mesh.IsValid() );
+        mesh.Material = materials.First();
+        
+        // Log.Info( $"Mesh vertex count: {mesh.VertexCount}" );
+        // Log.Info( $"Mesh index count: {mesh.IndexCount}" );
+        // Log.Info( $"Mesh bounds: {bounds}" );
+        // Log.Info( "Mesh is valid: " + mesh.IsValid() );
 
         var newModel = Model.Builder
             .AddMesh( mesh )
@@ -206,7 +223,7 @@ public class MeshDensifierTester : Component
         var prevTris = originalModel.GetIndices().Length / 3;
         var densified = MeshDensifier.Densify( originalModel, MaxEdgeLength );
         var newTris = densified.GetIndices().Length / 3;
-        Log.Info( $"MeshDensifierTester: Densified from {prevTris} triangles to {newTris} triangles" );
+        Log.Info( $"MeshDensifierTester: Densified {originalModel.Name} from {prevTris} triangles to {newTris} triangles" );
         modelRenderer.Model = densified;
     }
 }
