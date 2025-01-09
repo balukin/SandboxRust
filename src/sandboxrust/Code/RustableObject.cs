@@ -4,6 +4,7 @@ using Sandbox.Diagnostics;
 using Sandbox.Rendering;
 using Sandbox.UI;
 using System.Linq;
+using System.Diagnostics;
 
 /// <summary>
 /// Component for objects that can have rust applied to them.
@@ -29,6 +30,11 @@ public sealed class RustableObject : Component
 	private ComputeShader getSprayedShader;
 	private ComputeShader getHitShader;
 	private ComputeShader simulationShader;
+	private ComputeShader meshErosionShader;
+	private Vector3 meshCenter;
+
+	[Property]
+	public float ErosionStrength = 0.3f;
 
 	private SurfaceImpactHandler impactHandler;
 
@@ -39,6 +45,8 @@ public sealed class RustableObject : Component
 
 	private ImpactData? storedImpactData;
 
+	private bool applyErosionRequested = false;
+
 	// TODO: Coordinate spread across all rustable objects to avoid frame spikes
 	[Property]
 	public int SimulationFrameInterval = 15;
@@ -47,6 +55,9 @@ public sealed class RustableObject : Component
 	private Material rustableProperMaterial;
 	private Vertex[] vertices;
 	private ushort[] indices;
+
+	private GpuBuffer<VertexData> inputBuffer;
+	private GpuBuffer<VertexData> outputBuffer;
 
 	protected override void OnEnabled()
 	{
@@ -93,9 +104,6 @@ public sealed class RustableObject : Component
 	{
 		base.OnStart();
 
-
-
-
 		modelRenderer = GetComponent<ModelRenderer>();
 
 		// Create per-instance material - TODO: maybe it loads already as an instance or is it shared?
@@ -125,6 +133,11 @@ public sealed class RustableObject : Component
 			}
 
 			indices = modelRenderer.Model.GetIndices().Select( i => (ushort)i ).ToArray();
+			meshCenter = objectBounds.Center;
+
+			// Initialize the GPU buffers
+			inputBuffer = new GpuBuffer<VertexData>(vertices.Length, GpuBuffer.UsageFlags.Structured);
+			outputBuffer = new GpuBuffer<VertexData>(vertices.Length, GpuBuffer.UsageFlags.Structured);
 		}
 		else
 		{
@@ -135,6 +148,7 @@ public sealed class RustableObject : Component
 		getHitShader = new ComputeShader( "shaders/gethit" );
 		simulationShader = new ComputeShader( "shaders/rust_simulation" );
 		clone3dTexShader = new ComputeShader( "shaders/clone3dtex" );
+		meshErosionShader = new ComputeShader( "shaders/mesh_erosion" );
 
 		impactHandler = GameObject.GetOrAddComponent<SurfaceImpactHandler>();
 		impactHandler.OnImpact += StoreImpact;
@@ -144,13 +158,21 @@ public sealed class RustableObject : Component
 	{
 		base.OnDestroy();
 		impactHandler.OnImpact -= StoreImpact;
+		
+		inputBuffer?.Dispose();
+		outputBuffer?.Dispose();
 	}
-
 
 
 	protected override void OnUpdate()
 	{
 		base.OnUpdate();
+
+		if ( applyErosionRequested )
+		{
+			ApplyErosion();
+			applyErosionRequested = false;
+		}
 	}
 
 	protected override void OnPreRender()
@@ -205,6 +227,7 @@ public sealed class RustableObject : Component
 			simulationShader.Dispatch( TextureSize, TextureSize, TextureSize );
 		}
 
+
 		// After simulation, render the rust overlay
 		if ( vertices != null )
 		{
@@ -222,16 +245,97 @@ public sealed class RustableObject : Component
 			var mode = rustSystem.RenderingMode;
 			sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;
 
-			Graphics.Draw(
-				vertices,
-				vertices.Length,
-				indices,
-				indices.Length,
-				mode == RustRenderingMode.Debug ? rustableDebugMaterial : rustableProperMaterial,
-				attributes,
-				Graphics.PrimitiveType.Triangles
-			);
+			// Graphics.Draw(
+			// 	vertices,
+			// 	vertices.Length,
+			// 	indices,
+			// 	indices.Length,
+			// 	mode == RustRenderingMode.Debug ? rustableDebugMaterial : rustableProperMaterial,
+			// 	attributes,
+			// 	Graphics.PrimitiveType.Triangles
+			// );
 		}
+	}
+
+	[Button( "Update erosion" )]
+	public void StoreErosionRequest()
+	{
+		applyErosionRequested = true;
+	}
+
+	public void ApplyErosion()
+	{
+		var sw = Stopwatch.StartNew();
+
+		var oldVertices = modelRenderer.Model.GetVertices().ToArray();
+		var oldIndices = modelRenderer.Model.GetIndices().Select(i => (ushort)i).ToArray();
+
+		// Use the existing buffers instead of creating new ones
+		inputBuffer.SetData<VertexData>(oldVertices.Select(v => new VertexData(v)).ToArray());
+		meshErosionShader.Attributes.Set("InputVertices", inputBuffer);
+		meshErosionShader.Attributes.Set("OutputVertices", outputBuffer);
+		meshErosionShader.Attributes.Set("RustData", RustData);
+		meshErosionShader.Attributes.Set("MeshCenter", meshCenter);
+		meshErosionShader.Attributes.Set("BoundsMin", boundsMin);
+		meshErosionShader.Attributes.Set("BoundsScale", boundsScale);
+		meshErosionShader.Attributes.Set("ErosionStrength", ErosionStrength);
+		meshErosionShader.Attributes.Set("VertexCount", oldVertices.Length);
+
+		meshErosionShader.Dispatch(oldVertices.Length, 1, 1);
+
+		// Get results and update mesh
+		var newVertices = new VertexData[oldVertices.Length];
+		outputBuffer.GetData<VertexData>(newVertices);
+
+		// TODO: Refactor too many allocations
+		ReplaceMeshVertices(oldVertices.ToList(), oldIndices.ToList(), newVertices.Select(v => v.ToVector3()).ToList());
+
+		// Log.Info($"Erosion took {sw.ElapsedMilliseconds}ms, num vertices: {newVertices.Length}, old vertices: {oldVertices.Length}");
+	}
+
+	private void ReplaceMeshVertices( List<Vertex> oldVertices, List<ushort> oldIndices, List<Vector3> newVertices )
+	{
+		var bounds = new BBox();
+		var vb = new VertexBuffer();
+		vb.Init( true );
+		for ( int i = 0; i < newVertices.Count; i++ )
+		{
+			var oldVertex = oldVertices[i];
+			var newVertex = newVertices[i];
+			vb.Add( oldVertex with { Position = newVertex } );
+			bounds.AddPoint( newVertex );
+		}
+
+		// Reuse original indices
+		foreach ( var index in oldIndices )
+		{
+			vb.AddRawIndex( index );
+		}
+
+		var mesh = new Mesh();
+		mesh.CreateBuffers( vb, false );
+
+		mesh.Material = modelRenderer.Model.Materials.First();
+		mesh.Bounds = bounds;
+
+		// Create hull from updated vertices
+		var hull = new MeshHull( newVertices );
+
+		// Create new model with updated mesh but same collision data
+		var newModel = Model.Builder
+			.AddMesh( mesh )
+			.AddCollisionHull( hull.Vertices )
+			.Create();
+
+		// Update the model renderer
+		modelRenderer.Model = newModel;
+
+		// Update the model collider if present
+		var modelCollider = GetComponent<ModelCollider>();
+		if ( modelCollider != null )
+		{
+			modelCollider.Model = newModel;
+		}		
 	}
 
 	private void StoreImpact( ImpactData impactData )

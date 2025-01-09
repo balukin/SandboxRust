@@ -33,6 +33,6 @@ public class MeshHull
             .ToArray();
 
         // Vertices:
-        // Log.Info( string.Join( ", ", Vertices.Select( v => v.ToString() ) ) );
+        // Log.Info( "Hull vertices: " + string.Join( ", ", Vertices.Select( v => v.ToString() ) ) );
     }
 }
