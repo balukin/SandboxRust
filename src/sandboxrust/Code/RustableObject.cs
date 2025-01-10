@@ -52,6 +52,9 @@ public sealed class RustableObject : Component
 	[Property]
 	public int SimulationFrameInterval = 15;
 
+	[Property]
+	public int ErosionFrameInterval = 60;
+
 	private Material rustableDebugMaterial;
 	private Material rustableProperMaterial;
 	private Vertex[] vertices;
@@ -178,6 +181,11 @@ public sealed class RustableObject : Component
 	{
 		base.OnUpdate();
 
+		if ( simTicks++ % ErosionFrameInterval == 0 )
+		{
+			ApplyErosion();
+		}
+
 		if ( applyErosionRequested )
 		{
 			ApplyErosion();
@@ -287,15 +295,15 @@ public sealed class RustableObject : Component
 			var mode = rustSystem.RenderingMode;
 			sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;
 
-			// Graphics.Draw(
-			// 	vertices,
-			// 	vertices.Length,
-			// 	indices,
-			// 	indices.Length,
-			// 	mode == RustRenderingMode.Debug ? rustableDebugMaterial : rustableProperMaterial,
-			// 	attributes,
-			// 	Graphics.PrimitiveType.Triangles
-			// );
+			Graphics.Draw(
+				vertices,
+				vertices.Length,
+				indices,
+				indices.Length,
+				mode == RustRenderingMode.Debug ? rustableDebugMaterial : rustableProperMaterial,
+				attributes,
+				Graphics.PrimitiveType.Triangles
+			);
 		}
 	}
 
@@ -332,7 +340,7 @@ public sealed class RustableObject : Component
 		// TODO: Refactor too many allocations
 		ReplaceMeshVertices(oldVertices.ToList(), oldIndices.ToList(), newVertices.Select(v => v.ToVector3()).ToList());
 
-		// Log.Info($"Erosion took {sw.ElapsedMilliseconds}ms, num vertices: {newVertices.Length}, old vertices: {oldVertices.Length}");
+		Log.Info($"Erosion took {sw.ElapsedMilliseconds}ms, num vertices: {newVertices.Length}, old vertices: {oldVertices.Length}");
 	}
 
 	private void ReplaceMeshVertices( List<Vertex> oldVertices, List<ushort> oldIndices, List<Vector3> newVertices )
@@ -340,12 +348,16 @@ public sealed class RustableObject : Component
 		var bounds = new BBox();
 		var vb = new VertexBuffer();
 		vb.Init( true );
+
+		// Update proxy mesh, too
+		vertices = new Vertex[newVertices.Count];
 		for ( int i = 0; i < newVertices.Count; i++ )
 		{
 			var oldVertex = oldVertices[i];
 			var newVertex = newVertices[i];
 			vb.Add( oldVertex with { Position = newVertex } );
 			bounds.AddPoint( newVertex );
+			vertices[i] = new Vertex( newVertex );
 		}
 
 		// Reuse original indices
@@ -377,7 +389,8 @@ public sealed class RustableObject : Component
 		if ( modelCollider != null )
 		{
 			modelCollider.Model = newModel;
-		}		
+		}
+
 	}
 
 	private void StoreImpact( ImpactData impactData )

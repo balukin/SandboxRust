@@ -625,6 +625,7 @@
                 {
                   "__type": "RustableObject",
                   "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6",
+                  "ErosionFrameInterval": 60,
                   "ErosionStrength": 0.3,
                   "SimulationFrameInterval": 30,
                   "OnComponentDestroy": null,
@@ -704,7 +705,6 @@
           "Flags": 0,
           "Name": "Barrels",
           "Position": "264.7722,-215.1575,132.3204",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "b61417c6-a125-484f-a943-40e0493f026c",
@@ -766,6 +766,7 @@
           "Flags": 0,
           "Name": "erosion_tester",
           "Position": "93.96797,-97.55605,165.199",
+          "Enabled": true,
           "Components": [
             {
               "__type": "Sandbox.ModelRenderer",
@@ -793,6 +794,7 @@
             {
               "__type": "RustableObject",
               "__guid": "0ceec740-c6db-4a90-809f-f9fb11b7f904",
+              "ErosionFrameInterval": 60,
               "ErosionStrength": 0.3,
               "SimulationFrameInterval": 15,
               "OnComponentDestroy": null,
@@ -806,7 +808,7 @@
               "__type": "Sandbox.Rigidbody",
               "__guid": "452f3088-5d52-4a05-8a6c-45c8f056df92",
               "AngularDamping": 0,
-              "Gravity": false,
+              "Gravity": true,
               "LinearDamping": 0,
               "Locking": {
                 "X": false,
