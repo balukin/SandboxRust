@@ -21,7 +21,8 @@ public sealed class RustableObject : Component
 
 	private SceneCustomObject sceneCustomObject;
 
-	ModelRenderer modelRenderer;
+	private ModelRenderer modelRenderer;
+	private MeshDensifier meshDensifier;
 
 	private Texture RustData { get; set; }
 	private Texture RustDataReadBuffer { get; set; }
@@ -100,11 +101,20 @@ public sealed class RustableObject : Component
 		RustDataReadBuffer = null;
 	}
 
+	protected override void OnAwake()
+	{
+		base.OnAwake();
+
+		modelRenderer = GetComponent<ModelRenderer>();
+		meshDensifier = GameObject.GetOrAddComponent<MeshDensifier>();
+	}
+
 	protected override void OnStart()
 	{
 		base.OnStart();
-
-		modelRenderer = GetComponent<ModelRenderer>();
+		
+		// We need a mesh with vertex density of certain threshold to avoid artifacts when displacing vertices due to rust progress
+		DensifyObjectMesh();
 
 		// Create per-instance material - TODO: maybe it loads already as an instance or is it shared?
 		rustableDebugMaterial = Material.Load( "materials/rustable_debug.vmat" ).CreateCopy();
@@ -136,8 +146,8 @@ public sealed class RustableObject : Component
 			meshCenter = objectBounds.Center;
 
 			// Initialize the GPU buffers
-			inputBuffer = new GpuBuffer<VertexData>(vertices.Length, GpuBuffer.UsageFlags.Structured);
-			outputBuffer = new GpuBuffer<VertexData>(vertices.Length, GpuBuffer.UsageFlags.Structured);
+			inputBuffer = new GpuBuffer<VertexData>( vertices.Length, GpuBuffer.UsageFlags.Structured );
+			outputBuffer = new GpuBuffer<VertexData>( vertices.Length, GpuBuffer.UsageFlags.Structured );
 		}
 		else
 		{
@@ -180,6 +190,38 @@ public sealed class RustableObject : Component
 		base.OnPreRender();
 		sceneCustomObject.Transform = Transform.World;
 	}
+
+	private void DensifyObjectMesh()
+	{
+		// TODO: Make it depend on rust data resolution and object size (or mod Densify to work in world space)
+		// No more than 10 in case other conditions are invalid
+		for ( var densificationTurn = 0; densificationTurn < 10; densificationTurn++ )
+		{
+			var result = meshDensifier.Densify( 5f );
+
+			if ( result.newTriangleCount > 100_000 )
+			{
+				// that's too many triangles
+				// Log.Warning("Bailing out of densification due to too many triangles");
+				break;
+			}
+
+			if ( result.maxRemainingEdgeLength < 6f )
+			{
+				// that's good enough
+				// Log.Info("Bailing out of densification due to max edge length");
+				break;
+			}
+
+			if ( result.avgRemainingEdgeLength < 3f )
+			{
+				// that's good enough, mostly...
+				// Log.Info("Bailing out of densification due to avg edge length");
+				break;
+			}
+		}
+	}
+
 
 	private void RunSimulation( SceneObject o )
 	{

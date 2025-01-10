@@ -190,6 +190,7 @@
         {
           "__type": "Sandbox.PlayerController",
           "__guid": "d583a755-0308-465d-8b5f-2f7198d03ebe",
+          "AccelerationTime": 0,
           "AimStrengthBody": 1,
           "AimStrengthEyes": 1,
           "AimStrengthHead": 1,
@@ -209,6 +210,7 @@
             "_type": "gameobject",
             "go": "4f26433d-7a1e-4757-a750-697ff1435a44"
           },
+          "DeaccelerationTime": 0,
           "DuckedHeight": 36,
           "DuckedSpeed": 70,
           "EnableFootstepSounds": true,
@@ -702,6 +704,7 @@
           "Flags": 0,
           "Name": "Barrels",
           "Position": "264.7722,-215.1575,132.3204",
+          "Enabled": true,
           "Children": [
             {
               "__guid": "b61417c6-a125-484f-a943-40e0493f026c",
@@ -763,7 +766,6 @@
           "Flags": 0,
           "Name": "erosion_tester",
           "Position": "93.96797,-97.55605,165.199",
-          "Enabled": true,
           "Components": [
             {
               "__type": "Sandbox.ModelRenderer",
@@ -804,7 +806,7 @@
               "__type": "Sandbox.Rigidbody",
               "__guid": "452f3088-5d52-4a05-8a6c-45c8f056df92",
               "AngularDamping": 0,
-              "Gravity": true,
+              "Gravity": false,
               "LinearDamping": 0,
               "Locking": {
                 "X": false,
@@ -882,17 +884,6 @@
           "Tint": "1,1,1,1"
         },
         {
-          "__type": "MeshDensifierTester",
-          "__guid": "ca337d3a-b5f3-4e0e-ba36-01dd4dded3b8",
-          "MaxEdgeLength": 1,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
-        },
-        {
           "__type": "Sandbox.ModelCollider",
           "__guid": "d1a60498-9012-464d-82c1-61b54bbc3fbd",
           "Friction": null,
@@ -911,6 +902,17 @@
           "Static": false,
           "Surface": null,
           "SurfaceVelocity": "0,0,0"
+        },
+        {
+          "__type": "MeshDensifier",
+          "__guid": "b57428bd-4181-4a10-9fb1-c8176bfb74af",
+          "MaxEdgeLength": 1,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
         }
       ]
     },
@@ -944,17 +946,6 @@
           "Tint": "1,1,1,1"
         },
         {
-          "__type": "MeshDensifierTester",
-          "__guid": "800361d6-bfac-48f5-b67a-0ce58ab5c753",
-          "MaxEdgeLength": 1,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
-        },
-        {
           "__type": "Sandbox.ModelCollider",
           "__guid": "5ce7c35b-e00f-4037-85bd-12c5b6fab66e",
           "Friction": null,
@@ -973,6 +964,17 @@
           "Static": false,
           "Surface": null,
           "SurfaceVelocity": "0,0,0"
+        },
+        {
+          "__type": "MeshDensifier",
+          "__guid": "d7dedd63-e1c2-446d-8c1e-82a3fb56aa87",
+          "MaxEdgeLength": 1,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
         }
       ]
     },
@@ -1006,17 +1008,6 @@
           "Tint": "1,1,1,1"
         },
         {
-          "__type": "MeshDensifierTester",
-          "__guid": "d7506dce-c4c5-4794-85fd-9c0809be843a",
-          "MaxEdgeLength": 1,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
-        },
-        {
           "__type": "Sandbox.ModelCollider",
           "__guid": "2ac8b972-8469-4a4e-9481-6dfe92ddd24e",
           "Friction": null,
@@ -1035,6 +1026,17 @@
           "Static": false,
           "Surface": null,
           "SurfaceVelocity": "0,0,0"
+        },
+        {
+          "__type": "MeshDensifier",
+          "__guid": "0f61b1ab-d9d1-4041-8668-ad102007b5b7",
+          "MaxEdgeLength": 1,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
         }
       ]
     }

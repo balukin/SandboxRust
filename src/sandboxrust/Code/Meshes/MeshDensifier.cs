@@ -11,7 +11,7 @@ public class MeshDensifier : Component
 	// TODO: Use world-space edge length instead of object-space.
 	// Then use the same edge distance as 3d texture resolution to keep vertex density roughly the same as voxel density
 
-	public record DensificationResult( bool success, float maxRemainingEdgeLength, float avgRemainingEdgeLength );
+	public record DensificationResult( bool success, float maxRemainingEdgeLength, float avgRemainingEdgeLength, int newTriangleCount );
 
 	private class Edge
 	{
@@ -35,20 +35,22 @@ public class MeshDensifier : Component
 	public float MaxEdgeLength { get; set; } = 1.0f;
 
 	private ModelRenderer modelRenderer;
-	private Model originalModel;
+	private Model original;
 
-	protected override void OnStart()
+	protected override void OnAwake()
 	{
-		base.OnStart();
+		base.OnAwake();
 		modelRenderer = GetComponent<ModelRenderer>();
+		original = modelRenderer.Model;
 
 		ArgumentNullException.ThrowIfNull( modelRenderer );
+		Log.Info( $"MeshDensifier: Initialized with model {original.Name}" );
 	}
 
 	[Button( "Densify" )]
 	private void DensifyEditorButton()
 	{
-		originalModel = modelRenderer.Model;
+		original = modelRenderer.Model;
 
 		if ( modelRenderer == null )
 		{
@@ -56,19 +58,18 @@ public class MeshDensifier : Component
 			return;
 		}
 
-		Densify( originalModel, MaxEdgeLength );
+		Densify( MaxEdgeLength );
 	}
 
 	/// <summary>
 	/// Densifies given model's mesh by subdividing all edges longer than certain length.
 	/// </summary>
-	/// <param name="original">Model which mesh will be densified.</param>
 	/// <param name="maxEdgeLength">Maximum length of edge to be subdivided.</param>
 	/// <returns>New model with the densified mesh.</returns>
 	/// <remarks>
 	/// This will only run a one pass of subdivision. Use result to decide if more passes are needed.
 	/// </remarks>
-	public DensificationResult Densify( Model original, float maxEdgeLength )
+	public DensificationResult Densify(float maxEdgeLength )
 	{
 		var sw = Stopwatch.StartNew();
 		
@@ -76,7 +77,7 @@ public class MeshDensifier : Component
 		if ( original.MeshCount != 1 )
 		{
 			Log.Error( "MeshDensifier: Model has incorrect more than one mesh. This is not supported yet." );
-			return new DensificationResult( false, 0, 0 );
+			return new DensificationResult( false, 0, 0, 0 );
 		}
 
 		var vertices = original.GetVertices().ToList();
@@ -86,7 +87,7 @@ public class MeshDensifier : Component
 		if ( materials.Count() != 1 )
 		{
 			Log.Error( "MeshDensifier: Model has incorrect material count" );
-			return new DensificationResult( false, 0, 0 );
+			return new DensificationResult( false, 0, 0, 0 );
 		}
 
 		var maxLengthSqr = maxEdgeLength * maxEdgeLength;
@@ -254,7 +255,8 @@ public class MeshDensifier : Component
 			modelCollider.Model = newModel;
 		}
 
-		return new DensificationResult( true, maxRemainingLength, avgRemainingLength );
+		original = newModel;
+		return new DensificationResult( true, maxRemainingLength, avgRemainingLength, newIndices.Count / 3 );
 	}
 
 	private int GetOrCreateMidpoint( int v1, int v2, List<Vertex> vertices, Dictionary<Edge, int> splitEdges )
