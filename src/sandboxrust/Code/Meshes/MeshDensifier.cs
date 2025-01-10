@@ -1,8 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
-public class MeshDensifier
+/// <summary>
+/// Densifies mesh by subdividing all edges longer than certain length.
+/// </summary>
+public class MeshDensifier : Component
 {
+	// TODO: Use world-space edge length instead of object-space.
+	// Then use the same edge distance as 3d texture resolution to keep vertex density roughly the same as voxel density
+
+	public record DensificationResult( bool success, float maxRemainingEdgeLength, float avgRemainingEdgeLength );
+
 	private class Edge
 	{
 		public int V1 { get; }
@@ -21,20 +31,52 @@ public class MeshDensifier
 			obj is Edge other && V1 == other.V1 && V2 == other.V2;
 	}
 
+	[Property]
+	public float MaxEdgeLength { get; set; } = 1.0f;
+
+	private ModelRenderer modelRenderer;
+	private Model originalModel;
+
+	protected override void OnStart()
+	{
+		base.OnStart();
+		modelRenderer = GetComponent<ModelRenderer>();
+
+		ArgumentNullException.ThrowIfNull( modelRenderer );
+	}
+
+	[Button( "Densify" )]
+	private void DensifyEditorButton()
+	{
+		originalModel = modelRenderer.Model;
+
+		if ( modelRenderer == null )
+		{
+			Log.Error( "MeshDensifierTester: ModelRenderer component not found" );
+			return;
+		}
+
+		Densify( originalModel, MaxEdgeLength );
+	}
+
 	/// <summary>
 	/// Densifies given model's mesh by subdividing all edges longer than certain length.
 	/// </summary>
 	/// <param name="original">Model which mesh will be densified.</param>
 	/// <param name="maxEdgeLength">Maximum length of edge to be subdivided.</param>
 	/// <returns>New model with the densified mesh.</returns>
-	public static Model Densify( Model original, float maxEdgeLength )
+	/// <remarks>
+	/// This will only run a one pass of subdivision. Use result to decide if more passes are needed.
+	/// </remarks>
+	public DensificationResult Densify( Model original, float maxEdgeLength )
 	{
 		var sw = Stopwatch.StartNew();
+		
 		// TODO: Let's just assume that the model has only one mesh+material
 		if ( original.MeshCount != 1 )
 		{
 			Log.Error( "MeshDensifier: Model has incorrect more than one mesh. This is not supported yet." );
-			return original;
+			return new DensificationResult( false, 0, 0 );
 		}
 
 		var vertices = original.GetVertices().ToList();
@@ -44,13 +86,21 @@ public class MeshDensifier
 		if ( materials.Count() != 1 )
 		{
 			Log.Error( "MeshDensifier: Model has incorrect material count" );
-			return original;
+			return new DensificationResult( false, 0, 0 );
 		}
 
 		var maxLengthSqr = maxEdgeLength * maxEdgeLength;
 
 		var splitEdges = new Dictionary<Edge, int>();
 		var newIndices = new List<uint>();
+		
+		// Track edge length statistics
+		float maxRemainingLength = 0f;
+		float totalLength = 0f;
+		int edgeCount = 0;
+
+		float[] edgeLengths = new float[3];
+		bool[] edgeTooLongFlags = new bool[3];
 
 		// Process each triangle
 		for ( int i = 0; i < indices.Count; i += 3 )
@@ -63,10 +113,31 @@ public class MeshDensifier
 			var v1 = vertices[i1];
 			var v2 = vertices[i2];
 
-			// Check each edge length
-			bool e01Long = (v1.Position - v0.Position).LengthSquared > maxLengthSqr;
-			bool e12Long = (v2.Position - v1.Position).LengthSquared > maxLengthSqr;
-			bool e20Long = (v0.Position - v2.Position).LengthSquared > maxLengthSqr;
+			// Check each edge length and track statistics
+			edgeLengths[0] = (v1.Position - v0.Position).Length;
+			edgeLengths[1] = (v2.Position - v1.Position).Length;
+			edgeLengths[2] = (v0.Position - v2.Position).Length;
+
+			// Extra copy in an intermediate array cell to reduce the if/else count in the next loop
+			bool e01Long = edgeTooLongFlags[0] = edgeLengths[0] * edgeLengths[0] > maxLengthSqr;
+			bool e12Long = edgeTooLongFlags[1] = edgeLengths[1] * edgeLengths[1] > maxLengthSqr;
+			bool e20Long = edgeTooLongFlags[2] = edgeLengths[2] * edgeLengths[2] > maxLengthSqr;
+
+			// Track statistics for edges for debug purposes
+			for ( int j = 0; j < 3; j++ )
+			{
+				if ( !edgeTooLongFlags[j] )
+				{
+					maxRemainingLength = Math.Max( maxRemainingLength, edgeLengths[j] );
+					totalLength += edgeLengths[j];
+				}
+				else
+				{
+					totalLength += edgeLengths[j] / 2;
+					maxRemainingLength = Math.Max( maxRemainingLength, edgeLengths[j] / 2 );
+				}
+				edgeCount++;
+			}
 
 			// Debug: test if we can successfully re-write original mesh
 			const bool debugNoSubdivision = false;
@@ -130,6 +201,8 @@ public class MeshDensifier
 			}
 		}
 
+		var avgRemainingLength = totalLength / edgeCount;
+
 		var vb = new VertexBuffer();
 		vb.Init( true );
 		foreach ( var vertex in vertices )
@@ -170,12 +243,21 @@ public class MeshDensifier
 		// Hull vertices:
 		// Log.Info( $"Hull vertices: {string.Join( ", ", hull.Vertices )}" );
 		Log.Info( $"MeshDensifier: Densified {original.Name} from {indices.Count / 3} triangles "
-		          + $"to {newIndices.Count / 3} triangles with a hull of {hull.Vertices.Length} vertices in {sw.ElapsedMilliseconds}ms" );
+				  + $"to {newIndices.Count / 3} triangles with a hull of {hull.Vertices.Length} vertices in "
+				  + $"({avgRemainingLength:F2} avg length, {maxRemainingLength:F2} max length) in {sw.ElapsedMilliseconds}ms" );
 
-		return newModel;
+		modelRenderer.Model = newModel;
+		var modelCollider = GetComponent<ModelCollider>();
+
+		if ( modelCollider != null )
+		{
+			modelCollider.Model = newModel;
+		}
+
+		return new DensificationResult( true, maxRemainingLength, avgRemainingLength );
 	}
 
-	private static int GetOrCreateMidpoint( int v1, int v2, List<Vertex> vertices, Dictionary<Edge, int> splitEdges )
+	private int GetOrCreateMidpoint( int v1, int v2, List<Vertex> vertices, Dictionary<Edge, int> splitEdges )
 	{
 		var edge = new Edge( v1, v2 );
 
@@ -204,42 +286,5 @@ public class MeshDensifier
 		splitEdges.Add( edge, newIndex );
 
 		return newIndex;
-	}
-}
-
-public class MeshDensifierTester : Component
-{
-	[Property]
-	public float MaxEdgeLength = 1.0f;
-
-	private ModelRenderer modelRenderer;
-	private Model originalModel;
-
-	protected override void OnStart()
-	{
-		base.OnStart();
-		modelRenderer = GetComponent<ModelRenderer>();
-	}
-
-	[Button( "Densify" )]
-	public void Densify()
-	{
-		originalModel = modelRenderer.Model;
-
-		if ( modelRenderer == null )
-		{
-			Log.Error( "MeshDensifierTester: ModelRenderer component not found" );
-			return;
-		}
-
-		var densified = MeshDensifier.Densify( originalModel, MaxEdgeLength );
-		modelRenderer.Model = densified;
-
-		var modelCollider = GetComponent<ModelCollider>();
-
-		if ( modelCollider != null )
-		{
-			modelCollider.Model = densified;
-		}
 	}
 }
