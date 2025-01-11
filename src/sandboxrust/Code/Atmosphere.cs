@@ -15,7 +15,7 @@ public sealed class Atmosphere : Component
     protected override void OnUpdate()
     {
         HandleInput();
-        CameraHud.Current.AtmosphereText = $"Oxygen Level: {OxygenLevel:P0} (affects rusting speed, adjust with Arrow keys)";
+        CameraHud.Current.UI.OxygenLevel = OxygenLevel;
     }
 
     private void HandleInput()

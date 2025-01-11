@@ -1,0 +1,47 @@
+@using Sandbox;
+@using Sandbox.UI;
+
+<root class="rust-ui">
+    <div class="hud-panel">
+        <div class="hud-item">
+            <span class="icon">⏳</span>
+            <span class="text">Rusting Speed: @(OxygenLevel.ToString("P0"))</span>
+            <span class="explainer">
+                (🠈 🠊 🠉 🠋)
+            </span>
+        </div>
+        <div class="hud-item">
+            <span class="icon">🔦</span>
+            <span class="text">Flashlight: @(FlashlightEnabled ? "On" : "Off")</span>
+            <span class="explainer">
+                (F)
+            </span>
+        </div>
+        <div class="hud-item">
+            <span class="icon">🎨</span>
+            <span class="text">Rendering Mode: @RenderingMode</span>
+            <span class="explainer">
+                (R)
+            </span>
+        </div>
+    </div>
+</root>
+
+@code {
+    public float OxygenLevel { get; set; }
+    public bool FlashlightEnabled { get; set; }
+    public RustRenderingMode RenderingMode { get; set; }
+
+    protected override void OnAfterTreeRender(bool firstTime)
+    {
+        base.OnAfterTreeRender(firstTime);
+        
+        StyleSheet.Load("/UI/RustUI.css");        
+    }
+
+    protected override int BuildHash() => System.HashCode.Combine(
+        OxygenLevel,
+        FlashlightEnabled,
+        RenderingMode
+    );
+}

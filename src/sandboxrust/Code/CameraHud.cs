@@ -1,42 +1,29 @@
 using Sandbox;
-using Sandbox.Rendering;
 
 public sealed class CameraHud : Component
 {
-	private CameraComponent cam;
 	public static CameraHud Current { get; private set; }
-	public string AtmosphereText { get; set; } = string.Empty;
-	public string FlashlightText { get; set; } = string.Empty;
-	public string RustModeText { get; set; } = string.Empty;
+	private RustUI ui;
 
-	private int topLeftCurrentLineOffset = 0;
-	private const int lineHeight = 20;
+	public RustUI UI => ui;
 
 	protected override void OnStart()
 	{
-		cam = GetComponent<CameraComponent>();
 		Current = this;
+		
+		var screenPanel = Scene.GetOrAddComponent<ScreenPanel>();
+		
+		ui = new RustUI();
+		ui.Parent = screenPanel.GetPanel();
 	}
-	protected override void OnUpdate()
+	
+	protected override void OnDestroy()
 	{
-		var hud = cam.Hud;
-		WriteExplainers( hud );
-	}
+		if (Current == this)
+		{
+			Current = null;
+		}
 
-
-
-	private void WriteExplainers( HudPainter hud )
-	{
-		topLeftCurrentLineOffset = 0;
-		WriteLine( hud, "Hello!" );
-		WriteLine( hud, AtmosphereText );
-		WriteLine( hud, FlashlightText );
-		WriteLine( hud, RustModeText );
-	}
-
-	private void WriteLine( HudPainter hud, string text )
-	{
-		hud.DrawText( new TextRendering.Scope( text, Color.Red, lineHeight ), new Vector2( 10, 10 + topLeftCurrentLineOffset ), TextFlag.LeftTop );
-		topLeftCurrentLineOffset += lineHeight;
+		ui?.Delete();
 	}
 }

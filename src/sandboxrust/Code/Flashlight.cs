@@ -26,6 +26,6 @@ public class Flashlight : Component
             Sound.Play( spotLight.Enabled ? FlashlightSoundOn : FlashlightSoundOff, soundOrigin );
         }
 
-        CameraHud.Current.FlashlightText = spotLight.Enabled ? "[F]lashlight: On" : "[F]lashlight: Off";
+        CameraHud.Current.UI.FlashlightEnabled = spotLight.Enabled;
     }
 }

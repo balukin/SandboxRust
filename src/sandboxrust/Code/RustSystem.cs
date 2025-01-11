@@ -19,7 +19,7 @@ public class RustSystem : Component // Probably could be a GameObjectSystem but 
             Log.Info( "Rendering Mode switched to: " + RenderingMode );
         }
 
-        CameraHud.Current.RustModeText = "[R]endering Mode: " + RenderingMode;
+        CameraHud.Current.UI.RenderingMode = RenderingMode;
     }
 }
 
