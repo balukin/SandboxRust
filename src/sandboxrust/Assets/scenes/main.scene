@@ -390,6 +390,7 @@
         {
           "__type": "Weapon",
           "__guid": "40459d0a-360e-46f3-992a-2492732f4249",
+          "ClangSound": "sounds/clang.sound",
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,

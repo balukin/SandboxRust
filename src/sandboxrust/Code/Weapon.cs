@@ -13,7 +13,10 @@ public class Weapon : Component
 
     public float ShootDelay => switcher.CurrentWeapon == WeaponType.Spray ? 0.05f : 0.5f;
     public float WeaponRange => switcher.CurrentWeapon == WeaponType.Spray ? 100f : 50f;
-    public float AnimStartToImpactDelay => switcher.CurrentWeapon == WeaponType.Spray ? 0.00f : 0.25f;
+    public float AnimStartToImpactDelay => switcher.CurrentWeapon == WeaponType.Spray ? 0.00f : 0.1f;
+
+    [Property]
+    public SoundEvent ClangSound;
 
     [Property]
     public bool VisualizeHits { get; set; } = false;
@@ -69,7 +72,7 @@ public class Weapon : Component
         }
 
         void DoImpact()
-        {
+        {            
             if ( VisualizeHits )
             {
                 // Spawn temporary shooting ray effect
@@ -87,6 +90,7 @@ public class Weapon : Component
             var tr = Scene.Trace.Ray( ray, WeaponRange )
                 .IgnoreGameObjectHierarchy( GameObject )
                 .Run();
+                
 
             if ( !tr.Hit )
             {
@@ -112,6 +116,11 @@ public class Weapon : Component
                     .WithPosition( tr.HitPosition )
                     .WithDirection( tr.Normal )
                     .WithTimeout( 1f );
+            }
+
+            if(weapon == WeaponType.Crowbar)
+            {
+                Sound.Play( ClangSound, tr.HitPosition );
             }
         }
     }
