@@ -1,3 +1,5 @@
+using System;
+
 /// <summary>
 /// Handles shooting and scanning for hits.
 /// </summary>
@@ -26,17 +28,17 @@ public class Weapon : Component
     {
         if ( Input.Down( "attack1" ) )
         {
-            TryShoot();
+            Attack();
         }
     }
 
-    protected void TryShoot()
+    protected void Attack()
     {
         // Check if we can shoot again based on delay
         if ( timeSincePrimaryAttack < ShootDelay )
             return;
 
-        timeSincePrimaryAttack = 0;
+        TryAnimating();
 
         if ( VisualizeHits )
         {
@@ -81,4 +83,17 @@ public class Weapon : Component
                 .WithTimeout( 1f );
         }
     }
+
+	private void TryAnimating()
+	{
+        var skinnedModelRenderer = switcher.CurrentWeaponGo?.GetComponent<SkinnedModelRenderer>();
+		
+        if(skinnedModelRenderer != null)
+        {
+            Log.Info( "Setting Attack" );
+            //skinnedModelRenderer.Set("Attack", true);
+            skinnedModelRenderer.Set("b_attack", true);
+        
+        }
+	}
 }

@@ -142,6 +142,7 @@
           "__guid": "7e271c7d-0bd5-47c3-bc31-d38ccad99fb2",
           "Flags": 0,
           "Name": "Flashlight",
+          "Position": "18.16624,-7.199998,-20.85213",
           "Tags": "light,light_spot",
           "Enabled": true,
           "Components": [
@@ -175,6 +176,52 @@
               "OnComponentFixedUpdate": null,
               "OnComponentStart": null,
               "OnComponentUpdate": null
+            }
+          ]
+        },
+        {
+          "__guid": "92003e23-62d1-4414-b0a8-dc675a6d15aa",
+          "Flags": 0,
+          "Name": "Crowbar",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.SkinnedModelRenderer",
+              "__guid": "9b3e77f0-5f4e-4864-aace-31077e19e436",
+              "AnimationGraph": null,
+              "BodyGroups": 18446744073709551615,
+              "BoneMergeTarget": null,
+              "CreateAttachments": false,
+              "CreateBoneObjects": false,
+              "MaterialGroup": null,
+              "MaterialOverride": null,
+              "Model": "models/weapons/sbox_melee_crowbar/v_crowbar.vmdl",
+              "Morphs": {},
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Parameters": {
+                "bools": {},
+                "ints": {},
+                "floats": {},
+                "vectors": {},
+                "rotations": {}
+              },
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Sequence": {
+                "Name": null
+              },
+              "Tint": "1,1,1,1",
+              "UseAnimGraph": true
             }
           ]
         }
@@ -320,6 +367,10 @@
         {
           "__type": "WeaponSwitcher",
           "__guid": "dd6e6979-35a5-47d5-b1fd-4b1716aac807",
+          "CrowbarGo": {
+            "_type": "gameobject",
+            "go": "92003e23-62d1-4414-b0a8-dc675a6d15aa"
+          },
           "CurrentWeapon": "Spray",
           "GunGo": {
             "_type": "gameobject",
@@ -346,7 +397,7 @@
           "OnComponentStart": null,
           "OnComponentUpdate": null,
           "ShootDelay": 0.02,
-          "VisualizeHits": false
+          "VisualizeHits": true
         }
       ],
       "Children": [
@@ -1070,6 +1121,7 @@
   "Title": null,
   "Description": null,
   "__references": [
+    "facepunch.v_crowbar#81554",
     "jodiscontent.spray1#24114",
     "kenneynl.foodkitbarrel#80846",
     "mdlresrc.rtx_metalbox#12015",

@@ -4,5 +4,6 @@ using System;
 public enum WeaponType
 {
 	Spray,
-	Gun
+	Gun,
+	Crowbar
 }

@@ -12,6 +12,11 @@ public sealed class WeaponSwitcher : Component
 	[Property]
 	public GameObject GunGo { get; set; }
 
+	[Property]
+	public GameObject CrowbarGo { get; set; }
+
+	public GameObject CurrentWeaponGo { get; set; }
+
 	private PlayerController playerController;
 
 
@@ -33,32 +38,29 @@ public sealed class WeaponSwitcher : Component
 		{
 			Log.Info( "Switching to Spray" );
 			CurrentWeapon = WeaponType.Spray;
+			CurrentWeaponGo = SprayGo;
 		}
 		else if ( Input.Pressed( "Slot2" ) )
 		{
-			Log.Info( "Switching to Gun" );
-			CurrentWeapon = WeaponType.Gun;
+			Log.Info( "Switching to Crowbar" );
+			CurrentWeapon = WeaponType.Crowbar;
+			CurrentWeaponGo = CrowbarGo;
 		}
+		// else if ( Input.Pressed( "Slot3" ) ) // TODO: Maybe later
+		// {
+		// 	Log.Info( "Switching to Gun" );
+		// 	CurrentWeapon = WeaponType.Gun;
+		// 	CurrentWeaponGo = GunGo;
+		// }
+		
 	}
 
 	private void UpdateVisibility()
 	{
-		// Select which VM to render, probably could use change handlers
-		// but it seems that GameObject.Enabled property is smart enough to not do any changes if the value is the same
-		if ( playerController.ThirdPerson )
-		{
-			SprayGo.Enabled = false;
-			GunGo.Enabled = false;
-		}
-		else if ( CurrentWeapon == WeaponType.Spray )
-		{
-			SprayGo.Enabled = true;
-			GunGo.Enabled = false;
-		}
-		else if ( CurrentWeapon == WeaponType.Gun )
-		{
-			SprayGo.Enabled = false;
-			GunGo.Enabled = true;
-		}
+		bool isThirdPerson = playerController.ThirdPerson;
+
+		SprayGo.Enabled = !isThirdPerson && CurrentWeapon == WeaponType.Spray;
+		GunGo.Enabled = !isThirdPerson && CurrentWeapon == WeaponType.Gun;
+		CrowbarGo.Enabled = !isThirdPerson && CurrentWeapon == WeaponType.Crowbar;
 	}
 }
