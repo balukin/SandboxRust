@@ -9,8 +9,8 @@ public class Weapon : Component
     PlayerController player;
     WeaponSwitcher switcher;
 
-    [Property]
-    public float ShootDelay { get; set; } = 0.1f;
+    public float ShootDelay => switcher.CurrentWeapon == WeaponType.Spray ? 0.05f : 0.5f;
+    public float WeaponRange => switcher.CurrentWeapon == WeaponType.Spray ? 100f : 50f;
 
     [Property]
     public bool VisualizeHits { get; set; } = false;
@@ -36,7 +36,11 @@ public class Weapon : Component
     {
         // Check if we can shoot again based on delay
         if ( timeSincePrimaryAttack < ShootDelay )
+        {
             return;
+        }
+
+        timeSincePrimaryAttack = 0;
 
         TryAnimating();
 
@@ -54,7 +58,7 @@ public class Weapon : Component
         var ray = player.EyeTransform.ForwardRay;
 
         // Perform raycast
-        var tr = Scene.Trace.Ray( ray, 4096 )
+        var tr = Scene.Trace.Ray( ray, WeaponRange )
             .IgnoreGameObjectHierarchy( GameObject )
             .Run();
 
@@ -71,7 +75,8 @@ public class Weapon : Component
         }
 
         // Assume no other actors can cause impact - use eye forward
-        impactHandler.HandleImpact( new ImpactData( tr.HitPosition, tr.Normal, player.EyeTransform.Forward.Normal, switcher.CurrentWeapon ) );
+        var weapon = switcher.CurrentWeapon;
+        impactHandler.HandleImpact( GetImpactData( weapon, tr, player.EyeTransform.Forward.Normal ) );
 
         if ( VisualizeHits )
         {
@@ -91,9 +96,43 @@ public class Weapon : Component
         if(skinnedModelRenderer != null)
         {
             Log.Info( "Setting Attack" );
-            //skinnedModelRenderer.Set("Attack", true);
             skinnedModelRenderer.Set("b_attack", true);
         
         }
 	}
+
+    private ImpactData GetImpactData(WeaponType weapon, SceneTraceResult tr, Vector3 direction)
+    {
+        if(weapon == WeaponType.Spray)
+        {
+            return new ImpactData()
+            {
+                Position = tr.HitPosition,
+                SurfaceNormal = tr.Normal,
+                ImpactDirection = direction,
+                ImpactRadius = 0.15f,
+                ImpactStrength = 0.2f,
+                ImpactPenetrationStrength = 0.0f,
+                ImpactPenetrationConeDeg = 0.0f,
+                WeaponType = weapon
+            };
+        }
+        else if(weapon == WeaponType.Crowbar)
+        {
+            return new ImpactData()
+            {
+                Position = tr.HitPosition,
+                SurfaceNormal = tr.Normal,
+                ImpactDirection = direction,
+                ImpactRadius = 0.1f,
+                ImpactStrength = 0.4f,
+                ImpactPenetrationStrength = 0.2f,
+                ImpactPenetrationConeDeg = 20.0f,
+                WeaponType = weapon
+            };
+        }
+
+        // Gun not implemented yet
+        return null;
+    }
 }

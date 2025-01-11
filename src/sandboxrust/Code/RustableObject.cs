@@ -44,7 +44,7 @@ public sealed class RustableObject : Component
 	private Atmosphere atmosphere;
 	private RustSystem rustSystem;
 
-	private ImpactData? storedImpactData;
+	private ImpactData storedImpactData;
 
 	private bool applyErosionRequested = false;
 
@@ -405,36 +405,24 @@ public sealed class RustableObject : Component
 			return;
 		}
 
-		var impactData = storedImpactData.Value;
+		var impactData = storedImpactData;
 		storedImpactData = null;
 
-		var positionOs = Transform.World.PointToLocal( impactData.position );
-		var impactDirOs = Transform.World.NormalToLocal( impactData.impactDirection ).Normal;
+		var positionOs = Transform.World.PointToLocal( impactData.Position );
+		var impactDirOs = Transform.World.NormalToLocal( impactData.ImpactDirection ).Normal;
 
 		// Convert to 0-1 space for texture sampling
 		var texPos = (positionOs - boundsMin) * boundsScale;
-		var shader = impactData.weaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
-
-		var impactRadius = impactData.weaponType == WeaponType.Spray ? 0.15f : 0.1f;
-		var impactStrength = impactData.weaponType == WeaponType.Spray ? 0.2f : 0.4f;
+		var shader = impactData.WeaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
 
 		// Set common properties
 		shader.Attributes.Set( "DataTexture", RustData );
 		shader.Attributes.Set( "ImpactPosition", texPos );
-		shader.Attributes.Set( "ImpactRadius", impactRadius );
-		shader.Attributes.Set( "ImpactStrength", impactStrength );
-
-		if ( impactData.weaponType == WeaponType.Gun )
-		{
-			// Those probably could be weapon or ammo properties
-			const float coneAngleDeg = 20;
-			const float coneAngleRadians = coneAngleDeg * MathF.PI / 180.0f;
-			const float maxPenOs = 2f; // fully through the object and then some more
-
-			shader.Attributes.Set( "ImpactDirection", impactDirOs );
-			shader.Attributes.Set( "ConeAngleRad", coneAngleRadians );
-			shader.Attributes.Set( "MaxPenetration", maxPenOs );
-		}
+		shader.Attributes.Set( "ImpactRadius", impactData.ImpactRadius );
+		shader.Attributes.Set( "ImpactStrength", impactData.ImpactStrength );
+		shader.Attributes.Set( "ImpactDirection", impactDirOs );
+		shader.Attributes.Set( "ConeAngleRad", impactData.ImpactPenetrationConeDeg * MathF.PI / 180.0f );
+		shader.Attributes.Set( "MaxPenetration", impactData.ImpactPenetrationStrength );
 
 		shader.Dispatch( TextureSize, TextureSize, TextureSize );
 	}

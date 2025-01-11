@@ -1,7 +1,6 @@
 using System;
 using Sandbox;
 
-public record struct ImpactData( Vector3 position, Vector3 surfaceNormal, Vector3 impactDirection, WeaponType weaponType );
 public sealed class SurfaceImpactHandler : Component
 {
 	public delegate void ImpactHandler( ImpactData impactData );

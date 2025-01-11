@@ -396,8 +396,7 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "ShootDelay": 0.02,
-          "VisualizeHits": true
+          "VisualizeHits": false
         }
       ],
       "Children": [
@@ -675,7 +674,7 @@
                 },
                 {
                   "__type": "RustableObject",
-                  "__guid": "c83f0bc3-cc17-4868-bfed-8f8069932ed6",
+                  "__guid": "dc0e0ab3-dc22-4360-9e10-17a676cd9c64",
                   "ErosionFrameInterval": 60,
                   "ErosionStrength": 0.3,
                   "SimulationFrameInterval": 30,
@@ -844,7 +843,7 @@
             },
             {
               "__type": "RustableObject",
-              "__guid": "0ceec740-c6db-4a90-809f-f9fb11b7f904",
+              "__guid": "a65c9409-17f8-4f7f-b4d1-2502974f79f6",
               "ErosionFrameInterval": 60,
               "ErosionStrength": 0.3,
               "SimulationFrameInterval": 15,
