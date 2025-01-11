@@ -1,7 +1,10 @@
+using System;
 using Sandbox;
 
 public sealed class WeaponSwitcher : Component
 {
+	public delegate void WeaponChangedHandler(GameObject previousWeapon, GameObject newWeapon);
+	public event WeaponChangedHandler OnWeaponChanged;
 
 	[Property]
 	public WeaponType CurrentWeapon { get; set; }
@@ -34,6 +37,7 @@ public sealed class WeaponSwitcher : Component
 
 	private void HandleInput()
 	{
+		var previousWeapon = CurrentWeaponGo;
 		if ( Input.Pressed( "Slot1" ) )
 		{
 			Log.Info( "Switching to Spray" );
@@ -52,7 +56,11 @@ public sealed class WeaponSwitcher : Component
 		// 	CurrentWeapon = WeaponType.Gun;
 		// 	CurrentWeaponGo = GunGo;
 		// }
-		
+
+		if ( previousWeapon != CurrentWeaponGo )
+		{
+			OnWeaponChanged?.Invoke( previousWeapon, CurrentWeaponGo );
+		}
 	}
 
 	private void UpdateVisibility()

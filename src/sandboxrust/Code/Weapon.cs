@@ -1,5 +1,7 @@
 using System;
 
+// TODO: Merge this and WeaponSwitcher into one component and create weapon definition objects instead of switching over weapon types
+
 /// <summary>
 /// Handles shooting and scanning for hits.
 /// </summary>
@@ -11,6 +13,7 @@ public class Weapon : Component
 
     public float ShootDelay => switcher.CurrentWeapon == WeaponType.Spray ? 0.05f : 0.5f;
     public float WeaponRange => switcher.CurrentWeapon == WeaponType.Spray ? 100f : 50f;
+    public float AnimStartToImpactDelay => switcher.CurrentWeapon == WeaponType.Spray ? 0.00f : 0.25f;
 
     [Property]
     public bool VisualizeHits { get; set; } = false;
@@ -22,9 +25,21 @@ public class Weapon : Component
         base.OnStart();
         switcher = GetComponent<WeaponSwitcher>();
         player = GetComponent<PlayerController>();
+        switcher.OnWeaponChanged += OnWeaponChanged;
     }
 
-    protected override void OnFixedUpdate()
+	protected override void OnDestroy()
+	{
+		base.OnDestroy();
+		switcher.OnWeaponChanged -= OnWeaponChanged;
+	}
+
+	private void OnWeaponChanged( GameObject previousWeapon, GameObject newWeapon )
+	{
+		StopAnimatingAttack( previousWeapon );
+	}
+
+	protected override void OnFixedUpdate()
     {
         if ( Input.Down( "attack1" ) )
         {
@@ -42,54 +57,76 @@ public class Weapon : Component
 
         timeSincePrimaryAttack = 0;
 
-        TryAnimating();
+        TryAnimatingAttack();
 
-        if ( VisualizeHits )
+        if ( AnimStartToImpactDelay > 0 )
         {
-            // Spawn temporary shooting ray effect
-            DebugObject.Create()
-                .WithName( "Ray" )
-                .WithPosition( player.EyeTransform.Position )
-                .WithDirection( player.EyeTransform.Forward )
-                .WithTimeout( 2f );
+            Task.Delay( (int)(AnimStartToImpactDelay * 1000) ).ContinueWith( _ => DoImpact() );
+        }
+        else
+        {
+            DoImpact();
         }
 
-        // Create a ray from camera position forward
-        var ray = player.EyeTransform.ForwardRay;
-
-        // Perform raycast
-        var tr = Scene.Trace.Ray( ray, WeaponRange )
-            .IgnoreGameObjectHierarchy( GameObject )
-            .Run();
-
-        if ( !tr.Hit )
+        void DoImpact()
         {
-            return;
-        }
+            if ( VisualizeHits )
+            {
+                // Spawn temporary shooting ray effect
+                DebugObject.Create()
+                    .WithName( "Ray" )
+                    .WithPosition( player.EyeTransform.Position )
+                    .WithDirection( player.EyeTransform.Forward )
+                    .WithTimeout( 2f );
+            }
 
-        var impactHandler = tr.GameObject.GetComponent<SurfaceImpactHandler>();
-        if ( impactHandler == null )
-        {
-            // Something we don't care about was hit
-            return;
-        }
+            // Create a ray from camera position forward
+            var ray = player.EyeTransform.ForwardRay;
 
-        // Assume no other actors can cause impact - use eye forward
-        var weapon = switcher.CurrentWeapon;
-        impactHandler.HandleImpact( GetImpactData( weapon, tr, player.EyeTransform.Forward.Normal ) );
+            // Perform raycast
+            var tr = Scene.Trace.Ray( ray, WeaponRange )
+                .IgnoreGameObjectHierarchy( GameObject )
+                .Run();
 
-        if ( VisualizeHits )
-        {
-            // Spawn temporary hit effect
-            DebugObject.Create()
-                .WithName( "Hit" )
-                .WithPosition( tr.HitPosition )
-                .WithDirection( tr.Normal )
-                .WithTimeout( 1f );
+            if ( !tr.Hit )
+            {
+                return;
+            }
+
+            var impactHandler = tr.GameObject.GetComponent<SurfaceImpactHandler>();
+            if ( impactHandler == null )
+            {
+                // Something we don't care about was hit
+                return;
+            }
+
+            // Assume no other actors can cause impact - use eye forward
+            var weapon = switcher.CurrentWeapon;
+            impactHandler.HandleImpact( GetImpactData( weapon, tr, player.EyeTransform.Forward.Normal ) );
+
+            if ( VisualizeHits )
+            {
+                // Spawn temporary hit effect
+                DebugObject.Create()
+                    .WithName( "Hit" )
+                    .WithPosition( tr.HitPosition )
+                    .WithDirection( tr.Normal )
+                    .WithTimeout( 1f );
+            }
         }
     }
 
-	private void TryAnimating()
+    private void StopAnimatingAttack( GameObject previousWeapon )
+    {
+        var skinnedModelRenderer = previousWeapon?.GetComponent<SkinnedModelRenderer>();
+        if(skinnedModelRenderer != null)
+        {
+            Log.Info( "Stopping Attack" );
+            skinnedModelRenderer.Set("b_attack", false);
+        }
+    }
+
+	private void TryAnimatingAttack()
 	{
         var skinnedModelRenderer = switcher.CurrentWeaponGo?.GetComponent<SkinnedModelRenderer>();
 		
