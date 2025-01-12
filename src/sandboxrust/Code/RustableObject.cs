@@ -46,30 +46,18 @@ public sealed class RustableObject : Component
 
 	private ImpactData storedImpactData;
 
-	private bool applyErosionRequested = false;
-
-	// TODO: Coordinate spread across all rustable objects to avoid frame spikes
-	[Property]
-	public int SimulationFrameInterval = 15;
-
-	[Property]
-	public int ErosionFrameInterval = 60;
-
 	private Material rustableDebugMaterial;
 	private Material rustableProperMaterial;
 	private Vertex[] vertices;
 	private ushort[] indices;
 
-	private GpuBuffer<VertexData> inputBuffer;
-	private GpuBuffer<VertexData> outputBuffer;
+	private GpuBuffer<VertexData> erosionInputBuffer;
+	private GpuBuffer<VertexData> erosionOutputBuffer;
 
 	protected override void OnEnabled()
 	{
 		base.OnEnabled();
-		// Using SceneCustomObject with custom render hook
-		// seems to be correct way to access CopyResource
-		sceneCustomObject = new SceneCustomObject( Scene.SceneWorld );
-		sceneCustomObject.RenderOverride = RunSimulation;
+		sceneCustomObject = new SceneCustomObject( Scene.SceneWorld ) { RenderOverride = RenderHook };
 
 		atmosphere = GameObject.GetComponentInParent<Atmosphere>();
 		rustSystem = GameObject.GetComponentInParent<RustSystem>();
@@ -86,16 +74,22 @@ public sealed class RustableObject : Component
 
 		RustData = CreateVolumeTexture( TextureSize );
 		RustDataReadBuffer = CreateVolumeTexture( TextureSize );
+
+		impactHandler = GameObject.GetOrAddComponent<SurfaceImpactHandler>();
+		impactHandler.OnImpact += StoreImpact;
 	}
 
 	protected override void OnDisabled()
 	{
 		base.OnDisabled();
 		sceneCustomObject.RenderOverride = null;
+		impactHandler.OnImpact -= StoreImpact;
+
 		if ( sceneCustomObject.IsValid() )
 		{
 			sceneCustomObject.Delete();
 		}
+
 		sceneCustomObject = null;
 
 		RustData.Dispose();
@@ -115,7 +109,9 @@ public sealed class RustableObject : Component
 	protected override void OnStart()
 	{
 		base.OnStart();
-		
+
+		rustSystem?.RegisterRustableObject( this );
+
 		// We need a mesh with vertex density of certain threshold to avoid artifacts when displacing vertices due to rust progress
 		DensifyObjectMesh();
 
@@ -135,11 +131,9 @@ public sealed class RustableObject : Component
 			boundsScale = Vector3.One / boundsSize;
 			// Log.Info( $"Object {GameObject.Name} BoundsMin: {boundsMin}, BoundsSize: {boundsSize}, BoundsScale: {boundsScale}" );
 
-
 			// Why does GetIndices return uint[] but Graphics.Draw expects ushort[]?
 			vertices = modelRenderer.Model.GetVertices().ToArray();
 
-			// Unknown, let's just check if a model will be too big
 			if ( vertices.Length > ushort.MaxValue )
 			{
 				throw new Exception( $"Model {modelRenderer.Model.Name} has more than {ushort.MaxValue} vertices. This is not supported." );
@@ -149,8 +143,8 @@ public sealed class RustableObject : Component
 			meshCenter = objectBounds.Center;
 
 			// Initialize the GPU buffers
-			inputBuffer = new GpuBuffer<VertexData>( vertices.Length, GpuBuffer.UsageFlags.Structured );
-			outputBuffer = new GpuBuffer<VertexData>( vertices.Length, GpuBuffer.UsageFlags.Structured );
+			erosionInputBuffer = new GpuBuffer<VertexData>( vertices.Length, GpuBuffer.UsageFlags.Structured );
+			erosionOutputBuffer = new GpuBuffer<VertexData>( vertices.Length, GpuBuffer.UsageFlags.Structured );
 		}
 		else
 		{
@@ -162,41 +156,32 @@ public sealed class RustableObject : Component
 		simulationShader = new ComputeShader( "shaders/rust_simulation" );
 		clone3dTexShader = new ComputeShader( "shaders/clone3dtex" );
 		meshErosionShader = new ComputeShader( "shaders/mesh_erosion" );
-
-		impactHandler = GameObject.GetOrAddComponent<SurfaceImpactHandler>();
-		impactHandler.OnImpact += StoreImpact;
 	}
 
 	protected override void OnDestroy()
 	{
 		base.OnDestroy();
-		impactHandler.OnImpact -= StoreImpact;
-		
-		inputBuffer?.Dispose();
-		outputBuffer?.Dispose();
-	}
-
-
-	protected override void OnUpdate()
-	{
-		base.OnUpdate();
-
-		if ( simTicks++ % ErosionFrameInterval == 0 )
-		{
-			ApplyErosion();
-		}
-
-		if ( applyErosionRequested )
-		{
-			ApplyErosion();
-			applyErosionRequested = false;
-		}
+		rustSystem?.UnregisterRustableObject( this );
+		erosionInputBuffer?.Dispose();
+		erosionOutputBuffer?.Dispose();
 	}
 
 	protected override void OnPreRender()
 	{
 		base.OnPreRender();
 		sceneCustomObject.Transform = Transform.World;
+	}
+
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+
+		if ( rustSystem.ShouldRunErosion( this ) )
+		{
+			// This needs to happen in Update because otherwise we will have a race condition
+			// TODO: Figure out pipeline order of S&Box - when do custom objects get their hook called, etc.
+			RunErosionSimulation();
+		}
 	}
 
 	private void DensifyObjectMesh()
@@ -230,117 +215,143 @@ public sealed class RustableObject : Component
 		}
 	}
 
-
-	private void RunSimulation( SceneObject o )
+	public void RenderHook( SceneObject o )
 	{
-
-		// Optimization opportunities:
-		// - use ping-pong swap to avoid resource barrier mess (do I even need it? better safe than crash)
-		// - generate mipmaps and sample from lower-resolution resource to reduce total computation with some nice downsampling filter
-		Matrix worldToObject = Matrix.CreateRotation( Transform.World.Rotation.Inverse ) * Matrix.CreateTranslation( -Transform.World.Position );
-
-		// First, apply impact if it happened this frame
-		Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
-		ApplyImpact();
-
-		if ( simTicks++ % SimulationFrameInterval == 0 )
+		if ( rustSystem.ShouldRunSimulation( this ) )
 		{
-			// Copy the data to the read-only buffer to avoid race condition on R/W in the same resource
-
-			// For some reason Graphics.CopyTexture( RustData, RustDataReadBuffer ); does NOT work
-			// Only one slice was being copied and changing slice indices had no effect
-			// We're gonna do it the stupid way
-			Graphics.ResourceBarrierTransition( RustData, ResourceState.CopySource );
-			Graphics.ResourceBarrierTransition( RustDataReadBuffer, ResourceState.CopyDestination );
-			clone3dTexShader.Attributes.Set( "SourceTexture", RustData );
-			clone3dTexShader.Attributes.Set( "TargetTexture", RustDataReadBuffer );
-			clone3dTexShader.Dispatch( TextureSize, TextureSize, TextureSize );
-
-			Graphics.ResourceBarrierTransition( RustDataReadBuffer, ResourceState.UnorderedAccess );
-			Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
-			simulationShader.Attributes.Set( "SourceTexture", RustDataReadBuffer );
-			simulationShader.Attributes.Set( "TargetTexture", RustData );
-			simulationShader.Attributes.Set( "WorldToObject", worldToObject );
-
-			if ( atmosphere != null )
-			{
-				simulationShader.Attributes.Set( "OxygenLevel", atmosphere.OxygenLevel );
-				simulationShader.Attributes.Set( "WaterVapor", atmosphere.WaterVapor );
-			}
-			else
-			{
-				// Use default values if no Atmosphere component is present
-				simulationShader.Attributes.Set( "OxygenLevel", 0.2f );
-				simulationShader.Attributes.Set( "WaterVapor", 0.5f );
-			}
-
-			simulationShader.Dispatch( TextureSize, TextureSize, TextureSize );
+			RunRustSimulation();
 		}
 
-
-		// After simulation, render the rust overlay
-		if ( vertices != null )
-		{
-			var attributes = new RenderAttributes();
-
-			// Do I set these in the material or in the RenderAttributes?
-			attributes.Set( "RustDataRead", RustData );
-			attributes.Set( "BoundsScale", boundsScale );
-			attributes.Set( "BoundsMin", boundsMin );
-			attributes.Set( "FlashlightPosition", rustSystem.Flashlight.Transform.World.Position );
-			attributes.Set( "FlashlightDirection", rustSystem.Flashlight.Transform.World.Rotation.Forward );
-			attributes.Set( "FlashlightIntensity", rustSystem.Flashlight.IsEnabled ? 1.0f : 0.0f );
-			attributes.Set( "FlashlightAngle", rustSystem.Flashlight.Angle );
-
-			var mode = rustSystem.RenderingMode;
-			sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;
-
-			Graphics.Draw(
-				vertices,
-				vertices.Length,
-				indices,
-				indices.Length,
-				mode == RustRenderingMode.Debug ? rustableDebugMaterial : rustableProperMaterial,
-				attributes,
-				Graphics.PrimitiveType.Triangles
-			);
-		}
+		RunImpactSimulation();
+		RenderOverlayRust();
 	}
 
-	[Button( "Update erosion" )]
-	public void StoreErosionRequest()
-	{
-		applyErosionRequested = true;
-	}
-
-	public void ApplyErosion()
+	public void RunErosionSimulation()
 	{
 		var sw = Stopwatch.StartNew();
 
 		var oldVertices = modelRenderer.Model.GetVertices().ToArray();
-		var oldIndices = modelRenderer.Model.GetIndices().Select(i => (ushort)i).ToArray();
+		var oldIndices = modelRenderer.Model.GetIndices().Select( i => (ushort)i ).ToArray();
 
-		// Use the existing buffers instead of creating new ones
-		inputBuffer.SetData<VertexData>(oldVertices.Select(v => new VertexData(v)).ToArray());
-		meshErosionShader.Attributes.Set("InputVertices", inputBuffer);
-		meshErosionShader.Attributes.Set("OutputVertices", outputBuffer);
-		meshErosionShader.Attributes.Set("RustData", RustData);
-		meshErosionShader.Attributes.Set("MeshCenter", meshCenter);
-		meshErosionShader.Attributes.Set("BoundsMin", boundsMin);
-		meshErosionShader.Attributes.Set("BoundsScale", boundsScale);
-		meshErosionShader.Attributes.Set("ErosionStrength", ErosionStrength);
-		meshErosionShader.Attributes.Set("VertexCount", oldVertices.Length);
+		// TODO: We can probably use only one RW buffer, each thread operates on its own [vertex] in isolation
+		erosionInputBuffer.SetData<VertexData>( oldVertices.Select( v => new VertexData( v ) ).ToArray() );
+		meshErosionShader.Attributes.Set( "InputVertices", erosionInputBuffer );
+		meshErosionShader.Attributes.Set( "OutputVertices", erosionOutputBuffer );
+		meshErosionShader.Attributes.Set( "RustData", RustData );
+		meshErosionShader.Attributes.Set( "MeshCenter", meshCenter );
+		meshErosionShader.Attributes.Set( "BoundsMin", boundsMin );
+		meshErosionShader.Attributes.Set( "BoundsScale", boundsScale );
+		meshErosionShader.Attributes.Set( "ErosionStrength", ErosionStrength );
+		meshErosionShader.Attributes.Set( "VertexCount", oldVertices.Length );
 
-		meshErosionShader.Dispatch(oldVertices.Length, 1, 1);
+		meshErosionShader.Dispatch( oldVertices.Length, 1, 1 );
 
 		// Get results and update mesh
 		var newVertices = new VertexData[oldVertices.Length];
-		outputBuffer.GetData<VertexData>(newVertices);
+		erosionOutputBuffer.GetData<VertexData>( newVertices );
 
-		// TODO: Refactor too many allocations
-		ReplaceMeshVertices(oldVertices.ToList(), oldIndices.ToList(), newVertices.Select(v => v.ToVector3()).ToList());
+		// TODO: Refactor too many allocations with all the ToLists - pass spans or something
+		ReplaceMeshVertices( oldVertices.ToList(), oldIndices.ToList(), newVertices.Select( v => v.ToVector3() ).ToList() );
 
-		Log.Info($"Erosion took {sw.ElapsedMilliseconds}ms, num vertices: {newVertices.Length}, old vertices: {oldVertices.Length}");
+		Log.Trace( $"Erosion took {sw.ElapsedMilliseconds}ms, num vertices: {newVertices.Length}, old vertices: {oldVertices.Length}" );
+	}
+
+	private void RunRustSimulation()
+	{
+		// Optimization opportunities in the rust simulation:
+		// - use ping-pong swap to avoid resource barrier mess (do I even need them? better safe than crash)
+		// - generate mipmaps and sample from lower-resolution resource to reduce total computation with some nice downsampling filter
+		// - design smarter algorithm that doesn't have r/w hazards (possible?)
+
+		Matrix worldToObject = Matrix.CreateRotation( Transform.World.Rotation.Inverse ) * Matrix.CreateTranslation( -Transform.World.Position );
+
+		// Copy the data to the read-only buffer to avoid race condition on R/W in the same resource
+
+		// For some reason Graphics.CopyTexture( RustData, RustDataReadBuffer ); does NOT work
+		// Only one slice of 3D texture was being copied and changing slice indices had no effect
+		// We're gonna do it the crude way
+		Graphics.ResourceBarrierTransition( RustData, ResourceState.CopySource );
+		Graphics.ResourceBarrierTransition( RustDataReadBuffer, ResourceState.CopyDestination );
+		clone3dTexShader.Attributes.Set( "SourceTexture", RustData );
+		clone3dTexShader.Attributes.Set( "TargetTexture", RustDataReadBuffer );
+		clone3dTexShader.Dispatch( TextureSize, TextureSize, TextureSize );
+
+		Graphics.ResourceBarrierTransition( RustDataReadBuffer, ResourceState.UnorderedAccess );
+		Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
+		simulationShader.Attributes.Set( "SourceTexture", RustDataReadBuffer );
+		simulationShader.Attributes.Set( "TargetTexture", RustData );
+		simulationShader.Attributes.Set( "WorldToObject", worldToObject );
+
+		if ( atmosphere != null )
+		{
+			simulationShader.Attributes.Set( "OxygenLevel", atmosphere.OxygenLevel );
+			simulationShader.Attributes.Set( "WaterVapor", atmosphere.WaterVapor );
+		}
+		else
+		{
+			// Use some default reasonable values if no Atmosphere component is present (probably something else breaks anyway)
+			simulationShader.Attributes.Set( "OxygenLevel", 0.2f );
+			simulationShader.Attributes.Set( "WaterVapor", 0.5f );
+		}
+
+		simulationShader.Dispatch( TextureSize, TextureSize, TextureSize );
+	}
+
+	public void RunImpactSimulation()
+	{
+		if ( storedImpactData == null )
+		{
+			return;
+		}
+
+		Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
+
+		var impactData = storedImpactData;
+		storedImpactData = null;
+
+		var positionOs = Transform.World.PointToLocal( impactData.Position );
+		var impactDirOs = Transform.World.NormalToLocal( impactData.ImpactDirection ).Normal;
+
+		// Convert to 0-1 space for texture sampling
+		var texPos = (positionOs - boundsMin) * boundsScale;
+		var shader = impactData.WeaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
+
+		shader.Attributes.Set( "DataTexture", RustData );
+		shader.Attributes.Set( "ImpactPosition", texPos );
+		shader.Attributes.Set( "ImpactRadius", impactData.ImpactRadius );
+		shader.Attributes.Set( "ImpactStrength", impactData.ImpactStrength );
+		shader.Attributes.Set( "ImpactDirection", impactDirOs );
+		shader.Attributes.Set( "ConeAngleRad", impactData.ImpactPenetrationConeDeg * MathF.PI / 180.0f );
+		shader.Attributes.Set( "MaxPenetration", impactData.ImpactPenetrationStrength );
+
+		shader.Dispatch( TextureSize, TextureSize, TextureSize );
+	}
+
+	public void RenderOverlayRust()
+	{
+		Graphics.ResourceBarrierTransition( RustData, ResourceState.PixelShaderResource );
+		var attributes = new RenderAttributes();
+
+		attributes.Set( "RustDataRead", RustData );
+		attributes.Set( "BoundsScale", boundsScale );
+		attributes.Set( "BoundsMin", boundsMin );
+		attributes.Set( "FlashlightPosition", rustSystem.Flashlight.Transform.World.Position );
+		attributes.Set( "FlashlightDirection", rustSystem.Flashlight.Transform.World.Rotation.Forward );
+		attributes.Set( "FlashlightIntensity", rustSystem.Flashlight.IsEnabled ? 1.0f : 0.0f );
+		attributes.Set( "FlashlightAngle", rustSystem.Flashlight.Angle );
+
+		var mode = rustSystem.RenderingMode;
+		sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;
+
+		Graphics.Draw(
+			vertices,
+			vertices.Length,
+			indices,
+			indices.Length,
+			mode == RustRenderingMode.Debug ? rustableDebugMaterial : rustableProperMaterial,
+			attributes,
+			Graphics.PrimitiveType.Triangles
+		);
 	}
 
 	private void ReplaceMeshVertices( List<Vertex> oldVertices, List<ushort> oldIndices, List<Vector3> newVertices )
@@ -381,8 +392,12 @@ public sealed class RustableObject : Component
 			.AddCollisionHull( hull.Vertices )
 			.Create();
 
-		// Update the model renderer
+		// Update the model 
+		// var oldModel = modelRenderer.Model;
 		modelRenderer.Model = newModel;
+
+		// How to delete old model? Does C# finalizer do it?
+		// oldModel.Dispose();
 
 		// Update the model collider if present
 		var modelCollider = GetComponent<ModelCollider>();
@@ -390,7 +405,6 @@ public sealed class RustableObject : Component
 		{
 			modelCollider.Model = newModel;
 		}
-
 	}
 
 	private void StoreImpact( ImpactData impactData )
@@ -398,42 +412,13 @@ public sealed class RustableObject : Component
 		storedImpactData = impactData;
 	}
 
-	private void ApplyImpact()
-	{
-		if ( storedImpactData == null )
-		{
-			return;
-		}
-
-		var impactData = storedImpactData;
-		storedImpactData = null;
-
-		var positionOs = Transform.World.PointToLocal( impactData.Position );
-		var impactDirOs = Transform.World.NormalToLocal( impactData.ImpactDirection ).Normal;
-
-		// Convert to 0-1 space for texture sampling
-		var texPos = (positionOs - boundsMin) * boundsScale;
-		var shader = impactData.WeaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
-
-		// Set common properties
-		shader.Attributes.Set( "DataTexture", RustData );
-		shader.Attributes.Set( "ImpactPosition", texPos );
-		shader.Attributes.Set( "ImpactRadius", impactData.ImpactRadius );
-		shader.Attributes.Set( "ImpactStrength", impactData.ImpactStrength );
-		shader.Attributes.Set( "ImpactDirection", impactDirOs );
-		shader.Attributes.Set( "ConeAngleRad", impactData.ImpactPenetrationConeDeg * MathF.PI / 180.0f );
-		shader.Attributes.Set( "MaxPenetration", impactData.ImpactPenetrationStrength );
-
-		shader.Dispatch( TextureSize, TextureSize, TextureSize );
-	}
-
 	private Texture CreateVolumeTexture( int size )
 	{
-		// Random garbage to check if it's even getting to the shader
 		var data = new byte[size * size * size * 3];
+
+		// Random garbage to check if it's even getting to the shader
 		// FillInitialData( size, data );
 
-		// https://wiki.facepunch.com/sbox/Compute_Shaders
 		return Texture.CreateVolume( size, size, size, ImageFormat.RGB888 )
 			.WithDynamicUsage()
 			.WithUAVBinding()
@@ -474,4 +459,4 @@ public sealed class RustableObject : Component
 			}
 		}
 	}
-}
+} 

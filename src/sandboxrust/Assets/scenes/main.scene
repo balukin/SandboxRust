@@ -576,13 +576,17 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "OxygenLevel": 0.21,
+          "OxygenLevel": 1,
           "WaterVapor": 0.5
         },
         {
           "__type": "RustSystem",
           "__guid": "22e080c3-a42e-449f-b4fe-9dab33243f90",
+          "ErosionFrequency": 15,
+          "ObjectsPerFrame": 1,
           "RenderingMode": "Debug",
+          "SimulationFrequency": 5,
+          "SimulationInterval": 15,
           "Flashlight": {
             "_type": "component",
             "component_id": "97706068-f980-4650-aa2f-a7597e0c549f",
@@ -676,9 +680,7 @@
                 {
                   "__type": "RustableObject",
                   "__guid": "dc0e0ab3-dc22-4360-9e10-17a676cd9c64",
-                  "ErosionFrameInterval": 60,
                   "ErosionStrength": 0.3,
-                  "SimulationFrameInterval": 30,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -845,9 +847,7 @@
             {
               "__type": "RustableObject",
               "__guid": "a65c9409-17f8-4f7f-b4d1-2502974f79f6",
-              "ErosionFrameInterval": 60,
               "ErosionStrength": 0.3,
-              "SimulationFrameInterval": 15,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
