@@ -1,0 +1,157 @@
+$fontFamily: 'sans-serif';
+$backgroundStart: rgba(49, 50, 68, 0.9);
+$backgroundEnd: rgba(49, 50, 62, 0.9);
+$borderDim: rgba(255, 255, 255, 0.2);
+$shadowColor: rgba(0, 0, 0, 0.3);
+$baseTextColor: #e0e0e0;
+$buttonBg: #45475a;
+$closeButtonBg: #eba0ac;
+$closeButtonText: #1e1e2e;
+$activeButtonBg: #a6e3a1;
+
+// Typography
+$fontSizeBase: 22px;
+$fontSizeLarge: 26px;
+
+// Spacing
+$spacingBase: 12px;
+$spacingLarge: 20px;
+
+// Opacity
+$opacityLow: 0.5;
+$opacityMed: 0.7;
+$opacityHigh: 0.9;
+
+body {
+  font-family: $fontFamily;
+}
+
+.hud-panel {
+  padding: $spacingBase;
+  background: linear-gradient(to right, $backgroundStart, $backgroundEnd);
+  border-radius: 10px;
+  border: 6px solid $borderDim;
+  box-shadow: 0 4px 12px $shadowColor;
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  gap: $spacingBase;
+
+  .hud-item {
+    color: $baseTextColor;
+    font-size: $fontSizeBase;
+    display: flex;
+    align-items: center;
+    gap: $spacingBase;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    transition: all 0.2s ease;
+  }
+}
+
+#top-left-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  pointer-events: none;
+  min-width: 200px;
+}
+
+#options-container {
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  right: 100px;
+  bottom: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#options {
+  padding: $spacingLarge;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 200px;
+  pointer-events: all;
+  background: linear-gradient(to right, $backgroundStart, $backgroundEnd);
+  color: #cdd6f4;
+}
+
+.explainer {
+  opacity: $opacityMed;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.icon {
+  font-size: $fontSizeLarge;
+  opacity: $opacityHigh;
+}
+
+.option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: $spacingLarge;
+
+  label {
+    font-size: $fontSizeLarge;
+    display: flex;
+    align-items: center;
+  }
+
+  .explainer {
+    opacity: $opacityLow;
+  }
+}
+
+.value {
+  width: 40px;
+  text-align: center;
+  color: #fff;
+  font-weight: 600;
+}
+
+Button {
+  background-color: $buttonBg;
+  padding: 8px 16px;
+  border-radius: 6px;
+  color: $baseTextColor;
+  font-size: $fontSizeBase;
+  transition: all 0.2s ease;
+  border: 1px solid $borderDim;
+  cursor: pointer;
+  max-height: 50px;
+
+  &#close-button {
+    background-color: $closeButtonBg;
+    color: $closeButtonText;
+    font-weight: 800;
+    font-size: $fontSizeLarge;
+
+    &:hover {
+      background-color: darken($closeButtonBg, 30%);
+    }
+  }
+
+  &:hover {
+    background-color: darken($buttonBg, 30%);
+  }
+}
+
+ButtonGroup {
+  display: flex;
+  gap: $spacingBase;
+  font-weight: 600;
+
+  Button {
+    flex: 1;
+
+    &.active {
+      background-color: $activeButtonBg;
+      color: #1e1e2e;
+      font-weight: 800;
+    }
+  }
+}

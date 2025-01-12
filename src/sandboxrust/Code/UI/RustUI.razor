@@ -1,47 +1,101 @@
 @using Sandbox;
 @using Sandbox.UI;
 
-<root class="rust-ui">
-    <div class="hud-panel">
-        <div class="hud-item">
-            <span class="icon">⏳</span>
-            <span class="text">Rusting Speed: @(OxygenLevel.ToString("P0"))</span>
-            <span class="explainer">
-                (🠈 🠊 🠉 🠋)
-            </span>
-        </div>
-        <div class="hud-item">
-            <span class="icon">🔦</span>
-            <span class="text">Flashlight: @(FlashlightEnabled ? "On" : "Off")</span>
-            <span class="explainer">
-                (F)
-            </span>
-        </div>
-        <div class="hud-item">
-            <span class="icon">🎨</span>
-            <span class="text">Rendering Mode: @RenderingMode</span>
-            <span class="explainer">
-                (R)
-            </span>
-        </div>
-    </div>
+<root>
+	@if ( !OptionsOpen )
+	{
+		<div id="top-left-overlay">
+			<div class="hud-panel">
+				<div class="hud-item">
+					<span class="icon">🛠️</span>
+					<span class="text">Quality Options</span>
+					<span class="explainer">
+                        (Q)
+                    </span>
+				</div>
+				<div class="hud-item">
+					<span class="icon">⏳</span>
+					<span class="text">Rusting Speed: @( OxygenLevel.ToString( "P0" ) )</span>
+					<span class="explainer">
+                        (🠈 🠊 🠉 🠋)
+                    </span>
+				</div>
+				<div class="hud-item">
+					<span class="icon">🔦</span>
+					<span class="text">Flashlight: @( FlashlightEnabled ? "On" : "Off" )</span>
+					<span class="explainer">
+                        (F)
+                    </span>
+				</div>
+				<div class="hud-item">
+					<span class="icon">🎨</span>
+					<span class="text">Rendering Mode: @RenderingMode</span>
+					<span class="explainer">
+                        (R)
+                    </span>
+				</div>
+			</div>
+		</div>
+	}
+	else
+	{
+		<div id="options-container">
+			<div id="options" class="hud-panel">
+				<div class="option-group">
+					<label>Volumetric Data Resolution</label>
+					<ButtonGroup Value:bind=@VolumeResolution Options=@ResolutionOptions/>
+					<div class="explainer">Higher values allow more detail but increase VRAM per object cubically</div>
+				</div>
+
+				<div class="option-group">
+					<label>Max Simulated Updates Per Second</label>
+					<ButtonGroup Value:bind=@UpdatesPerSecond Options=@UpdateFrequencyOptions/>
+					<div class="explainer">Controls how many objects are updated each second</div>
+				</div>
+
+				<div class="option-group">
+					<label>Rust Shading Quality</label>
+					<ButtonGroup Value:bind=@SoftRustEnabled Options=@QualityOptions/>
+					<div class="explainer">Soft rust enables smoother transitions at the cost of extra texture sampling
+					</div>
+				</div>
+				<Button id="close-button" Text="Close" onclick=@( () => OptionsOpen = false )/>
+			</div>
+		</div>
+	}
+
 </root>
 
 @code {
-    public float OxygenLevel { get; set; }
-    public bool FlashlightEnabled { get; set; }
-    public RustRenderingMode RenderingMode { get; set; }
+	public float OxygenLevel { get; set; }
+	public bool FlashlightEnabled { get; set; }
+	public RustRenderingMode RenderingMode { get; set; }
+	public bool OptionsOpen { get; set; }
+	public int VolumeResolution { get; set; } = 64;
+	public int UpdatesPerSecond { get; set; } = 1;
+	public bool SoftRustEnabled { get; set; } = true;
 
-    protected override void OnAfterTreeRender(bool firstTime)
-    {
-        base.OnAfterTreeRender(firstTime);
-        
-        StyleSheet.Load("/UI/RustUI.css");        
-    }
+	private List<Option> ResolutionOptions { get; } = new() { new Option( "16", 16 ), new Option( "32", 32 ), new Option( "64", 64 ), new Option( "128", 128 ) };
 
-    protected override int BuildHash() => System.HashCode.Combine(
-        OxygenLevel,
-        FlashlightEnabled,
-        RenderingMode
-    );
+	private List<Option> UpdateFrequencyOptions { get; } = new() { new Option( "1", 1 ), new Option( "2", 2 ), new Option( "4", 4 ), new Option( "8", 8 ) };
+
+	private List<Option> QualityOptions { get; } = new() { new Option( "Standard", false ), new Option( "Soft", true ) };
+
+	protected override void OnAfterTreeRender( bool firstTime )
+	{
+		base.OnAfterTreeRender( firstTime );
+
+		StyleSheet.Load( "/UI/RustUI.scss" );
+	}
+
+	protected override int BuildHash() => System.HashCode.Combine(
+		OxygenLevel,
+		FlashlightEnabled,
+		RenderingMode,
+		OptionsOpen,
+		VolumeResolution,
+		UpdatesPerSecond,
+		SoftRustEnabled
+	);
+
 }

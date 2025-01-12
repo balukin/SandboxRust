@@ -24,6 +24,11 @@
     "CsProjName": "",
     "StartupScene": "scenes/main.scene",
     "LaunchMode": "Normal",
-    "MapStartupScene": "scenes/main.scene"
+    "MapStartupScene": "scenes/main.scene",
+    "ControlModes": {
+      "Keyboard": false,
+      "VR": false,
+      "Gamepad": false
+    }
   }
 }

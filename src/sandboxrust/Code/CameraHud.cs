@@ -10,16 +10,25 @@ public sealed class CameraHud : Component
 	protected override void OnStart()
 	{
 		Current = this;
-		
+
 		var screenPanel = Scene.GetOrAddComponent<ScreenPanel>();
-		
+
 		ui = new RustUI();
 		ui.Parent = screenPanel.GetPanel();
 	}
-	
+
+	protected override void OnUpdate()
+	{
+		if ( Input.Pressed( "Menu" ) )
+		{
+			ui.OptionsOpen = !ui.OptionsOpen;
+			Mouse.Visible = ui.OptionsOpen;
+		}
+	}
+
 	protected override void OnDestroy()
 	{
-		if (Current == this)
+		if ( Current == this )
 		{
 			Current = null;
 		}
