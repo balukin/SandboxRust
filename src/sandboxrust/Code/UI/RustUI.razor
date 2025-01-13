@@ -69,16 +69,28 @@
 </root>
 
 @code {
+
+	public bool OptionsOpen
+	{
+		get => optionsOpen;
+		set
+		{
+			optionsOpen = value;
+			Mouse.Visible = optionsOpen;
+		}
+	}
+
 	public float OxygenLevel { get; set; }
 	public bool FlashlightEnabled { get; set; }
 	public RustRenderingMode RenderingMode { get; set; }
-	public bool OptionsOpen { get; set; }
+
 	public int VolumeResolution { get; set; } = 64;
 	public int ObjectUpdatesPerFrame { get; set; } = 1;
 	public bool SoftRustEnabled { get; set; } = true;
 
-	private CancellationTokenSource debounceCts;
 
+	private CancellationTokenSource debounceCts;
+	private bool optionsOpen = false;
 	private List<Option> ResolutionOptions { get; } = new()
 	{
 		new Option( "16", 16 ),

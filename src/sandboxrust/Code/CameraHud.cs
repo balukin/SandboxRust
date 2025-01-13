@@ -21,8 +21,7 @@ public sealed class CameraHud : Component
 	{
 		if ( Input.Pressed( "Menu" ) )
 		{
-			ui.OptionsOpen = !ui.OptionsOpen;
-			Mouse.Visible = ui.OptionsOpen;
+			ui.OptionsOpen = !ui.OptionsOpen;			
 		}
 	}
 
