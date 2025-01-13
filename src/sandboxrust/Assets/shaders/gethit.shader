@@ -17,12 +17,12 @@ CS
     float g_flImpactStrength < Attribute("ImpactStrength"); >;
     float g_flConeAngle < Attribute("ConeAngleRad"); >;
     float g_flMaxPenetration < Attribute("MaxPenetration"); >;
-    static const uint TextureSize = 64;
-
+    int g_iVolumeResolution < Attribute("VolumeResolution"); Default(64); >;
+    
     [numthreads(8, 8, 8)]
     void MainCs(uint uGroupIndex : SV_GroupIndex, uint3 vThreadId : SV_DispatchThreadID)
     {
-        float3 pos = float3(vThreadId) / TextureSize;
+        float3 pos = float3(vThreadId) / g_iVolumeResolution;
         float3 toPoint = pos - g_vImpactPosition;
         
         // Calculate spherical impact

@@ -30,10 +30,6 @@ CS
 
     #include "common/shared.hlsl"
 
-    // TODO: make this dynamic?
-    static const uint TextureSize = 64;
-
-
     RWTexture3D<float3> g_tSource < Attribute("SourceTexture"); >;
     RWTexture3D<float3> g_tTarget < Attribute("TargetTexture"); >;
     
@@ -43,6 +39,7 @@ CS
     // Global parameters for rust simulation
     float g_flOxygenLevel < Attribute("OxygenLevel"); Range(0.0, 1.0); Default(0.2); >;
     float g_flWaterVapor < Attribute("WaterVapor"); Range(0.0, 1.0); Default(0.5); >;
+    int g_iVolumeResolution < Attribute("VolumeResolution"); Default(64); >;
 
     // Rust growth simulation constants
     // TODO: Expose those with some UI sliders or something
@@ -66,11 +63,11 @@ CS
     // Simulate how the water drips down from the top of the object
     float SimulateWaterDrip(uint3 globalId)
     {
-        float3 texCoord = float3(globalId) / float(TextureSize);
+        float3 texCoord = float3(globalId) / float(g_iVolumeResolution);
         float3 upDir = GetTextureSpaceUp();
         
         // Sample step size in texture space (1 texel)
-        float stepSize = 2.0 / TextureSize;
+        float stepSize = 2.0 / g_iVolumeResolution;
         
         float totalMoisture = 0.0;
         float3 sampleBase = texCoord + upDir * stepSize;
@@ -98,7 +95,7 @@ CS
             // Ensure we don't sample outside the texture bounds on the sides
             if (all(samplePos >= 0.0) && all(samplePos <= 1.0))
             {
-                uint3 sampleTexel = uint3(samplePos * TextureSize);
+                uint3 sampleTexel = uint3(samplePos * g_iVolumeResolution);
                 totalMoisture += g_tSource[sampleTexel].g;
             }
         }
@@ -138,7 +135,7 @@ CS
             int3 samplePos = int3(vThreadId) + offsets[i];
             
             // Check texture bounds
-            if (all(samplePos >= 0) && all(samplePos < int3(TextureSize, TextureSize, TextureSize)))
+            if (all(samplePos >= 0) && all(samplePos < int3(g_iVolumeResolution, g_iVolumeResolution, g_iVolumeResolution)))
             {
                 neighboringRust += g_tSource[samplePos].r;
             }
@@ -168,7 +165,7 @@ CS
     [numthreads(8, 8, 8)]
     void MainCs(uint3 localId : SV_GroupThreadID, uint3 groupId : SV_GroupID, uint3 vThreadId : SV_DispatchThreadID)
     {       
-        if (any(vThreadId >= TextureSize)) return;
+        if (any(vThreadId >= g_iVolumeResolution)) return;
 
         float3 center = g_tSource[vThreadId];
 

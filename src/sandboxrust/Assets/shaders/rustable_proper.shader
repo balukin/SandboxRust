@@ -18,7 +18,6 @@ COMMON
     #include "common/fast_noise_lite.hlsl" 
 
     #define S_TRANSLUCENT 1
-    static const uint TextureSize = 64;
     CreateInputTexture3D( RustDataRead, Srgb, 8, "", "_rustdata_read", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) );
     CreateTexture3D( g_tRustDataRead ) < Channel( RGB, Box( RustDataRead ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;    
 
@@ -27,6 +26,7 @@ COMMON
     float g_fFlashlightIntensity < Attribute("FlashlightIntensity"); >;
     float g_fFlashlightAngle < Attribute("FlashlightAngle"); >;
     bool g_bSoftRustEnabled < Attribute("SoftRustEnabled"); >;
+    int g_iVolumeResolution < Attribute("VolumeResolution"); Default(64); >;
 }
 
 struct VertexInput
@@ -132,7 +132,7 @@ PS
         float3 sum = 0.0;
         for (int j = 0; j < 8; j++)
         {
-            float3 neighborPos = pos + offsets[j] / float3(TextureSize, TextureSize, TextureSize);
+            float3 neighborPos = pos + offsets[j] / float3(g_iVolumeResolution, g_iVolumeResolution, g_iVolumeResolution);
             sum += g_tRustDataRead.Sample(g_sBilinearClamp, neighborPos).rgb;
         }
         return sum * 0.125;

@@ -14,13 +14,13 @@ CS
     float3 g_vImpactPosition < Attribute("ImpactPosition"); >;
     float g_flImpactRadius < Attribute("ImpactRadius"); >;
     float g_flImpactStrength < Attribute("ImpactStrength"); >;
-    static const uint TextureSize = 64;
-
+    int g_iVolumeResolution < Attribute("VolumeResolution"); Default(64); >;
+    
     [numthreads(8, 8, 8)]
     void MainCs(uint uGroupIndex : SV_GroupIndex, uint3 vThreadId : SV_DispatchThreadID)
     {
         // Convert thread ID to position in 3D texture space
-        float3 pos = float3(vThreadId) / TextureSize;
+        float3 pos = float3(vThreadId) / g_iVolumeResolution;
         
         // Calculate distance from impact
         float dist = length(pos - g_vImpactPosition);

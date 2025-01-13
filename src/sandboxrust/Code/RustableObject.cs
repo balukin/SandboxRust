@@ -16,9 +16,6 @@ public sealed class RustableObject : Component
 	private Vector3 boundsMin;
 	private Vector3 boundsScale;
 
-	// Counter for simulation ticks
-	private long simTicks = 0;
-
 	private SceneCustomObject sceneCustomObject;
 
 	private ModelRenderer modelRenderer;
@@ -39,8 +36,6 @@ public sealed class RustableObject : Component
 
 	private SurfaceImpactHandler impactHandler;
 
-	private const int TextureSize = 64;
-
 	private Atmosphere atmosphere;
 	private RustSystem rustSystem;
 
@@ -56,6 +51,8 @@ public sealed class RustableObject : Component
 
 	private QualitySystem qualitySystem;
 
+	private int currentVolumeResolution;
+
 	protected override void OnEnabled()
 	{
 		base.OnEnabled();
@@ -70,13 +67,12 @@ public sealed class RustableObject : Component
 			Log.Error( $"Atmosphere component not found in {GameObject.Name} parent hierarchy. Will use defaults." );
 		}
 
-		if ( RustData != null )
+		if ( qualitySystem == null )
 		{
-			Log.Error( "Re-creating texture before previous was disposed, why?" );
+			Log.Error( $"QualitySystem component not found in {GameObject.Name} parent hierarchy. Will use defaults." );
 		}
 
-		RustData = CreateVolumeTexture( TextureSize );
-		RustDataReadBuffer = CreateVolumeTexture( TextureSize );
+		EnsureResourceResolutionIsValid();
 
 		impactHandler = GameObject.GetOrAddComponent<SurfaceImpactHandler>();
 		impactHandler.OnImpact += StoreImpact;
@@ -113,6 +109,7 @@ public sealed class RustableObject : Component
 	{
 		base.OnStart();
 
+
 		rustSystem?.RegisterRustableObject( this );
 
 		// We need a mesh with vertex density of certain threshold to avoid artifacts when displacing vertices due to rust progress
@@ -121,8 +118,6 @@ public sealed class RustableObject : Component
 		// Create per-instance material - TODO: maybe it loads already as an instance or is it shared?
 		rustableDebugMaterial = Material.Load( "materials/rustable_debug.vmat" ).CreateCopy();
 		rustableProperMaterial = Material.Load( "materials/rustable_proper.vmat" ).CreateCopy();
-		rustableDebugMaterial.Set( "RustDataRead", RustData );
-		rustableProperMaterial.Set( "RustDataRead", RustData );
 
 		// Cache the model's mesh for overlay rendering
 		if ( modelRenderer.Model != null )
@@ -179,6 +174,8 @@ public sealed class RustableObject : Component
 	{
 		base.OnUpdate();
 
+		EnsureResourceResolutionIsValid();
+
 		if ( rustSystem.ShouldRunErosion( this ) )
 		{
 			// This needs to happen in Update because otherwise we will have a race condition
@@ -218,6 +215,31 @@ public sealed class RustableObject : Component
 		}
 	}
 
+	private void EnsureResourceResolutionIsValid()
+	{
+		if ( currentVolumeResolution != qualitySystem.VolumeResolution )
+		{
+			Log.Info( $"RustableObject {GameObject.Name} resolution changed from {currentVolumeResolution} to {qualitySystem.VolumeResolution}. Recreating resources." );
+			RustData?.Dispose();
+			RustDataReadBuffer?.Dispose();
+			RustData = CreateVolumeTexture( qualitySystem.VolumeResolution );
+			RustDataReadBuffer = CreateVolumeTexture( qualitySystem.VolumeResolution );
+
+			// Update material bindings
+			if ( rustableDebugMaterial != null )
+			{
+				rustableDebugMaterial.Set( "RustDataRead", RustData );
+			}
+
+			if ( rustableProperMaterial != null )
+			{
+				rustableProperMaterial.Set( "RustDataRead", RustData );
+			}
+
+			currentVolumeResolution = qualitySystem.VolumeResolution;
+		}
+	}
+
 	public void RenderHook( SceneObject o )
 	{
 		if ( rustSystem.ShouldRunSimulation( this ) )
@@ -231,6 +253,12 @@ public sealed class RustableObject : Component
 
 	public void RunErosionSimulation()
 	{
+		if ( currentVolumeResolution == 0 )
+		{
+			// Skip, resources were not created yet
+			return;
+		}
+
 		var sw = Stopwatch.StartNew();
 
 		var oldVertices = modelRenderer.Model.GetVertices().ToArray();
@@ -261,6 +289,11 @@ public sealed class RustableObject : Component
 
 	private void RunRustSimulation()
 	{
+		if(currentVolumeResolution == 0)
+		{
+			// Skip, resources were not created yet
+			return;
+		}
 		// Optimization opportunities in the rust simulation:
 		// - use ping-pong swap to avoid resource barrier mess (do I even need them? better safe than crash)
 		// - generate mipmaps and sample from lower-resolution resource to reduce total computation with some nice downsampling filter
@@ -277,13 +310,14 @@ public sealed class RustableObject : Component
 		Graphics.ResourceBarrierTransition( RustDataReadBuffer, ResourceState.CopyDestination );
 		clone3dTexShader.Attributes.Set( "SourceTexture", RustData );
 		clone3dTexShader.Attributes.Set( "TargetTexture", RustDataReadBuffer );
-		clone3dTexShader.Dispatch( TextureSize, TextureSize, TextureSize );
+		clone3dTexShader.Dispatch( currentVolumeResolution, currentVolumeResolution, currentVolumeResolution );
 
 		Graphics.ResourceBarrierTransition( RustDataReadBuffer, ResourceState.UnorderedAccess );
 		Graphics.ResourceBarrierTransition( RustData, ResourceState.UnorderedAccess );
 		simulationShader.Attributes.Set( "SourceTexture", RustDataReadBuffer );
 		simulationShader.Attributes.Set( "TargetTexture", RustData );
 		simulationShader.Attributes.Set( "WorldToObject", worldToObject );
+		simulationShader.Attributes.Set( "VolumeResolution", currentVolumeResolution );
 
 		if ( atmosphere != null )
 		{
@@ -297,13 +331,19 @@ public sealed class RustableObject : Component
 			simulationShader.Attributes.Set( "WaterVapor", 0.5f );
 		}
 
-		simulationShader.Dispatch( TextureSize, TextureSize, TextureSize );
+		simulationShader.Dispatch( currentVolumeResolution, currentVolumeResolution, currentVolumeResolution );
 	}
 
 	public void RunImpactSimulation()
 	{
 		if ( storedImpactData == null )
 		{
+			return;
+		}
+
+		if ( currentVolumeResolution == 0 )
+		{
+			// Skip, resources were not created yet
 			return;
 		}
 
@@ -326,8 +366,9 @@ public sealed class RustableObject : Component
 		shader.Attributes.Set( "ImpactDirection", impactDirOs );
 		shader.Attributes.Set( "ConeAngleRad", impactData.ImpactPenetrationConeDeg * MathF.PI / 180.0f );
 		shader.Attributes.Set( "MaxPenetration", impactData.ImpactPenetrationStrength );
+		shader.Attributes.Set( "VolumeResolution", currentVolumeResolution );
 
-		shader.Dispatch( TextureSize, TextureSize, TextureSize );
+		shader.Dispatch( currentVolumeResolution, currentVolumeResolution, currentVolumeResolution );
 	}
 
 	public void RenderOverlayRust()
@@ -343,16 +384,21 @@ public sealed class RustableObject : Component
 		attributes.Set( "FlashlightIntensity", rustSystem.Flashlight.IsEnabled ? 1.0f : 0.0f );
 		attributes.Set( "FlashlightAngle", rustSystem.Flashlight.Angle );
 		attributes.Set( "SoftRustEnabled", qualitySystem.SoftRustEnabled );
+		attributes.Set( "VolumeResolution", currentVolumeResolution );
 
 		var mode = rustSystem.RenderingMode;
 		sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;
+
+		var material = mode == RustRenderingMode.Debug ? rustableDebugMaterial : rustableProperMaterial;
+		material.Set( "VolumeResolution", currentVolumeResolution );
+		material.Set( "RustDataRead", RustData );
 
 		Graphics.Draw(
 			vertices,
 			vertices.Length,
 			indices,
 			indices.Length,
-			mode == RustRenderingMode.Debug ? rustableDebugMaterial : rustableProperMaterial,
+			material,
 			attributes,
 			Graphics.PrimitiveType.Triangles
 		);
@@ -463,4 +509,4 @@ public sealed class RustableObject : Component
 			}
 		}
 	}
-} 
+}
