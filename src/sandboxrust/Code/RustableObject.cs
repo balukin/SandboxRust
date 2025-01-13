@@ -43,8 +43,18 @@ public sealed class RustableObject : Component
 
 	private Material rustableDebugMaterial;
 	private Material rustableProperMaterial;
-	private Vertex[] vertices;
-	private ushort[] indices;
+	private GpuBuffer<Vertex> proxyVertices;
+
+	/// <summary>
+	/// Unique vertex count in the model. NOT equal to proxy vertices count (those may contain repeated vertices).
+	/// Used for erosion simulation.
+	/// </summary>
+	private int uniqueVertexCount;
+
+	/// <summary>
+	/// Vertex count in the proxy mesh. Not used anywhere but here just to remember that uniqueVertexCount is something different.
+	/// </summary>
+	private int proxyVertexCount;
 
 	private GpuBuffer<VertexData> erosionInputBuffer;
 	private GpuBuffer<VertexData> erosionOutputBuffer;
@@ -91,6 +101,8 @@ public sealed class RustableObject : Component
 
 		sceneCustomObject = null;
 
+		proxyVertices?.Dispose();
+		proxyVertices = null;
 		RustData.Dispose();
 		RustDataReadBuffer.Dispose();
 		RustData = null;
@@ -109,11 +121,12 @@ public sealed class RustableObject : Component
 	{
 		base.OnStart();
 
-
 		rustSystem?.RegisterRustableObject( this );
 
 		// We need a mesh with vertex density of certain threshold to avoid artifacts when displacing vertices due to rust progress
 		DensifyObjectMesh();
+
+		ProcessMeshVertices( modelRenderer.Model );
 
 		// Create per-instance material - TODO: maybe it loads already as an instance or is it shared?
 		rustableDebugMaterial = Material.Load( "materials/rustable_debug.vmat" ).CreateCopy();
@@ -129,20 +142,11 @@ public sealed class RustableObject : Component
 			boundsScale = Vector3.One / boundsSize;
 			// Log.Info( $"Object {GameObject.Name} BoundsMin: {boundsMin}, BoundsSize: {boundsSize}, BoundsScale: {boundsScale}" );
 
-			// Why does GetIndices return uint[] but Graphics.Draw expects ushort[]?
-			vertices = modelRenderer.Model.GetVertices().ToArray();
-
-			if ( vertices.Length > ushort.MaxValue )
-			{
-				throw new Exception( $"Model {modelRenderer.Model.Name} has more than {ushort.MaxValue} vertices. This is not supported." );
-			}
-
-			indices = modelRenderer.Model.GetIndices().Select( i => (ushort)i ).ToArray();
 			meshCenter = objectBounds.Center;
 
 			// Initialize the GPU buffers
-			erosionInputBuffer = new GpuBuffer<VertexData>( vertices.Length, GpuBuffer.UsageFlags.Structured );
-			erosionOutputBuffer = new GpuBuffer<VertexData>( vertices.Length, GpuBuffer.UsageFlags.Structured );
+			erosionInputBuffer = new GpuBuffer<VertexData>( uniqueVertexCount, GpuBuffer.UsageFlags.Structured );
+			erosionOutputBuffer = new GpuBuffer<VertexData>( uniqueVertexCount, GpuBuffer.UsageFlags.Structured );
 		}
 		else
 		{
@@ -178,7 +182,7 @@ public sealed class RustableObject : Component
 
 		if ( rustSystem.ShouldRunErosion( this ) )
 		{
-			// This needs to happen in Update because otherwise we will have a race condition
+			// This needs to happen in Update because mesh flickering happens otherwise
 			// TODO: Figure out pipeline order of S&Box - when do custom objects get their hook called, etc.
 			RunErosionSimulation();
 		}
@@ -213,6 +217,42 @@ public sealed class RustableObject : Component
 				break;
 			}
 		}
+	}
+
+	/// <summary>
+	/// Creates a proxy mesh with all sequentially laid triangle vertices.
+	/// </summary>
+	/// <param name="model">Model to create proxy mesh for.</param>
+	/// <remarks>
+	/// We need to re-format vertex data to always have 3 vertices per triangle (with no vertex sharing) because Graphics.Draw has only
+	/// an overload taking GpuBuffer for VertexBuffer but no overload taking GpuBuffer for IndexBuffer
+	/// Previously I tried simply using Graphics.Draw(vertices+len, indices+len, material, attributes, primitive) overload but it seems to cause a memory leak of some sort
+	/// Therefore we go with GpuBuffer`Vertex and create a new buffer with potentially repeated vertices sequentially for each triangle.
+	/// To be fair, it's also possible that it's not a leak and maybe it's some internal caching with LRU eviction once VRAM pressure is high
+	/// but I don't want to risk OOMs. Maybe later (TODO) I'll investigate with RenderDoc or look how to enable leak detection in debug layers or something.
+	/// </remarks>
+	private void ProcessMeshVertices( Model model )
+	{
+		var vertices = model.GetVertices().ToList();
+		var indices = model.GetIndices().ToList();
+
+		uniqueVertexCount = vertices.Count;
+		proxyVertexCount = indices.Count;
+
+		proxyVertices?.Dispose();
+		proxyVertices = new GpuBuffer<Vertex>( indices.Count, GpuBuffer.UsageFlags.Vertex );
+
+		var vertexData = new List<Vertex>();
+		for ( int i = 0; i < indices.Count; i += 3 )
+		{
+			vertexData.Add( vertices[(int)indices[i]] );
+			vertexData.Add( vertices[(int)indices[i + 1]] );
+			vertexData.Add( vertices[(int)indices[i + 2]] );
+		}
+
+		proxyVertices.SetData( vertexData.ToArray() );
+
+		Log.Info( $"Created proxy mesh with {proxyVertices.ElementCount} vertices, valid: {proxyVertices.IsValid}" );
 	}
 
 	private void EnsureResourceResolutionIsValid()
@@ -289,7 +329,7 @@ public sealed class RustableObject : Component
 
 	private void RunRustSimulation()
 	{
-		if(currentVolumeResolution == 0)
+		if ( currentVolumeResolution == 0 )
 		{
 			// Skip, resources were not created yet
 			return;
@@ -394,14 +434,13 @@ public sealed class RustableObject : Component
 		material.Set( "RustDataRead", RustData );
 
 		Graphics.Draw(
-			vertices,
-			vertices.Length,
-			indices,
-			indices.Length,
+			proxyVertices,
 			material,
-			attributes,
-			Graphics.PrimitiveType.Triangles
+			attributes: attributes,
+			primitiveType: Graphics.PrimitiveType.Triangles
 		);
+
+		attributes.Clear();
 	}
 
 	private void ReplaceMeshVertices( List<Vertex> oldVertices, List<ushort> oldIndices, List<Vector3> newVertices )
@@ -410,22 +449,28 @@ public sealed class RustableObject : Component
 		var vb = new VertexBuffer();
 		vb.Init( true );
 
-		// Update proxy mesh, too
-		vertices = new Vertex[newVertices.Count];
+		Vertex[] proxyVertexTriplets = new Vertex[oldIndices.Count];
 		for ( int i = 0; i < newVertices.Count; i++ )
 		{
 			var oldVertex = oldVertices[i];
 			var newVertex = newVertices[i];
 			vb.Add( oldVertex with { Position = newVertex } );
 			bounds.AddPoint( newVertex );
-			vertices[i] = new Vertex( newVertex );
 		}
 
-		// Reuse original indices
-		foreach ( var index in oldIndices )
+		for ( int i = 0; i < oldIndices.Count; i++ )
 		{
+			ushort index = oldIndices[i];
 			vb.AddRawIndex( index );
+
+			// See ProcessMeshVertices for explanation why we copy vertices to a new array
+			// We could reuse the above method when we're done here but we're iterating over indices anyway...
+			proxyVertexTriplets[i] = oldVertices[index] with { Position = newVertices[index] };
 		}
+
+		proxyVertices?.Dispose();
+		proxyVertices = new GpuBuffer<Vertex>( proxyVertexTriplets.Length, GpuBuffer.UsageFlags.Vertex );
+		proxyVertices.SetData( proxyVertexTriplets );
 
 		var mesh = new Mesh();
 		mesh.CreateBuffers( vb, false );

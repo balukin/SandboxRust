@@ -70,6 +70,7 @@ CS
         float stepSize = 2.0 / g_iVolumeResolution;
         
         float totalMoisture = 0.0;
+        float validSamples = 0.0;
         float3 sampleBase = texCoord + upDir * stepSize;
         
         // Sample in a pointing-down pyramid pattern from the upper 4 corners of the pyramid base
@@ -93,15 +94,16 @@ CS
                 forwardDir * (offsets[i].y * stepSize);
             
             // Ensure we don't sample outside the texture bounds on the sides
-            if (all(samplePos >= 0.0) && all(samplePos <= 1.0))
+            if (all(samplePos >= 0.01) && all(samplePos <= 0.99))
             {
                 uint3 sampleTexel = uint3(samplePos * g_iVolumeResolution);
                 totalMoisture += g_tSource[sampleTexel].g;
+                validSamples++;
             }
         }
 
         // Calculate the average moisture     
-        float averageMoisture = totalMoisture / 4.0;
+        float averageMoisture = totalMoisture / validSamples;
 
         // Attenuate the drip to simulate evaporation or something
         return averageMoisture * (1.0 - WATER_DRIP_EVAPORATION_RATE);
