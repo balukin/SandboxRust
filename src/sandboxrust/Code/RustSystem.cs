@@ -36,12 +36,6 @@ public class RustSystem : Component
     public int SimulationInterval = 15;
 
     /// <summary>
-    /// How many objects to process per frame at most.
-    /// </summary>
-    [Property]
-    public int ObjectsPerFrame = 1;
-
-    /// <summary>
     /// Offset erosion from simulation by this many frames
     /// </summary>
     private const int ErosionOffset = 5;
@@ -49,10 +43,12 @@ public class RustSystem : Component
     // Track last updates separately for simulation and erosion
     private Dictionary<RustableObject, long> lastSimulationFrames = new();
     private Dictionary<RustableObject, long> lastErosionFrames = new();
+	private QualitySystem qualitySystem;
 
-    protected override void OnStart()
+	protected override void OnStart()
     {
         base.OnStart();
+        qualitySystem = Scene.GetSystem<QualitySystem>();
     }
 
     protected override void OnUpdate()
@@ -84,12 +80,12 @@ public class RustSystem : Component
         }
 
         var index = activeObjects.IndexOf( obj );
-        var currentFrame = (frameCount + offset) % Math.Max( 1, activeObjects.Count / ObjectsPerFrame );
+        var currentFrame = (frameCount + offset) % Math.Max( 1, activeObjects.Count / qualitySystem.ObjectUpdatesPerFrame );
 
         // Check if it's this object's turn based on the current frame
-        for ( int i = 0; i < ObjectsPerFrame; i++ )
+        for ( int i = 0; i < qualitySystem.ObjectUpdatesPerFrame; i++ )
         {
-            var targetIndex = ((currentFrame * ObjectsPerFrame) + i) % activeObjects.Count;
+            var targetIndex = ((currentFrame * qualitySystem.ObjectUpdatesPerFrame) + i) % activeObjects.Count;
             if ( index == targetIndex )
             {
                 return true;

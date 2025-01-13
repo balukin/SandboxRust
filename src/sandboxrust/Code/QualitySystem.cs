@@ -5,7 +5,7 @@ using Sandbox;
 /// </summary>
 public class QualitySystem( Scene scene ) : GameObjectSystem( scene )
 {
-    public int UpdatesPerSecond { get; set; }
-    public int VolumeResolution { get; set; }
-    public bool SoftRustEnabled { get; set; }
+    public int ObjectUpdatesPerFrame { get; set; } = 1;
+    public int VolumeResolution { get; set; } = 64;
+    public bool SoftRustEnabled { get; set; } = true;
 }
