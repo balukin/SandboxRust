@@ -1,5 +1,7 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using System.Threading.Tasks;
+@using System.Threading
 
 <root>
 	@if ( !OptionsOpen )
@@ -43,19 +45,19 @@
 			<div id="options" class="hud-panel">
 				<div class="option-group">
 					<label>Volumetric Data Resolution</label>
-					<ButtonGroup Value:bind=@VolumeResolution Options=@ResolutionOptions/>
+					<ButtonGroup Value:bind=@VolumeResolution ValueChanged=@SomethingChanged Options=@ResolutionOptions/>
 					<div class="explainer">Higher values allow more detail but increase VRAM per object cubically</div>
 				</div>
 
 				<div class="option-group">
 					<label>Max Simulated Updates Per Second</label>
-					<ButtonGroup Value:bind=@UpdatesPerSecond Options=@UpdateFrequencyOptions/>
+					<ButtonGroup Value:bind=@UpdatesPerSecond ValueChanged=@SomethingChanged Options=@UpdateFrequencyOptions/>
 					<div class="explainer">Controls how many objects are updated each second</div>
 				</div>
 
 				<div class="option-group">
 					<label>Rust Shading Quality</label>
-					<ButtonGroup Value:bind=@SoftRustEnabled Options=@QualityOptions/>
+					<ButtonGroup Value:bind=@SoftRustEnabled ValueChanged=@SomethingChanged Options=@QualityOptions/>
 					<div class="explainer">Soft rust enables smoother transitions at the cost of extra texture sampling
 					</div>
 				</div>
@@ -75,17 +77,54 @@
 	public int UpdatesPerSecond { get; set; } = 1;
 	public bool SoftRustEnabled { get; set; } = true;
 
-	private List<Option> ResolutionOptions { get; } = new() { new Option( "16", 16 ), new Option( "32", 32 ), new Option( "64", 64 ), new Option( "128", 128 ) };
+	private CancellationTokenSource debounceCts;
 
-	private List<Option> UpdateFrequencyOptions { get; } = new() { new Option( "1", 1 ), new Option( "2", 2 ), new Option( "4", 4 ), new Option( "8", 8 ) };
+	private List<Option> ResolutionOptions { get; } = new()
+	{
+		new Option( "16", 16 ),
+		new Option( "32", 32 ),
+		new Option( "64", 64 ),
+		new Option( "128", 128 )
+	};
 
-	private List<Option> QualityOptions { get; } = new() { new Option( "Standard", false ), new Option( "Soft", true ) };
+	private List<Option> UpdateFrequencyOptions { get; } = new()
+	{
+		new Option( "1", 1 ),
+		new Option( "2", 2 ),
+		new Option( "4", 4 ),
+		new Option( "8", 8 )
+	};
+
+	private List<Option> QualityOptions { get; } = new()
+	{
+		new Option( "Standard", false ),
+		new Option( "Soft", true ) 
+	};
 
 	protected override void OnAfterTreeRender( bool firstTime )
 	{
 		base.OnAfterTreeRender( firstTime );
 
 		StyleSheet.Load( "/UI/RustUI.scss" );
+	}
+
+	private void SomethingChanged(string value)
+	{
+		debounceCts?.Cancel();
+		debounceCts = new CancellationTokenSource();
+		
+		// Debounce the changes plus fix the thing where the value is still the old value when ValueChanged is called
+		Task.Delay(500, debounceCts.Token).ContinueWith( _ =>
+		{
+			var scene = FindRootPanel().Scene;
+			var qualitySystem = scene.GetSystem<QualitySystem>();
+
+			qualitySystem.UpdatesPerSecond = UpdatesPerSecond;
+			qualitySystem.VolumeResolution = VolumeResolution;
+			qualitySystem.SoftRustEnabled = SoftRustEnabled;
+
+			Log.Info($"QualitySystem updated: {qualitySystem.UpdatesPerSecond}, {qualitySystem.VolumeResolution}, {qualitySystem.SoftRustEnabled}");
+		} );
 	}
 
 	protected override int BuildHash() => System.HashCode.Combine(

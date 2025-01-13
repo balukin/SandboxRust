@@ -7,7 +7,6 @@ MODES
 {
     VrForward();
     Depth();
-    ToolsVis( S_MODE_TOOLS_VIS );
 }
 
 COMMON
@@ -20,7 +19,6 @@ COMMON
 
     #define S_TRANSLUCENT 1
     static const uint TextureSize = 64;
-    static const uint UsePCF = 1;
     CreateInputTexture3D( RustDataRead, Srgb, 8, "", "_rustdata_read", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) );
     CreateTexture3D( g_tRustDataRead ) < Channel( RGB, Box( RustDataRead ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;    
 
@@ -28,6 +26,7 @@ COMMON
     float3 g_fFlashlightDirection < Attribute("FlashlightDirection"); >;
     float g_fFlashlightIntensity < Attribute("FlashlightIntensity"); >;
     float g_fFlashlightAngle < Attribute("FlashlightAngle"); >;
+    bool g_bSoftRustEnabled < Attribute("SoftRustEnabled"); >;
 }
 
 struct VertexInput
@@ -239,7 +238,7 @@ PS
         float3 samplePos = ObjectToTextureSpace(i.vPositionOs, g_vBoundsMin, g_vBoundsScale);
         float3 absoluteWorldPos = i.vPositionWithOffsetWs + g_vCameraPositionWs;
 
-        float3 rustData = UsePCF ? FilteredVolumeSample(samplePos) : g_tRustDataRead.Sample(g_sBilinearClamp, samplePos).rgb;
+        float3 rustData = g_bSoftRustEnabled ? FilteredVolumeSample(samplePos) : g_tRustDataRead.Sample(g_sBilinearClamp, samplePos).rgb;
         
         float baseRust = rustData.r; 
         float moisture = rustData.g;

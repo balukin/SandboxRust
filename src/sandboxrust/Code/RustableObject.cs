@@ -54,6 +54,8 @@ public sealed class RustableObject : Component
 	private GpuBuffer<VertexData> erosionInputBuffer;
 	private GpuBuffer<VertexData> erosionOutputBuffer;
 
+	private QualitySystem qualitySystem;
+
 	protected override void OnEnabled()
 	{
 		base.OnEnabled();
@@ -61,6 +63,7 @@ public sealed class RustableObject : Component
 
 		atmosphere = GameObject.GetComponentInParent<Atmosphere>();
 		rustSystem = GameObject.GetComponentInParent<RustSystem>();
+		qualitySystem = Scene.GetSystem<QualitySystem>();
 
 		if ( atmosphere == null )
 		{
@@ -339,6 +342,7 @@ public sealed class RustableObject : Component
 		attributes.Set( "FlashlightDirection", rustSystem.Flashlight.Transform.World.Rotation.Forward );
 		attributes.Set( "FlashlightIntensity", rustSystem.Flashlight.IsEnabled ? 1.0f : 0.0f );
 		attributes.Set( "FlashlightAngle", rustSystem.Flashlight.Angle );
+		attributes.Set( "SoftRustEnabled", qualitySystem.SoftRustEnabled );
 
 		var mode = rustSystem.RenderingMode;
 		sceneCustomObject.RenderLayer = SceneRenderLayer.OverlayWithDepth;
