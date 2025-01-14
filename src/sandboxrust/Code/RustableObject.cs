@@ -480,7 +480,6 @@ public sealed class RustableObject : Component
 		// This one takes long and nas no async version, yet
 		erosionOutputBuffer.GetData<VertexData>( newVertices );
 
-		var bounds = new BBox();
 		var vb = new VertexBuffer();
 		vb.Init( true );
 
@@ -491,7 +490,6 @@ public sealed class RustableObject : Component
 			var oldVertex = oldVertices[i];
 			var newVertex = oldVertex with { Position = newPosition };
 			vb.Add( newVertex );
-			bounds.AddPoint( newPosition );
 			meshVertices[i] = newVertex;
 		}
 
@@ -515,9 +513,8 @@ public sealed class RustableObject : Component
 		await GameTask.MainThread();
 
 		var mesh = new Mesh();
-		mesh.CreateBuffers( vb, false );
+		mesh.CreateBuffers( vb, true );
 		mesh.Material = modelRenderer.Model.Materials.First();
-		mesh.Bounds = bounds;
 
 
 		// Step 3 - Prepare pending state for main thread to update the mesh
