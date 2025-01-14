@@ -199,8 +199,7 @@ public sealed class RustableObject : Component
 	protected override void OnPreRender()
 	{
 		base.OnPreRender();
-		sceneCustomObject.Transform = Transform.World;
-		SwapMeshIfPending();
+		sceneCustomObject.Transform = Transform.World;		
 	}
 
 	protected override void OnUpdate()
@@ -221,6 +220,8 @@ public sealed class RustableObject : Component
 				_ = RunErosionSimulation();
 			}
 		}
+
+		SwapMeshIfPending();
 	}
 
 	private void DensifyObjectMesh()
