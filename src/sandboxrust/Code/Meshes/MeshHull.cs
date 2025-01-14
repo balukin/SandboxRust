@@ -20,7 +20,7 @@ public class MeshHull
         } ).ToList();
 
         // Create the convex hull
-        var hullResult = ConvexHull.Create( points );
+        var hullResult = ConvexHull.Create( points, 1 );
 
         if ( hullResult.Outcome != ConvexHullCreationResultOutcome.Success )
         {
