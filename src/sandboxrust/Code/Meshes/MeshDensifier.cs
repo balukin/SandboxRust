@@ -37,6 +37,17 @@ public class MeshDensifier : Component
 	private ModelRenderer modelRenderer;
 	private Model original;
 
+
+	/// <summary>
+	/// Vertex result of the last densification operation.
+	/// </summary>
+	internal Vertex[] LastVertices = new Vertex[32];
+
+	/// <summary>
+	/// Index result of the last densification operation.
+	/// </summary>
+	internal ushort[] LastIndices = new ushort[32];
+
 	protected override void OnAwake()
 	{
 		base.OnAwake();
@@ -73,6 +84,7 @@ public class MeshDensifier : Component
 	{
 		var sw = Stopwatch.StartNew();
 		
+		original = modelRenderer.Model;
 		// TODO: Let's just assume that the model has only one mesh+material
 		if ( original.MeshCount != 1 )
 		{
@@ -204,28 +216,29 @@ public class MeshDensifier : Component
 
 		var avgRemainingLength = totalLength / edgeCount;
 
+		LastVertices = new Vertex[vertices.Count];
+		LastIndices = new ushort[newIndices.Count];
+
 		var vb = new VertexBuffer();
 		vb.Init( true );
-		foreach ( var vertex in vertices )
+		for ( int i = 0; i < vertices.Count; i++ )
 		{
-			vb.Add( vertex );
+			Vertex vertex = vertices[i];
+			var randVec4 = new Vector4( Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle() );
+			vb.Add( vertex with { TexCoord0 = randVec4 } );
+			LastVertices[i] = vertex;
 		}
 
-		foreach ( var index in newIndices )
+		for ( int i = 0; i < newIndices.Count; i++ )
 		{
+			uint index = newIndices[i];
 			vb.AddRawIndex( (int)index );
+			LastIndices[i] = (ushort)index;
 		}
 
 		var mesh = new Mesh();
 		mesh.CreateBuffers( vb );
 
-		var bounds = new BBox();
-		foreach ( var vertex in vertices )
-		{
-			bounds = bounds.AddPoint( vertex.Position );
-		}
-
-		mesh.Bounds = bounds;
 		mesh.Material = materials.First();
 
 		// Log.Info( $"Mesh vertex count: {mesh.VertexCount}" );
@@ -251,6 +264,7 @@ public class MeshDensifier : Component
 
 		if ( modelCollider != null )
 		{
+			// We could leave them as is but as soon as erosion starts, we'll need higher density collision hull, too
 			modelCollider.Model = newModel;
 		}
 

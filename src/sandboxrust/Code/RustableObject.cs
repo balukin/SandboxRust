@@ -154,7 +154,6 @@ public sealed class RustableObject : Component
 
 		// We need a mesh with vertex density of certain threshold to avoid artifacts when displacing vertices due to rust progress
 		DensifyObjectMesh();
-
 		ProcessMeshVertices( modelRenderer.Model );
 
 		// Create per-instance material - TODO: maybe it loads already as an instance or is it shared?
@@ -202,7 +201,7 @@ public sealed class RustableObject : Component
 		base.OnPreRender();
 		sceneCustomObject.Transform = Transform.World;
 		SwapMeshIfPending();
-	}	
+	}
 
 	protected override void OnUpdate()
 	{
@@ -264,18 +263,17 @@ public sealed class RustableObject : Component
 	/// an overload taking GpuBuffer for VertexBuffer but no overload taking GpuBuffer for IndexBuffer
 	/// Previously I tried simply using Graphics.Draw(vertices+len, indices+len, material, attributes, primitive) overload but it seems to cause a memory leak of some sort
 	/// Therefore we go with GpuBuffer`Vertex and create a new buffer with potentially repeated vertices sequentially for each triangle.
-	/// To be fair, it's also possible that it's not a leak and maybe it's some internal caching with LRU eviction once VRAM pressure is high
+	/// To be fair, it's also possible that it's not a leak and maybe it's some internal buffer caching with LRU eviction once VRAM pressure is high
 	/// but I don't want to risk OOMs. Maybe later (TODO) I'll investigate with RenderDoc or look how to enable leak detection in debug layers or something.
 	/// </remarks>
 	private void ProcessMeshVertices( Model model )
 	{
-		meshVertices = model.GetVertices().ToArray();
-		meshIndices = model.GetIndices().Select( i => (ushort)i ).ToArray();
+		meshVertices = meshDensifier.LastVertices;
+		meshIndices = meshDensifier.LastIndices;
 
 		uniqueVertexCount = meshVertices.Length;
 		proxyVertexCount = meshIndices.Length;
 
-		proxyVertices?.Dispose();
 		proxyVertices = new GpuBuffer<Vertex>( meshIndices.Length, GpuBuffer.UsageFlags.Vertex );
 
 		var vertexData = new List<Vertex>();
@@ -471,12 +469,12 @@ public sealed class RustableObject : Component
 		// Step 2 - get results and calculate new mesh - still on worker thread
 		var newVertices = new VertexData[oldVertices.Length];
 
-		if(UseBgErosion == false)
+		if ( UseBgErosion == false )
 		{
 			// If we cannot do proper threading, let's at least split the work across multiple frames
 			await GameTask.Delay(1);
 		}
-		
+
 		// This one takes long and nas no async version, yet
 		erosionOutputBuffer.GetData<VertexData>( newVertices );
 
@@ -507,7 +505,7 @@ public sealed class RustableObject : Component
 
 		// Create hull from updated vertices
 
-		// This is also costly and we're 100% safe to do it off main thread because we're not touching any engine code
+		// This is also costly and we're 99.(9)% safe to do it off main thread because we're not touching any engine code
 		await GameTask.WorkerThread();
 		var hull = new MeshHull( newVertices );
 		await GameTask.MainThread();
