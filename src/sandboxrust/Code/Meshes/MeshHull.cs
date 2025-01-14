@@ -10,7 +10,7 @@ public class MeshHull
 
     private const float Epsilon = 0.001f;
 
-	public MeshHull( VertexData[] vertices )
+	public MeshHull( VertexData[] vertices, BBox bb )
     {
 
         // Convert Vector3 to MIConvexHull's DefaultVertex
@@ -19,8 +19,10 @@ public class MeshHull
             Position = [v.X, v.Y, v.Z]
         } ).ToList();
 
+
+        var planeDistanceTolerance = CalculatePlaneDistanceTolerance( bb );
         // Create the convex hull
-        var hullResult = ConvexHull.Create( points, 3 );
+        var hullResult = ConvexHull.Create( points, planeDistanceTolerance );
 
         if ( hullResult.Outcome != ConvexHullCreationResultOutcome.Success )
         {
@@ -36,8 +38,14 @@ public class MeshHull
         // Log.Info( "Hull vertices: " + string.Join( ", ", Vertices.Select( v => v.ToString() ) ) );
     }
 
-	public MeshHull( List<Vertex> vertices )
-        : this( vertices.Select( v => new VertexData( v ) ).ToArray() )
+    private static double CalculatePlaneDistanceTolerance( BBox bb )
+    {
+        // Pulled the number out my... hat... to make the hull not break for meshes of varying sizes
+        return Math.Max( bb.Size.Length / 20, 1.5 );
+    }
+
+	public MeshHull( List<Vertex> vertices, BBox bb )
+        : this( vertices.Select( v => new VertexData( v ) ).ToArray(), bb )
 	{
 	}
 }

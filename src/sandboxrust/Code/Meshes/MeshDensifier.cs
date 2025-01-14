@@ -34,6 +34,9 @@ public class MeshDensifier : Component
 	[Property]
 	public float MaxEdgeLength { get; set; } = 1.0f;
 
+	[Property]
+	public bool DontDensify { get; set; } = false;
+
 	private ModelRenderer modelRenderer;
 	private Model original;
 
@@ -155,7 +158,7 @@ public class MeshDensifier : Component
 			// Debug: test if we can successfully re-write original mesh
 			const bool debugNoSubdivision = false;
 
-			if ( debugNoSubdivision || (!e01Long && !e12Long && !e20Long) )
+			if ( DontDensify || debugNoSubdivision || (!e01Long && !e12Long && !e20Long) )
 			{
 				// No subdivision needed
 				newIndices.AddRange( [(uint)i0, (uint)i1, (uint)i2] );
@@ -219,6 +222,7 @@ public class MeshDensifier : Component
 		LastVertices = new Vertex[vertices.Count];
 		LastIndices = new ushort[newIndices.Count];
 
+		var bb = new BBox();
 		var vb = new VertexBuffer();
 		vb.Init( true );
 		for ( int i = 0; i < vertices.Count; i++ )
@@ -227,6 +231,7 @@ public class MeshDensifier : Component
 			var randVec4 = new Vector4( Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle() );
 			vb.Add( vertex );
 			LastVertices[i] = vertex;
+			bb = bb.AddPoint( vertex.Position );
 		}
 
 		for ( int i = 0; i < newIndices.Count; i++ )
@@ -236,8 +241,10 @@ public class MeshDensifier : Component
 			LastIndices[i] = (ushort)index;
 		}
 
+
 		var mesh = new Mesh();
-		mesh.CreateBuffers( vb );
+		mesh.CreateBuffers( vb, false );
+		mesh.Bounds = bb;
 
 		mesh.Material = materials.First();
 
@@ -246,7 +253,7 @@ public class MeshDensifier : Component
 		// Log.Info( $"Mesh bounds: {bounds}" );
 		// Log.Info( "Mesh is valid: " + mesh.IsValid() );
 
-		var hull = new MeshHull( vertices );
+		var hull = new MeshHull( vertices, bb );
 
 		var newModel = Model.Builder
 			.AddMesh( mesh )

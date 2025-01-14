@@ -482,6 +482,8 @@ public sealed class RustableObject : Component
 		var vb = new VertexBuffer();
 		vb.Init( true );
 
+		var bb = new BBox();
+
 		Vertex[] proxyVertexTriplets = new Vertex[oldIndices.Length];
 		for ( int i = 0; i < newVertices.Length; i++ )
 		{
@@ -489,6 +491,7 @@ public sealed class RustableObject : Component
 			var oldVertex = oldVertices[i];
 			var newVertex = oldVertex with { Position = newPosition };
 			vb.Add( newVertex );
+			bb = bb.AddPoint( newPosition );
 			meshVertices[i] = newVertex;
 		}
 
@@ -508,11 +511,12 @@ public sealed class RustableObject : Component
 
 		// This is also costly and we're 99.(9)% safe to do it off main thread because we're not touching any engine code
 		await GameTask.WorkerThread();
-		var hull = new MeshHull( newVertices );
+		var hull = new MeshHull( newVertices, bb );
 		await GameTask.MainThread();
 
 		var mesh = new Mesh();
-		mesh.CreateBuffers( vb, true );
+		mesh.CreateBuffers( vb, false );
+		mesh.Bounds = bb;
 		mesh.Material = modelRenderer.Model.Materials.First();
 
 
