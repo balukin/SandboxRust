@@ -3,7 +3,7 @@ using System;
 public class RustSystem : Component
 {
     [Property]
-    public RustRenderingMode RenderingMode = RustRenderingMode.Debug;
+    public RustRenderingMode RenderingMode = RustRenderingMode.Colored;
 
     [Property]
     public Flashlight Flashlight { get; set; }
@@ -59,7 +59,7 @@ public class RustSystem : Component
         // Handle rendering mode toggle
         if ( Input.Pressed( "reload" ) )
         {
-            RenderingMode = RenderingMode == RustRenderingMode.Debug ? RustRenderingMode.Pretty : RustRenderingMode.Debug;
+            RenderingMode = RenderingMode == RustRenderingMode.Debug ? RustRenderingMode.Colored : RustRenderingMode.Debug;
             Log.Info( "Rendering Mode switched to: " + RenderingMode );
         }
 
@@ -146,5 +146,5 @@ public class RustSystem : Component
 public enum RustRenderingMode
 {
     Debug,
-    Pretty,
+    Colored,
 }
