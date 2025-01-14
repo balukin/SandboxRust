@@ -255,7 +255,8 @@
           "CameraOffset": "256,0,12",
           "ColliderObject": {
             "_type": "gameobject",
-            "go": "4f26433d-7a1e-4757-a750-697ff1435a44"
+            "go": "4f26433d-7a1e-4757-a750-697ff1435a44",
+            "prefab": null
           },
           "DeaccelerationTime": 0,
           "DuckedHeight": 36,
@@ -369,12 +370,14 @@
           "__guid": "dd6e6979-35a5-47d5-b1fd-4b1716aac807",
           "CrowbarGo": {
             "_type": "gameobject",
-            "go": "92003e23-62d1-4414-b0a8-dc675a6d15aa"
+            "go": "92003e23-62d1-4414-b0a8-dc675a6d15aa",
+            "prefab": null
           },
           "CurrentWeapon": "Spray",
           "GunGo": {
             "_type": "gameobject",
-            "go": "fe388b3d-1f3e-4a64-ba30-640a1ad28edc"
+            "go": "fe388b3d-1f3e-4a64-ba30-640a1ad28edc",
+            "prefab": null
           },
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
@@ -384,7 +387,8 @@
           "OnComponentUpdate": null,
           "SprayGo": {
             "_type": "gameobject",
-            "go": "ff80b390-918f-4253-847b-41165530068b"
+            "go": "ff80b390-918f-4253-847b-41165530068b",
+            "prefab": null
           }
         },
         {
@@ -583,7 +587,6 @@
           "__type": "RustSystem",
           "__guid": "22e080c3-a42e-449f-b4fe-9dab33243f90",
           "ErosionFrequency": 15,
-          "ObjectsPerFrame": 1,
           "RenderingMode": "Debug",
           "SimulationFrequency": 5,
           "SimulationInterval": 15,
@@ -607,6 +610,7 @@
           "Flags": 0,
           "Name": "Boxes",
           "Position": "264.4928,-8.556137,158.9301",
+          "Enabled": true,
           "Children": [
             {
               "__guid": "93759109-9f66-4297-a785-58ec4edc793d",
@@ -657,27 +661,6 @@
                   "Tint": "1,1,1,1"
                 },
                 {
-                  "__type": "Sandbox.BoxCollider",
-                  "__guid": "73211632-deb9-4356-9bd5-e839cc33a7b8",
-                  "Center": "0,0,0",
-                  "Friction": null,
-                  "IsTrigger": false,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "OnObjectTriggerEnter": null,
-                  "OnObjectTriggerExit": null,
-                  "OnTriggerEnter": null,
-                  "OnTriggerExit": null,
-                  "Scale": "30,30,30",
-                  "Static": false,
-                  "Surface": "props/hittable_surface.surface",
-                  "SurfaceVelocity": "0,0,0"
-                },
-                {
                   "__type": "RustableObject",
                   "__guid": "dc0e0ab3-dc22-4360-9e10-17a676cd9c64",
                   "ErosionStrength": 0.3,
@@ -689,29 +672,9 @@
                   "OnComponentUpdate": null
                 },
                 {
-                  "__type": "Sandbox.BoxCollider",
-                  "__guid": "267d4f1d-3bb3-4da1-ba9d-13907964105a",
-                  "Center": "0,0,0",
-                  "Friction": null,
-                  "IsTrigger": false,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "OnObjectTriggerEnter": null,
-                  "OnObjectTriggerExit": null,
-                  "OnTriggerEnter": null,
-                  "OnTriggerExit": null,
-                  "Scale": "30,30,30",
-                  "Static": false,
-                  "Surface": "props/hittable_surface.surface",
-                  "SurfaceVelocity": "0,0,0"
-                },
-                {
                   "__type": "TestMovement",
                   "__guid": "06b18f60-dc56-47a9-a9b9-b20b994fd58e",
+                  "__enabled": false,
                   "IsRotating": true,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -724,9 +687,8 @@
                 {
                   "__type": "Sandbox.Rigidbody",
                   "__guid": "a83a00fa-2b85-462b-a4a5-128c1e9f8760",
-                  "__enabled": false,
                   "AngularDamping": 0,
-                  "Gravity": true,
+                  "Gravity": false,
                   "LinearDamping": 0,
                   "Locking": {
                     "X": false,
@@ -748,6 +710,26 @@
                   "OverrideMassCenter": false,
                   "RigidbodyFlags": 0,
                   "StartAsleep": false
+                },
+                {
+                  "__type": "Sandbox.ModelCollider",
+                  "__guid": "b023c8e1-8de2-4adf-865b-02914a8a3709",
+                  "Friction": null,
+                  "IsTrigger": false,
+                  "Model": "models/props/furniture/aperture_cube.vmdl",
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "OnObjectTriggerEnter": null,
+                  "OnObjectTriggerExit": null,
+                  "OnTriggerEnter": null,
+                  "OnTriggerExit": null,
+                  "Static": false,
+                  "Surface": "props/hittable_surface.surface",
+                  "SurfaceVelocity": "0,0,0"
                 }
               ]
             }
@@ -758,6 +740,7 @@
           "Flags": 0,
           "Name": "Barrels",
           "Position": "264.7722,-215.1575,132.3204",
+          "Enabled": true,
           "Children": [
             {
               "__guid": "b61417c6-a125-484f-a943-40e0493f026c",
@@ -819,7 +802,6 @@
           "Flags": 0,
           "Name": "erosion_tester",
           "Position": "93.96797,-97.55605,165.199",
-          "Enabled": true,
           "Components": [
             {
               "__type": "Sandbox.ModelRenderer",

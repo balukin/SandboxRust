@@ -233,8 +233,7 @@ public class MeshDensifier : Component
 		// Log.Info( $"Mesh bounds: {bounds}" );
 		// Log.Info( "Mesh is valid: " + mesh.IsValid() );
 
-		// TODO: pass T:Vertex instead of creating a new list of T:Vector3, adjust ConvexHull accordingly
-		var hull = new MeshHull( vertices.Select( v => v.Position ).ToList() );
+		var hull = new MeshHull( vertices );
 
 		var newModel = Model.Builder
 			.AddMesh( mesh )

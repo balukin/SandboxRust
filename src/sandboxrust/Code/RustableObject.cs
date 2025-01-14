@@ -5,12 +5,26 @@ using Sandbox.Rendering;
 using Sandbox.UI;
 using System.Linq;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Threading;
 
 /// <summary>
 /// Component for objects that can have rust applied to them.
 /// </summary>
 public sealed class RustableObject : Component
 {
+	/// <summary>
+	/// Setting it to true will make frame pacing much smoother but is very unstable with unexplainable errors due to
+	/// thread-related issues. It's possible to get it working but the documentation on what can be called off main thread
+	/// is scarce, error reporting is not-so-clear and it requires way more debugging to guarantee 100% stability.
+	/// 
+	/// Setting it to false will make the simulation run on the main thread and will block the game during costly mesh 
+	/// re-calculation which sucks but at least it doesn't kill the app randomly.
+	/// </summary>
+	private const bool UseBgErosion = false;
+
+	private int frameNo = 0;
+
 	private BBox objectBounds;
 	private Vector3 boundsSize;
 	private Vector3 boundsMin;
@@ -56,12 +70,27 @@ public sealed class RustableObject : Component
 	/// </summary>
 	private int proxyVertexCount;
 
+	/// <summary>
+	/// Whenever we update the mesh we store a copy of buffers here so we don't have to re-fetch them from GPU.
+	/// </summary>
+	/// <remarks>
+	/// Currently there is no way to use async read/write to GpuBuffer so we have to do a lot of copies here and there to 
+	/// avoid unnecessary blocking round trips.
+	/// Issue to track: https://github.com/Facepunch/sbox-issues/issues/7270
+	/// </remarks>
+	public Vertex[] meshVertices;
+	public ushort[] meshIndices;
+
 	private GpuBuffer<VertexData> erosionInputBuffer;
 	private GpuBuffer<VertexData> erosionOutputBuffer;
 
 	private QualitySystem qualitySystem;
 
 	private int currentVolumeResolution;
+
+	private bool meshUpdatePending;
+	private Vertex[] pendingProxyVertices;
+	private Model pendingModel;
 
 	protected override void OnEnabled()
 	{
@@ -172,19 +201,26 @@ public sealed class RustableObject : Component
 	{
 		base.OnPreRender();
 		sceneCustomObject.Transform = Transform.World;
-	}
+		SwapMeshIfPending();
+	}	
 
 	protected override void OnUpdate()
 	{
 		base.OnUpdate();
+		frameNo++;
 
 		EnsureResourceResolutionIsValid();
 
 		if ( rustSystem.ShouldRunErosion( this ) )
 		{
-			// This needs to happen in Update because mesh flickering happens otherwise
-			// TODO: Figure out pipeline order of S&Box - when do custom objects get their hook called, etc.
-			RunErosionSimulation();
+			if ( UseBgErosion )
+			{
+				_ = GameTask.RunInThreadAsync( RunErosionSimulation );
+			}
+			else
+			{
+				_ = RunErosionSimulation();
+			}
 		}
 	}
 
@@ -233,21 +269,21 @@ public sealed class RustableObject : Component
 	/// </remarks>
 	private void ProcessMeshVertices( Model model )
 	{
-		var vertices = model.GetVertices().ToList();
-		var indices = model.GetIndices().ToList();
+		meshVertices = model.GetVertices().ToArray();
+		meshIndices = model.GetIndices().Select( i => (ushort)i ).ToArray();
 
-		uniqueVertexCount = vertices.Count;
-		proxyVertexCount = indices.Count;
+		uniqueVertexCount = meshVertices.Length;
+		proxyVertexCount = meshIndices.Length;
 
 		proxyVertices?.Dispose();
-		proxyVertices = new GpuBuffer<Vertex>( indices.Count, GpuBuffer.UsageFlags.Vertex );
+		proxyVertices = new GpuBuffer<Vertex>( meshIndices.Length, GpuBuffer.UsageFlags.Vertex );
 
 		var vertexData = new List<Vertex>();
-		for ( int i = 0; i < indices.Count; i += 3 )
+		for ( int i = 0; i < meshIndices.Length; i += 3 )
 		{
-			vertexData.Add( vertices[(int)indices[i]] );
-			vertexData.Add( vertices[(int)indices[i + 1]] );
-			vertexData.Add( vertices[(int)indices[i + 2]] );
+			vertexData.Add( meshVertices[meshIndices[i]] );
+			vertexData.Add( meshVertices[meshIndices[i + 1]] );
+			vertexData.Add( meshVertices[meshIndices[i + 2]] );
 		}
 
 		proxyVertices.SetData( vertexData.ToArray() );
@@ -289,42 +325,6 @@ public sealed class RustableObject : Component
 
 		RunImpactSimulation();
 		RenderOverlayRust();
-	}
-
-	public void RunErosionSimulation()
-	{
-		if ( currentVolumeResolution == 0 )
-		{
-			// Skip, resources were not created yet
-			return;
-		}
-
-		var sw = Stopwatch.StartNew();
-
-		var oldVertices = modelRenderer.Model.GetVertices().ToArray();
-		var oldIndices = modelRenderer.Model.GetIndices().Select( i => (ushort)i ).ToArray();
-
-		// TODO: We can probably use only one RW buffer, each thread operates on its own [vertex] in isolation
-		erosionInputBuffer.SetData<VertexData>( oldVertices.Select( v => new VertexData( v ) ).ToArray() );
-		meshErosionShader.Attributes.Set( "InputVertices", erosionInputBuffer );
-		meshErosionShader.Attributes.Set( "OutputVertices", erosionOutputBuffer );
-		meshErosionShader.Attributes.Set( "RustData", RustData );
-		meshErosionShader.Attributes.Set( "MeshCenter", meshCenter );
-		meshErosionShader.Attributes.Set( "BoundsMin", boundsMin );
-		meshErosionShader.Attributes.Set( "BoundsScale", boundsScale );
-		meshErosionShader.Attributes.Set( "ErosionStrength", ErosionStrength );
-		meshErosionShader.Attributes.Set( "VertexCount", oldVertices.Length );
-
-		meshErosionShader.Dispatch( oldVertices.Length, 1, 1 );
-
-		// Get results and update mesh
-		var newVertices = new VertexData[oldVertices.Length];
-		erosionOutputBuffer.GetData<VertexData>( newVertices );
-
-		// TODO: Refactor too many allocations with all the ToLists - pass spans or something
-		ReplaceMeshVertices( oldVertices.ToList(), oldIndices.ToList(), newVertices.Select( v => v.ToVector3() ).ToList() );
-
-		Log.Trace( $"Erosion took {sw.ElapsedMilliseconds}ms, num vertices: {newVertices.Length}, old vertices: {oldVertices.Length}" );
 	}
 
 	private void RunRustSimulation()
@@ -411,7 +411,7 @@ public sealed class RustableObject : Component
 		shader.Dispatch( currentVolumeResolution, currentVolumeResolution, currentVolumeResolution );
 	}
 
-	public void RenderOverlayRust()
+	private void RenderOverlayRust()
 	{
 		Graphics.ResourceBarrierTransition( RustData, ResourceState.PixelShaderResource );
 		var attributes = new RenderAttributes();
@@ -443,63 +443,128 @@ public sealed class RustableObject : Component
 		attributes.Clear();
 	}
 
-	private void ReplaceMeshVertices( List<Vertex> oldVertices, List<ushort> oldIndices, List<Vector3> newVertices )
+	private async Task RunErosionSimulation()
 	{
+		//Log.Info( "Running erosion simulation" );
+		if ( currentVolumeResolution == 0 || meshUpdatePending )
+		{
+			// Skip if resources not created or update already pending
+			return;
+		}
+
+		var oldVertices = meshVertices;
+		var oldIndices = meshIndices;
+
+		// Step 1 - erosion simulation in compute shader
+		// TODO: We can probably use only one RW buffer, each thread operates on its own [vertex] in isolation
+		erosionInputBuffer.SetData<VertexData>( oldVertices.Select( v => new VertexData( v ) ).ToArray() );
+		meshErosionShader.Attributes.Set( "InputVertices", erosionInputBuffer );
+		meshErosionShader.Attributes.Set( "OutputVertices", erosionOutputBuffer );
+		meshErosionShader.Attributes.Set( "RustData", RustData );
+		meshErosionShader.Attributes.Set( "MeshCenter", meshCenter );
+		meshErosionShader.Attributes.Set( "BoundsMin", boundsMin );
+		meshErosionShader.Attributes.Set( "BoundsScale", boundsScale );
+		meshErosionShader.Attributes.Set( "ErosionStrength", ErosionStrength );
+		meshErosionShader.Attributes.Set( "VertexCount", oldVertices.Length );
+		meshErosionShader.Dispatch( oldVertices.Length, 1, 1 );
+
+		// Step 2 - get results and calculate new mesh - still on worker thread
+		var newVertices = new VertexData[oldVertices.Length];
+
+		if(UseBgErosion == false)
+		{
+			// If we cannot do proper threading, let's at least split the work across multiple frames
+			await GameTask.Delay(1);
+		}
+		
+		// This one takes long and nas no async version, yet
+		erosionOutputBuffer.GetData<VertexData>( newVertices );
+
 		var bounds = new BBox();
 		var vb = new VertexBuffer();
 		vb.Init( true );
 
-		Vertex[] proxyVertexTriplets = new Vertex[oldIndices.Count];
-		for ( int i = 0; i < newVertices.Count; i++ )
+		Vertex[] proxyVertexTriplets = new Vertex[oldIndices.Length];
+		for ( int i = 0; i < newVertices.Length; i++ )
 		{
+			var newPosition = newVertices[i].ToVector3();
 			var oldVertex = oldVertices[i];
-			var newVertex = newVertices[i];
-			vb.Add( oldVertex with { Position = newVertex } );
-			bounds.AddPoint( newVertex );
+			var newVertex = oldVertex with { Position = newPosition };
+			vb.Add( newVertex );
+			bounds.AddPoint( newPosition );
+			meshVertices[i] = newVertex;
 		}
 
-		for ( int i = 0; i < oldIndices.Count; i++ )
+		for ( int i = 0; i < oldIndices.Length; i++ )
 		{
 			ushort index = oldIndices[i];
 			vb.AddRawIndex( index );
+			meshIndices[i] = index;
 
 			// See ProcessMeshVertices for explanation why we copy vertices to a new array
 			// We could reuse the above method when we're done here but we're iterating over indices anyway...
-			proxyVertexTriplets[i] = oldVertices[index] with { Position = newVertices[index] };
+			proxyVertexTriplets[i] = oldVertices[index] with { Position = newVertices[index].ToVector3() };
 		}
 
-		proxyVertices?.Dispose();
-		proxyVertices = new GpuBuffer<Vertex>( proxyVertexTriplets.Length, GpuBuffer.UsageFlags.Vertex );
-		proxyVertices.SetData( proxyVertexTriplets );
+
+		// Create hull from updated vertices
+
+		// This is also costly and we're 100% safe to do it off main thread because we're not touching any engine code
+		await GameTask.WorkerThread();
+		var hull = new MeshHull( newVertices );
+		await GameTask.MainThread();
 
 		var mesh = new Mesh();
 		mesh.CreateBuffers( vb, false );
-
 		mesh.Material = modelRenderer.Model.Materials.First();
 		mesh.Bounds = bounds;
 
-		// Create hull from updated vertices
-		var hull = new MeshHull( newVertices );
 
-		// Create new model with updated mesh but same collision data
-		var newModel = Model.Builder
+		// Step 3 - Prepare pending state for main thread to update the mesh
+		// Note: Don't use await GameTask.MainThread() because we want to drop back exactly to PreRender
+		// to avoid some weird visual flickering
+
+		// Technically we could simply swap it here if UseBgErosion is false but being one frame behind
+		// isn't much of a deal and it keeps the spaghetti code al dente
+
+		// Create new model with updated mesh
+		pendingModel = Model.Builder
 			.AddMesh( mesh )
 			.AddCollisionHull( hull.Vertices )
 			.Create();
 
-		// Update the model 
-		// var oldModel = modelRenderer.Model;
-		modelRenderer.Model = newModel;
+		pendingProxyVertices = proxyVertexTriplets;
+		meshUpdatePending = true;
+	}
 
-		// How to delete old model? Does C# finalizer do it?
-		// oldModel.Dispose();
+	/// <summary>
+	/// Swaps a new mesh (that was calculated in RunErosion) with the old one.
+	/// Should be called from main thread.
+	/// </summary>
+	private void SwapMeshIfPending()
+	{
+		if ( !meshUpdatePending )
+			return;
+
+		// Update proxy vertices
+		proxyVertices?.Dispose();
+		proxyVertices = new GpuBuffer<Vertex>( pendingProxyVertices.Length, GpuBuffer.UsageFlags.Vertex );
+		proxyVertices.SetData( pendingProxyVertices );
+
+		// Update model
+		modelRenderer.Model = pendingModel;
 
 		// Update the model collider if present
 		var modelCollider = GetComponent<ModelCollider>();
 		if ( modelCollider != null )
 		{
-			modelCollider.Model = newModel;
+			modelCollider.Model = pendingModel;
 		}
+
+		// Clear pending state
+		meshUpdatePending = false;
+		pendingProxyVertices = null;
+		pendingModel = null;
 	}
 
 	private void StoreImpact( ImpactData impactData )

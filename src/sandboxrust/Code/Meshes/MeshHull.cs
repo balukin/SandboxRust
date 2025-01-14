@@ -10,13 +10,13 @@ public class MeshHull
 
     private const float Epsilon = 0.001f;
 
-    public MeshHull( List<Vector3> vertices )
+	public MeshHull( VertexData[] vertices )
     {
 
         // Convert Vector3 to MIConvexHull's DefaultVertex
         var points = vertices.Select( v => new DefaultVertex
         {
-            Position = new double[] { v.x, v.y, v.z }
+            Position = [v.X, v.Y, v.Z]
         } ).ToList();
 
         // Create the convex hull
@@ -35,4 +35,9 @@ public class MeshHull
         // Vertices:
         // Log.Info( "Hull vertices: " + string.Join( ", ", Vertices.Select( v => v.ToString() ) ) );
     }
+
+	public MeshHull( List<Vertex> vertices )
+        : this( vertices.Select( v => new VertexData( v ) ).ToArray() )
+	{
+	}
 }
