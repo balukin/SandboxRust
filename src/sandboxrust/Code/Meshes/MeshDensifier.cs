@@ -225,7 +225,7 @@ public class MeshDensifier : Component
 		{
 			Vertex vertex = vertices[i];
 			var randVec4 = new Vector4( Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle() );
-			vb.Add( vertex with { TexCoord0 = randVec4 } );
+			vb.Add( vertex );
 			LastVertices[i] = vertex;
 		}
 
