@@ -51,6 +51,15 @@ public sealed class RustableObject : Component
 	[Property]
 	public Vector3 ErosionTarget { get; set; }
 
+	/// <summary>
+	/// If set, it will override the volume resolution for this object and will ignore the quality system settings.
+	/// </summary>
+	/// <remarks>
+	/// There's no point in using high resolutions for very small objects.
+	/// </remarks>
+	[Property]
+	public int OverrideVolumeResolution = 0;
+
 	private SurfaceImpactHandler impactHandler;
 
 	private Atmosphere atmosphere;
@@ -242,8 +251,10 @@ public sealed class RustableObject : Component
 			{
 				Gizmo.Draw.Color = Color.Red;
 				Gizmo.Draw.IgnoreDepth = true;
-				Gizmo.Draw.SolidSphere( Vector3.Zero, 0.5f );
+				Gizmo.Draw.SolidSphere( Vector3.Zero, 0.5f );				
 			}
+
+			Gizmo.Draw.Text( "Deform target", Transform.Local );
 		}
 	}
 
@@ -315,13 +326,26 @@ public sealed class RustableObject : Component
 
 	private void EnsureResourceResolutionIsValid()
 	{
-		if ( currentVolumeResolution != qualitySystem.VolumeResolution )
+		int resolutionToUse;
+		string reasonForChange;
+		if ( OverrideVolumeResolution > 0 )
 		{
-			Log.Info( $"RustableObject {GameObject.Name} resolution changed from {currentVolumeResolution} to {qualitySystem.VolumeResolution}. Recreating resources." );
+			resolutionToUse = OverrideVolumeResolution;
+			reasonForChange = "override";
+		}
+		else
+		{
+			resolutionToUse = qualitySystem.VolumeResolution;
+			reasonForChange = "quality";
+		}
+
+		if ( currentVolumeResolution != resolutionToUse )
+		{
+			Log.Info( $"RustableObject {GameObject.Name} resolution changed from {currentVolumeResolution} to {resolutionToUse} ({reasonForChange}). Recreating resources." );
 			RustData?.Dispose();
 			RustDataReadBuffer?.Dispose();
-			RustData = CreateVolumeTexture( qualitySystem.VolumeResolution );
-			RustDataReadBuffer = CreateVolumeTexture( qualitySystem.VolumeResolution );
+			RustData = CreateVolumeTexture( resolutionToUse );
+			RustDataReadBuffer = CreateVolumeTexture( resolutionToUse );
 
 			// Update material bindings
 			if ( rustableDebugMaterial != null )
@@ -334,7 +358,7 @@ public sealed class RustableObject : Component
 				rustableProperMaterial.Set( "RustDataRead", RustData );
 			}
 
-			currentVolumeResolution = qualitySystem.VolumeResolution;
+			currentVolumeResolution = resolutionToUse;
 		}
 	}
 
