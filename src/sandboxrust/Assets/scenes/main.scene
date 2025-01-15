@@ -1811,7 +1811,7 @@
               "__guid": "b4c857c3-f85b-4078-8465-783bd7083142",
               "Flags": 0,
               "Name": "zuk",
-              "Position": "212.0604,-334.7538,132.0014",
+              "Position": "212.0604,-334.7538,86.91319",
               "Scale": "0.75,0.75,0.75",
               "Enabled": true,
               "Components": [
@@ -1916,7 +1916,7 @@
               "__guid": "63bcad6b-1eb9-4324-a99f-a8776c6c6c4c",
               "Flags": 0,
               "Name": "waste_bin_dev",
-              "Position": "330.6355,-83.84509,131.9932",
+              "Position": "330.6355,-83.84509,134.7479",
               "Enabled": true,
               "Components": [
                 {

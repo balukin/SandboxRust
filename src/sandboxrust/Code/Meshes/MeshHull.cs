@@ -41,7 +41,7 @@ public class MeshHull
     private static double CalculatePlaneDistanceTolerance( BBox bb )
     {
         // Pulled the number out my... hat... to make the hull not break for meshes of varying sizes
-        return Math.Max( bb.Size.Length / 20, 1.5 );
+        return Math.Max( bb.Size.Length / 25, 1.5 );
     }
 
 	public MeshHull( List<Vertex> vertices, BBox bb )
