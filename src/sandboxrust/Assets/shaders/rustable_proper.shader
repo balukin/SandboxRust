@@ -247,11 +247,19 @@ PS
         // MoistureEffect effect = CalculateMoistureEffect(moisture);
         // return float4(effect.colorTint, 1.0);
         // // END DEBUG
-
-        float alpha = saturate(baseRust * 2.0f);
-
         float3 finalRustColor = GenerateRustDetail(i.vPositionOs, baseRust, i.vNormalWs);
         finalRustColor = CalculateFlashlightLighting(absoluteWorldPos, i.vNormalWs, finalRustColor, baseRust, moisture);
+
+        // Calculate view direction for reflections
+        float3 viewDir = normalize(g_vCameraPositionWs - absoluteWorldPos);
+        
+        // Sample environment reflections
+        float3 reflectionColor = SampleMetallicReflection(absoluteWorldPos, i.vPositionSs.xy, i.vNormalWs, viewDir);
+        
+        // Blend reflection based on moisture (wetter = more reflective)
+        // Also reduce reflection intensity on very rusty areas
+        float reflectionStrength = moisture * (1.0 - baseRust * 0.7);
+        finalRustColor = lerp(finalRustColor, reflectionColor, reflectionStrength * 0.3);
 
         // Blend it with rust clearly overlaying the base color and moisture a tiny bit more transparent
         // Probably could use a more sophisticated blend mode config instead
