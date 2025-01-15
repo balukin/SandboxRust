@@ -31,7 +31,7 @@ CS
     RWStructuredBuffer<VertexData> g_OutputVertices < Attribute("OutputVertices"); >;
 
     // Parameters
-    float3 g_vMeshCenter < Attribute("MeshCenter"); >;
+    float3 g_vErosionTarget < Attribute("ErosionTarget"); >;
     float g_flErosionStrength < Attribute("ErosionStrength"); >;
     int g_uVertexCount < Attribute("VertexCount"); >;
 
@@ -55,7 +55,7 @@ CS
         structuralStrength = saturate(1 - rustData.r + 0.5f);
 
         // Calculate erosion offset
-        float3 offsetDirection = normalize(g_vMeshCenter - vPositionOs);
+        float3 offsetDirection = normalize(g_vErosionTarget - vPositionOs);
         float erosionAmount = (1.0 - structuralStrength) * g_flErosionStrength;
         float3 offset = offsetDirection * erosionAmount;
 

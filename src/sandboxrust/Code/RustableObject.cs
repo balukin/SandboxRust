@@ -48,6 +48,9 @@ public sealed class RustableObject : Component
 	[Property]
 	public float ErosionStrength = 0.3f;
 
+	[Property]
+	public Vector3 ErosionTarget { get; set; }
+
 	private SurfaceImpactHandler impactHandler;
 
 	private Atmosphere atmosphere;
@@ -199,7 +202,7 @@ public sealed class RustableObject : Component
 	protected override void OnPreRender()
 	{
 		base.OnPreRender();
-		sceneCustomObject.Transform = Transform.World;		
+		sceneCustomObject.Transform = Transform.World;
 	}
 
 	protected override void OnUpdate()
@@ -222,6 +225,17 @@ public sealed class RustableObject : Component
 		}
 
 		SwapMeshIfPending();
+		if ( rustSystem.RenderingMode == RustRenderingMode.Debug && ErosionTarget != Vector3.Zero )
+		{
+			var erosionTargetWorld = Transform.World.PointToWorld( ErosionTarget );
+
+			using ( var instance = Gizmo.Scope( "ErosionTarget", erosionTargetWorld ) )
+			{
+				Gizmo.Draw.Color = Color.Red;
+				Gizmo.Draw.IgnoreDepth = true;
+				Gizmo.Draw.SolidSphere( Vector3.Zero, 0.5f );
+			}
+		}
 	}
 
 	private void DensifyObjectMesh()
@@ -439,6 +453,8 @@ public sealed class RustableObject : Component
 			primitiveType: Graphics.PrimitiveType.Triangles
 		);
 
+
+
 		attributes.Clear();
 	}
 
@@ -454,13 +470,20 @@ public sealed class RustableObject : Component
 		var oldVertices = meshVertices;
 		var oldIndices = meshIndices;
 
+
+		var currentErosionTarget = meshCenter;
+		if ( ErosionTarget != Vector3.Zero )
+		{
+			currentErosionTarget = ErosionTarget;
+		}
+
 		// Step 1 - erosion simulation in compute shader
 		// TODO: We can probably use only one RW buffer, each thread operates on its own [vertex] in isolation
 		erosionInputBuffer.SetData<VertexData>( oldVertices.Select( v => new VertexData( v ) ).ToArray() );
 		meshErosionShader.Attributes.Set( "InputVertices", erosionInputBuffer );
 		meshErosionShader.Attributes.Set( "OutputVertices", erosionOutputBuffer );
 		meshErosionShader.Attributes.Set( "RustData", RustData );
-		meshErosionShader.Attributes.Set( "MeshCenter", meshCenter );
+		meshErosionShader.Attributes.Set( "ErosionTarget", currentErosionTarget );
 		meshErosionShader.Attributes.Set( "BoundsMin", boundsMin );
 		meshErosionShader.Attributes.Set( "BoundsScale", boundsScale );
 		meshErosionShader.Attributes.Set( "ErosionStrength", ErosionStrength );
@@ -473,7 +496,7 @@ public sealed class RustableObject : Component
 		if ( UseBgErosion == false )
 		{
 			// If we cannot do proper threading, let's at least split the work across multiple frames
-			await GameTask.Delay(1);
+			await GameTask.Delay( 1 );
 		}
 
 		// This one takes long and nas no async version, yet
