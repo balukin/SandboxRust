@@ -146,7 +146,16 @@ public sealed class RustableObject : Component
 		base.OnAwake();
 
 		modelRenderer = GetComponent<ModelRenderer>();
-		meshDensifier = GameObject.GetOrAddComponent<MeshDensifier>();
+
+		if ( modelRenderer.Model.MeshCount > 1 )
+		{
+			Log.Error( "Only meshes with one material and one mesh are currently supported" );
+			Enabled = false;
+			Destroy();
+			return;
+		}
+		
+		meshDensifier = GameObject.GetOrAddComponent<MeshDensifier>();		
 	}
 
 	protected override void OnStart()

@@ -91,7 +91,7 @@ public class MeshDensifier : Component
 		// TODO: Let's just assume that the model has only one mesh+material
 		if ( original.MeshCount != 1 )
 		{
-			Log.Error( "MeshDensifier: Model has incorrect more than one mesh. This is not supported yet." );
+			Log.Error( "MeshDensifier: Model has incorrect mesh count (only 1 is supported for now)" );
 			return new DensificationResult( false, 0, 0, 0 );
 		}
 
@@ -101,7 +101,7 @@ public class MeshDensifier : Component
 
 		if ( materials.Count() != 1 )
 		{
-			Log.Error( "MeshDensifier: Model has incorrect material count" );
+			Log.Error( "MeshDensifier: Model has incorrect material count (only 1 is supported for now)" );
 			return new DensificationResult( false, 0, 0, 0 );
 		}
 
