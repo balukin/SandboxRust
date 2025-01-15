@@ -215,22 +215,7 @@ PS
         float diffuseFactor = saturate(dot(toLight, normal)) * g_fFlashlightIntensity;
         float3 diffuseLight = baseColor * diffuseFactor * 2.0;
         
-        // Speculars
-        float angle = dot(toLight, normal);
-        float coneEdge = cos(radians(g_fFlashlightAngle));
-        float3 specularLight = float3(0, 0, 0);
-        
-        if(angle > coneEdge)
-        {
-            // Ramp up specular intensity based on how centered in the flashlight beam we are
-            float specIntensity = saturate((angle - coneEdge) / (1.0 - coneEdge)) * (g_fFlashlightIntensity / 10);
-            
-            // Apply moisture effects to specular, too
-            specIntensity = pow(specIntensity, 1.0 / moistureEffect.specularSharpness);
-            specularLight = float3(1.0, 1.0, 1.0) * specIntensity * 2.0 * moistureEffect.specularIntensity;
-        }
-        
-        return baseColor + diffuseLight + specularLight;
+        return baseColor + diffuseLight;
     }
 
 	float4 MainPs( PixelInput i ) : SV_Target0
