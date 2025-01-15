@@ -156,11 +156,12 @@ public sealed class RustableObject : Component
 
 		modelRenderer = GetComponent<ModelRenderer>();
 
-		if ( modelRenderer.Model.MeshCount > 1 )
+		if ( modelRenderer.Model.MeshCount > 1)
 		{
 			Log.Error( "Only meshes with one material and one mesh are currently supported" );
 			Enabled = false;
 			Destroy();
+			sceneCustomObject.Delete();
 			return;
 		}
 		
@@ -254,7 +255,8 @@ public sealed class RustableObject : Component
 				Gizmo.Draw.SolidSphere( Vector3.Zero, 0.5f );				
 			}
 
-			Gizmo.Draw.Text( "Deform target", Transform.Local );
+			var worldPos = Transform.World.PointToWorld( ErosionTarget );
+			Gizmo.Draw.Text( "Deform target", new Transform( worldPos, Transform.World.Rotation, Transform.World.Scale ) );
 		}
 	}
 
@@ -266,21 +268,21 @@ public sealed class RustableObject : Component
 		{
 			var result = meshDensifier.Densify( 5f );
 
-			if ( result.newTriangleCount > 100_000 )
+			if ( result.newTriangleCount > 50_000 )
 			{
 				// that's too many triangles
 				// Log.Warning("Bailing out of densification due to too many triangles");
 				break;
 			}
 
-			if ( result.maxRemainingEdgeLength < 6f )
+			if ( result.maxRemainingEdgeLength < 10f )
 			{
 				// that's good enough
 				// Log.Info("Bailing out of densification due to max edge length");
 				break;
 			}
 
-			if ( result.avgRemainingEdgeLength < 3f )
+			if ( result.avgRemainingEdgeLength < 6f )
 			{
 				// that's good enough, mostly...
 				// Log.Info("Bailing out of densification due to avg edge length");

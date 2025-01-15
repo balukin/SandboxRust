@@ -1506,7 +1506,7 @@
               "__guid": "8e7216f6-a0b2-4dc3-9ba1-8d5f2357e2cb",
               "Flags": 0,
               "Name": "wooden_chair_a",
-              "Position": "-276.958,-117.8751,132.0197",
+              "Position": "-279.4009,-122.5013,132.0197",
               "Rotation": "0,0,1,-0.00000004371139",
               "Enabled": true,
               "Components": [
@@ -1812,7 +1812,7 @@
               "Flags": 0,
               "Name": "zuk",
               "Position": "212.0604,-334.7538,132.0014",
-              "Scale": "0.5,0.5,0.5",
+              "Scale": "0.75,0.75,0.75",
               "Enabled": true,
               "Components": [
                 {
@@ -1911,6 +1911,98 @@
                   "OnComponentUpdate": null
                 }
               ]
+            },
+            {
+              "__guid": "63bcad6b-1eb9-4324-a99f-a8776c6c6c4c",
+              "Flags": 0,
+              "Name": "waste_bin_dev",
+              "Position": "330.6355,-83.84509,131.9932",
+              "Enabled": true,
+              "Components": [
+                {
+                  "__type": "Sandbox.ModelRenderer",
+                  "__guid": "adaf9860-0b8c-48bc-994b-8dda5173bec5",
+                  "BodyGroups": 18446744073709551615,
+                  "CreateAttachments": false,
+                  "MaterialGroup": null,
+                  "MaterialOverride": "materials/metal_generic.vmat",
+                  "Model": "models/dev/dumpster/waste_bin_dev.vmdl",
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "RenderOptions": {
+                    "GameLayer": true,
+                    "OverlayLayer": false,
+                    "BloomLayer": false,
+                    "AfterUILayer": false
+                  },
+                  "RenderType": "On",
+                  "Tint": "0,0.37674,0.06279,1"
+                },
+                {
+                  "__type": "Sandbox.ModelCollider",
+                  "__guid": "64f9ceb3-d3f8-418b-a051-d55ce1f77f32",
+                  "Friction": null,
+                  "IsTrigger": false,
+                  "Model": "models/dev/dumpster/waste_bin_dev.vmdl",
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "OnObjectTriggerEnter": null,
+                  "OnObjectTriggerExit": null,
+                  "OnTriggerEnter": null,
+                  "OnTriggerExit": null,
+                  "Static": false,
+                  "Surface": null,
+                  "SurfaceVelocity": "0,0,0"
+                },
+                {
+                  "__type": "Sandbox.Rigidbody",
+                  "__guid": "55e9ed98-dadf-41ce-a123-41f270b0491e",
+                  "AngularDamping": 0,
+                  "Gravity": true,
+                  "LinearDamping": 0,
+                  "Locking": {
+                    "X": false,
+                    "Y": false,
+                    "Z": false,
+                    "Pitch": false,
+                    "Yaw": false,
+                    "Roll": false
+                  },
+                  "MassCenterOverride": "0,0,0",
+                  "MassOverride": 0,
+                  "MotionEnabled": true,
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "OverrideMassCenter": false,
+                  "RigidbodyFlags": 0,
+                  "StartAsleep": false
+                },
+                {
+                  "__type": "RustableObject",
+                  "__guid": "6a32ef27-e0fa-4913-b740-5f6d80c5dd13",
+                  "ErosionStrength": 0.3,
+                  "OverrideVolumeResolution": 0,
+                  "ErosionTarget": "-25,0,0",
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null
+                }
+              ]
             }
           ]
         }
@@ -1946,6 +2038,7 @@
   "__references": [
     "facepunch.coffeetablea#83540",
     "facepunch.v_crowbar#81554",
+    "facepunch.waste_bin_dev#58707",
     "facepunch.wooden_chair_a#43573",
     "fpopium.toilet_clean#54900",
     "gandesign.zuk#33505",
