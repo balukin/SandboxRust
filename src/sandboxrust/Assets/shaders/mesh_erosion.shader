@@ -25,7 +25,7 @@ CS
 
     // Input data
     RWStructuredBuffer<VertexData> g_InputVertices < Attribute("InputVertices"); >;
-    Texture3D<float3> g_tRustData < Attribute("RustData"); >; 
+    RWTexture3D<float3> g_tRustData < Attribute("RustData"); >; 
 
     // Output data 
     RWStructuredBuffer<VertexData> g_OutputVertices < Attribute("OutputVertices"); >;
@@ -34,6 +34,7 @@ CS
     float3 g_vErosionTarget < Attribute("ErosionTarget"); >;
     float g_flErosionStrength < Attribute("ErosionStrength"); >;
     int g_uVertexCount < Attribute("VertexCount"); >;
+    int g_iVolumeResolution < Attribute("VolumeResolution"); Default(64); >;
 
     [numthreads(64, 1, 1)]
     void MainCs(uint3 vThreadId : SV_DispatchThreadID, uint3 vGroupId : SV_GroupID, uint3 vGroupThreadId : SV_GroupThreadID)
@@ -46,17 +47,25 @@ CS
 
         // Sample rust data
         float3 samplePos = ObjectToTextureSpace(vPositionOs, g_vBoundsMin, g_vBoundsScale);
-        float3 rustData = g_tRustData.SampleLevel(g_sBilinearClamp, samplePos, 0).rgb;
+        uint3 coord = uint3(samplePos * g_iVolumeResolution);
+        float3 rustData = g_tRustData[coord];
 
         // Get structural strength from the blue channel
         float structuralStrength = rustData.b;
 
-        // DEBUG: FROM rust data but the first 1.0-0.5 loss has no effect
-        structuralStrength = saturate(1 - rustData.r + 0.5f);
+        // Once rusting reaches 0.5, start to lower structural strength
+        structuralStrength = lerp(structuralStrength, saturate(1 - rustData.r + 0.5f), step(0.5f, rustData.r));
+    
+        g_tRustData[coord] = float3(rustData.r, rustData.g, structuralStrength);
 
+        // Structural strength below 70% starts erosion (displacing vertices towards the target)
+        float effectiveDamage = max(0, 1.0f - structuralStrength - 0.3f);
+
+        // So in summary, rust causes structural strength to drop, which then causes mesh to deform    
+        
         // Calculate erosion offset
         float3 offsetDirection = normalize(g_vErosionTarget - vPositionOs);
-        float erosionAmount = (1.0 - structuralStrength) * g_flErosionStrength;
+        float erosionAmount = effectiveDamage * g_flErosionStrength;
         float3 offset = offsetDirection * erosionAmount;
 
         // Apply offset to vertex position

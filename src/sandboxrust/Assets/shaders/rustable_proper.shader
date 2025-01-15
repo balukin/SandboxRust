@@ -248,6 +248,6 @@ PS
 
         // Blend it with rust clearly overlaying the base color and moisture a tiny bit more transparent
         // Probably could use a more sophisticated blend mode config instead
-        return float4(finalRustColor, max(baseRust, moisture/1.6));
+        return float4(finalRustColor, max(baseRust, moisture/1.4));
 	}
 }

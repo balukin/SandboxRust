@@ -635,7 +635,7 @@ public sealed class RustableObject : Component
 		var data = new byte[size * size * size * 3];
 
 		// Random garbage to check if it's even getting to the shader
-		// FillInitialData( size, data );
+		FillInitialData( size, data );
 
 		return Texture.CreateVolume( size, size, size, ImageFormat.RGB888 )
 			.WithDynamicUsage()
@@ -646,33 +646,54 @@ public sealed class RustableObject : Component
 
 	private static void FillInitialData( int size, byte[] data )
 	{
-		const int globalMultiplier = 1;
-		const int checkerboardSizeR = 16 * globalMultiplier;
-		const int checkerboardSizeG = 4 * globalMultiplier;
-		const int checkerboardSizeB = 1 * globalMultiplier;
-
-		const int dark = 10;
-		const int light = 60;
-
-		for ( int z = 0; z < size; z++ )
+		const bool debugCheckerboard = false;
+		if ( debugCheckerboard )
 		{
-			for ( int y = 0; y < size; y++ )
+			const int globalMultiplier = 1;
+			const int checkerboardSizeR = 16 * globalMultiplier;
+			const int checkerboardSizeG = 4 * globalMultiplier;
+			const int checkerboardSizeB = 1 * globalMultiplier;
+
+			const int dark = 10;
+			const int light = 60;
+
+			for ( int z = 0; z < size; z++ )
 			{
-				for ( int x = 0; x < size; x++ )
+				for ( int y = 0; y < size; y++ )
 				{
-					int index = (z * size * size + y * size + x) * 3;
+					for ( int x = 0; x < size; x++ )
+					{
+						int index = (z * size * size + y * size + x) * 3;
 
-					// Red channel: large checkerboard
-					bool darkOrLightR = ((x / checkerboardSizeR) + (y / checkerboardSizeR) + (z / checkerboardSizeR)) % 2 == 0;
-					data[index] = darkOrLightR ? (byte)dark : (byte)light;
+						// Red channel: large checkerboard
+						bool darkOrLightR = ((x / checkerboardSizeR) + (y / checkerboardSizeR) + (z / checkerboardSizeR)) % 2 == 0;
+						data[index] = darkOrLightR ? (byte)dark : (byte)light;
 
-					// Green channel: medium checkerboard
-					bool darkOrLightG = ((x / checkerboardSizeG) + (y / checkerboardSizeG) + (z / checkerboardSizeG)) % 2 == 0;
-					data[index + 1] = darkOrLightG ? (byte)dark : (byte)light;
+						// Green channel: medium checkerboard
+						bool darkOrLightG = ((x / checkerboardSizeG) + (y / checkerboardSizeG) + (z / checkerboardSizeG)) % 2 == 0;
+						data[index + 1] = darkOrLightG ? (byte)dark : (byte)light;
 
-					// Blue channel: small checkerboard
-					bool darkOrLightB = ((x / checkerboardSizeB) + (y / checkerboardSizeB) + (z / checkerboardSizeB)) % 2 == 0;
-					data[index + 2] = darkOrLightB ? (byte)dark : (byte)light;
+						// Blue channel: small checkerboard
+						bool darkOrLightB = ((x / checkerboardSizeB) + (y / checkerboardSizeB) + (z / checkerboardSizeB)) % 2 == 0;
+						data[index + 2] = darkOrLightB ? (byte)dark : (byte)light;
+					}
+				}
+			}
+		}
+		else
+		{
+			// 0,0,1 to every texel
+			for ( int z = 0; z < size; z++ )
+			{
+				for ( int y = 0; y < size; y++ )
+				{
+					for ( int x = 0; x < size; x++ )
+					{
+						int index = (z * size * size + y * size + x) * 3;
+						data[index] = 0;
+						data[index + 1] = 0;
+						data[index + 2] = 255;
+					}
 				}
 			}
 		}
