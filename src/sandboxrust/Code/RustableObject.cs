@@ -40,7 +40,6 @@ public sealed class RustableObject : Component
 
 	private ComputeShader clone3dTexShader;
 	private ComputeShader getSprayedShader;
-	private ComputeShader getHitShader;
 	private ComputeShader simulationShader;
 	private ComputeShader meshErosionShader;
 	private Vector3 meshCenter;
@@ -156,7 +155,7 @@ public sealed class RustableObject : Component
 
 		modelRenderer = GetComponent<ModelRenderer>();
 
-		if ( modelRenderer.Model.MeshCount > 1)
+		if ( modelRenderer.Model.MeshCount > 1 )
 		{
 			Log.Error( "Only meshes with one material and one mesh are currently supported" );
 			Enabled = false;
@@ -164,8 +163,8 @@ public sealed class RustableObject : Component
 			sceneCustomObject.Delete();
 			return;
 		}
-		
-		meshDensifier = GameObject.GetOrAddComponent<MeshDensifier>();		
+
+		meshDensifier = GameObject.GetOrAddComponent<MeshDensifier>();
 	}
 
 	protected override void OnStart()
@@ -204,7 +203,6 @@ public sealed class RustableObject : Component
 		}
 
 		getSprayedShader = new ComputeShader( "shaders/getsprayed" );
-		getHitShader = new ComputeShader( "shaders/gethit" );
 		simulationShader = new ComputeShader( "shaders/rust_simulation" );
 		clone3dTexShader = new ComputeShader( "shaders/clone3dtex" );
 		meshErosionShader = new ComputeShader( "shaders/mesh_erosion" );
@@ -252,7 +250,7 @@ public sealed class RustableObject : Component
 			{
 				Gizmo.Draw.Color = Color.Red;
 				Gizmo.Draw.IgnoreDepth = true;
-				Gizmo.Draw.SolidSphere( Vector3.Zero, 0.5f );				
+				Gizmo.Draw.SolidSphere( Vector3.Zero, 0.5f );
 			}
 
 			var worldPos = Transform.World.PointToWorld( ErosionTarget );
@@ -371,7 +369,19 @@ public sealed class RustableObject : Component
 			RunRustSimulation();
 		}
 
-		RunImpactSimulation();
+		if ( storedImpactData != null )
+		{
+			if ( storedImpactData.WeaponType == WeaponType.Spray )
+			{
+				RunSpraySimulation();
+			}
+			else if ( storedImpactData.WeaponType == WeaponType.Crowbar )
+			{
+				// We'll run erosion simulation next frame
+				rustSystem.RunErosionNextFrame( this );
+			}
+		}
+
 		RenderOverlayRust();
 	}
 
@@ -422,12 +432,8 @@ public sealed class RustableObject : Component
 		simulationShader.Dispatch( currentVolumeResolution, currentVolumeResolution, currentVolumeResolution );
 	}
 
-	public void RunImpactSimulation()
+	public void RunSpraySimulation()
 	{
-		if ( storedImpactData == null )
-		{
-			return;
-		}
 
 		if ( currentVolumeResolution == 0 )
 		{
@@ -445,7 +451,7 @@ public sealed class RustableObject : Component
 
 		// Convert to 0-1 space for texture sampling
 		var texPos = (positionOs - boundsMin) * boundsScale;
-		var shader = impactData.WeaponType == WeaponType.Spray ? getSprayedShader : getHitShader;
+		var shader = getSprayedShader;
 
 		shader.Attributes.Set( "DataTexture", RustData );
 		shader.Attributes.Set( "ImpactPosition", texPos );
@@ -523,7 +529,19 @@ public sealed class RustableObject : Component
 		meshErosionShader.Attributes.Set( "BoundsScale", boundsScale );
 		meshErosionShader.Attributes.Set( "ErosionStrength", ErosionStrength );
 		meshErosionShader.Attributes.Set( "VertexCount", oldVertices.Length );
+
+		if ( storedImpactData != null )
+		{
+			// If we have a pending impact, apply it while we play with the mesh
+			var impactStruct = storedImpactData.ToLocalStruct( Transform, boundsMin, boundsScale );
+			Log.Info( "Applying impact data: " + impactStruct.ToString() );
+			meshErosionShader.Attributes.SetData( "ImpactParameters", impactStruct );
+		}
+
 		meshErosionShader.Dispatch( oldVertices.Length, 1, 1 );
+
+		// Reset pending impact after use
+		storedImpactData = null;
 
 		// Step 2 - get results and calculate new mesh - still on worker thread
 		var newVertices = new VertexData[oldVertices.Length];
@@ -531,10 +549,10 @@ public sealed class RustableObject : Component
 		if ( UseBgErosion == false )
 		{
 			// If we cannot do proper threading, let's at least split the work across multiple frames
+			// This is a good moment to do it because GetData is blocking, takes a lot of time, and has no async version
 			await GameTask.Delay( 1 );
 		}
 
-		// This one takes long and nas no async version, yet
 		erosionOutputBuffer.GetData<VertexData>( newVertices );
 
 		var vb = new VertexBuffer();

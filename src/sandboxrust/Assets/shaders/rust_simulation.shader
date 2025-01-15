@@ -164,6 +164,12 @@ CS
         return saturate(rustGrowth);
     }
 
+    float SimulateStructuralDetoration(uint3 vThreadId, float rust, float moisture, float structuralStrength)
+    {
+        // Once rusting reaches 0.5, start to lower structural strength
+        return lerp(structuralStrength, saturate(1 - rust + 0.5f), step(0.5f, rust));
+    }
+
     [numthreads(8, 8, 8)]
     void MainCs(uint3 localId : SV_GroupThreadID, uint3 groupId : SV_GroupID, uint3 vThreadId : SV_DispatchThreadID)
     {       
@@ -184,7 +190,10 @@ CS
         // Simulate rust growth (R channel)
         float rustGrowth = SimulateRustGrowth(vThreadId);
         float rust = rustGrowth > center.r ? rustGrowth : center.r;
+        float structuralStrength = center.b;
 
-        g_tTarget[vThreadId] = float3(rust, moisture, center.b);
+        structuralStrength = SimulateStructuralDetoration(vThreadId, rust, moisture, structuralStrength);
+
+        g_tTarget[vThreadId] = float3(rust, moisture, structuralStrength);
     }
 }

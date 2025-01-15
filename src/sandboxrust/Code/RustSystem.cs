@@ -141,6 +141,15 @@ public class RustSystem : Component
         lastSimulationFrames.Remove( obj );
         lastErosionFrames.Remove( obj );
     }
+
+
+    /// <summary>
+    /// Call this to run erosion simulation for a given object during next turn immediately.
+    /// </summary>
+	public void RunErosionNextFrame( RustableObject rustableObject )
+	{
+		lastErosionFrames[rustableObject] = 0;
+	}
 }
 
 public enum RustRenderingMode
