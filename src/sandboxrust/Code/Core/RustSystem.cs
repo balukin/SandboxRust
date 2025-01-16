@@ -76,7 +76,7 @@ public class RustSystem : Component
 
             if(RenderingMode == RustRenderingMode.Debug)
             {
-                CameraHud.Current.UI.ExplainerText = "Channels: R - Rust, G - Wetness, B - Structure health";
+                CameraHud.Current.UI.ExplainerText = "Channels: R - Rust, G - Wetness, B - Plasticity";
             }
         }
 
