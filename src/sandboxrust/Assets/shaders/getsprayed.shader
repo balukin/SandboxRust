@@ -39,14 +39,16 @@ CS
         float3 toPoint = pos - g_vImpactPosition;
         float depth = dot(toPoint, g_vSprayDirection);
         
-        if (depth > 0 && depth <= g_flMaxPenetration)
+        // Allow for negative penetration up to 25% of max penetration
+        float negativeAllowance = g_flMaxPenetration * 0.25;
+        if (depth >= -negativeAllowance && depth <= g_flMaxPenetration)
         {
             float3 projection = g_vImpactPosition + g_vSprayDirection * depth;
             float perpDist = length(pos - projection);
             
             if (perpDist <= g_flImpactRadius)
             {
-                float depthFactor = 1.0 - (depth / g_flMaxPenetration);
+                float depthFactor = 1.0 - ((depth + negativeAllowance) / (g_flMaxPenetration + negativeAllowance));
                 cylinderFactor = depthFactor;
             }
         }
