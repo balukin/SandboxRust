@@ -19,7 +19,14 @@
 					<span class="icon">⏳</span>
 					<span class="text">Rusting Speed: @( OxygenLevel.ToString( "P0" ) )</span>
 					<span class="explainer">
-                        (🠈 🠊 🠉 🠋)
+                        (🠉 🠋)
+                    </span>
+				</div>
+				<div class="hud-item">
+					<span class="icon">🧊</span>
+					<span class="text">Mesh Erosion Interval: @ErosionFrequency</span>
+					<span class="explainer">
+                        (🠈 🠊)
                     </span>
 				</div>
 				<div class="hud-item">
@@ -35,7 +42,7 @@
 					<span class="explainer">
                         (R)
                     </span>
-				</div>
+				</div>				
 			</div>
 		</div>
 	}
@@ -83,7 +90,7 @@
 	public float OxygenLevel { get; set; }
 	public bool FlashlightEnabled { get; set; }
 	public RustRenderingMode RenderingMode { get; set; }
-
+	public int ErosionFrequency { get; set; }
 	public int VolumeResolution { get; set; } = 64;
 	public int ObjectUpdatesPerFrame { get; set; } = 1;
 	public bool SoftRustEnabled { get; set; } = true;
@@ -146,7 +153,8 @@
 		OptionsOpen,
 		VolumeResolution,
 		ObjectUpdatesPerFrame,
-		SoftRustEnabled
+		SoftRustEnabled,
+		ErosionFrequency
 	);
 
 }

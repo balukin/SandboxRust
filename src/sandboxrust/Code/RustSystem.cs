@@ -14,6 +14,8 @@ public class RustSystem : Component
 
 	private long frameCount = 0;
 
+    // Those are intervals, not frequency - that's the opposite of the frequency meaning...
+
     /// <summary>
     /// Minimum frames between simulation updates for each object
     /// </summary>
@@ -54,14 +56,33 @@ public class RustSystem : Component
         base.OnUpdate();
         frameCount++;
 
-        // Handle rendering mode toggle
+        HandleInput();
+        CameraHud.Current.UI.ErosionFrequency = ErosionFrequency;
+        CameraHud.Current.UI.RenderingMode = RenderingMode;
+    }
+    
+    private void HandleInput()
+    {
         if ( Input.Pressed( "reload" ) )
         {
             RenderingMode = RenderingMode == RustRenderingMode.Debug ? RustRenderingMode.Colored : RustRenderingMode.Debug;
             Log.Info( "Rendering Mode switched to: " + RenderingMode );
         }
 
-        CameraHud.Current.UI.RenderingMode = RenderingMode;
+        if ( Input.Pressed( "erosion_interval_up" ) )
+        {
+            ErosionFrequency = (int)(ErosionFrequency * 1.1f);
+        }
+
+        if ( Input.Pressed( "erosion_interval_down" ) )
+        {
+            ErosionFrequency = (int)(ErosionFrequency * 0.9f);
+        }
+
+        if ( ErosionFrequency < 10 )
+        {
+            ErosionFrequency = 10;
+        }
     }
 
 

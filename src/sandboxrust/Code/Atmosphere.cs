@@ -19,18 +19,10 @@ public sealed class Atmosphere : Component
     }
 
     private void HandleInput()
-    {
-        var minorStep = 0.01f;
+    {        
         var majorStep = 0.1f;
 
-        if ( Input.Pressed( "o2_minor_step_down" ) )
-        {
-            OxygenLevel -= minorStep;
-        }
-        if ( Input.Pressed( "o2_minor_step_up" ) )
-        {
-            OxygenLevel += minorStep;
-        }
+
         if ( Input.Pressed( "o2_major_step_up" ) )
         {
             OxygenLevel += majorStep;
