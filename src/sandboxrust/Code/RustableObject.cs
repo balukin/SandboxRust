@@ -43,9 +43,7 @@ public sealed class RustableObject : Component
 	private ComputeShader simulationShader;
 	private ComputeShader meshErosionShader;
 	private Vector3 meshCenter;
-
-	[Property]
-	public float ErosionStrength = 0.3f;
+	public float ErosionStrength => rustSystem.ErosionStrength;
 
 	[Property]
 	public Vector3 ErosionTarget { get; set; }
@@ -242,6 +240,8 @@ public sealed class RustableObject : Component
 		}
 
 		SwapMeshIfPending();
+
+
 		if ( rustSystem.RenderingMode == RustRenderingMode.Debug && ErosionTarget != Vector3.Zero )
 		{
 			var erosionTargetWorld = Transform.World.PointToWorld( ErosionTarget );
@@ -396,6 +396,7 @@ public sealed class RustableObject : Component
 		// - use ping-pong swap to avoid resource barrier mess (do I even need them? better safe than crash)
 		// - generate mipmaps and sample from lower-resolution resource to reduce total computation with some nice downsampling filter
 		// - design smarter algorithm that doesn't have r/w hazards (possible?)
+		// - let object "sleep" when no new external changes are detected and simulation doesn't result in significant changes
 
 		Matrix worldToObject = Matrix.CreateRotation( Transform.World.Rotation.Inverse ) * Matrix.CreateTranslation( -Transform.World.Position );
 

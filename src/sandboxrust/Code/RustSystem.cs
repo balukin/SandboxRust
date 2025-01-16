@@ -8,32 +8,30 @@ public class RustSystem : Component
     [Property]
     public Flashlight Flashlight { get; set; }
 
-    private long frameCount = 0;
+    [Property]
+    [Range( 0, 2 )]
+	public float ErosionStrength { get; set; } = 0.3f;
+
+	private long frameCount = 0;
 
     /// <summary>
     /// Minimum frames between simulation updates for each object
     /// </summary>
     [Property]
-    public int SimulationFrequency = 5;
+    [Range( 1, 300 )]
+    public int SimulationFrequency = 7;
 
     /// <summary>
     /// Minimum frames between erosion updates for each object
     /// </summary>
     [Property]
-    public int ErosionFrequency = 15;
+    [Range( 1, 300 )]
+    public int ErosionFrequency = 97;
 
     /// <summary>
     /// Collection of all known active rustable objects
     /// </summary>
     private List<RustableObject> activeObjects = new();
-
-
-
-    /// <summary>
-    /// Frames between rusting/dripping simulation ticks.
-    /// </summary>
-    [Property]
-    public int SimulationInterval = 15;
 
     /// <summary>
     /// Offset erosion from simulation by this many frames
