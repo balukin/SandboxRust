@@ -60,18 +60,24 @@ CS
         return normalize(localUp);
     }
 
+    // Attenuate the drip to simulate evaporation or something
+    float GetWaterDripEvaporationRate()
+    {
+        return 0.12 * (64.0 / float(g_iVolumeResolution));
+    }
+
     // Simulate how the water drips down from the top of the object
     float SimulateWaterDrip(uint3 globalId)
     {
         float3 texCoord = float3(globalId) / float(g_iVolumeResolution);
         float3 upDir = GetTextureSpaceUp();
         
-        // Sample step size in texture space (1 texel)
-        float stepSize = 2.0 / g_iVolumeResolution;
+        // Scale the sampling pattern based on resolution
+        float baseStepSize = 2.0 / 64.0;
+        float stepSize = baseStepSize * (64.0 / float(g_iVolumeResolution));
         
-        float totalMoisture = 0.0;
-        float validSamples = 0.0;
-        float3 sampleBase = texCoord + upDir * stepSize;
+        // Scale the offset pattern based on resolution
+        float offsetScale = min(1.0, float(g_iVolumeResolution) / 32.0); // Starts reducing scale below 32^3
         
         // Sample in a pointing-down pyramid pattern from the upper 4 corners of the pyramid base
         // Previously I was sampling 3 points but it can line up unfortunately and cause the water not to drip down on one surface
@@ -83,6 +89,10 @@ CS
             float2( 0.5,  0.5)
         };
         
+        float totalMoisture = 0.0;
+        float validSamples = 0.0;
+        float3 sampleBase = texCoord + upDir * stepSize;
+        
         // Create basis vectors for sampling plane
         float3 rightDir = normalize(float3(upDir.z, 0, -upDir.x));
         float3 forwardDir = cross(upDir, rightDir);
@@ -90,11 +100,12 @@ CS
         for (int i = 0; i < 4; i++)
         {    
             float3 samplePos = sampleBase + 
-                rightDir * (offsets[i].x * stepSize) +
-                forwardDir * (offsets[i].y * stepSize);
+                rightDir * (offsets[i].x * stepSize * offsetScale) +  // Apply scale to offset
+                forwardDir * (offsets[i].y * stepSize * offsetScale);
             
-            // Ensure we don't sample outside the texture bounds on the sides
-            if (all(samplePos >= 0.01) && all(samplePos <= 0.99))
+            // Widen the valid sampling range for lower resolutions
+            float boundary = lerp(0.01, 0.1, 1.0 - offsetScale);
+            if (all(samplePos >= boundary) && all(samplePos <= (1.0 - boundary)))
             {
                 uint3 sampleTexel = uint3(samplePos * g_iVolumeResolution);
                 totalMoisture += g_tSource[sampleTexel].g;
@@ -102,11 +113,11 @@ CS
             }
         }
 
-        // Calculate the average moisture     
+        // Ensure we always get at least one valid sample
+        validSamples = max(validSamples, 1.0);
         float averageMoisture = totalMoisture / validSamples;
-
-        // Attenuate the drip to simulate evaporation or something
-        return averageMoisture * (1.0 - WATER_DRIP_EVAPORATION_RATE);
+        
+        return averageMoisture * (1.0 - GetWaterDripEvaporationRate());
     }
 
     // Simulates rust growth based on moisture, oxygen, and neighboring rust
