@@ -298,12 +298,66 @@
                     "go": "c84775a5-d53b-4535-b515-80d7cc5dc61f",
                     "component_type": "ParticleConeEmitter"
                   },
+                  "Sound": {
+                    "_type": "component",
+                    "component_id": "857592d5-33e6-4577-8979-480e6cc5df40",
+                    "go": "c84775a5-d53b-4535-b515-80d7cc5dc61f",
+                    "component_type": "SoundPointComponent"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
                   "OnComponentUpdate": null
+                },
+                {
+                  "__type": "Sandbox.SoundPointComponent",
+                  "__guid": "857592d5-33e6-4577-8979-480e6cc5df40",
+                  "Distance": 512,
+                  "DistanceAttenuation": false,
+                  "DistanceAttenuationOverride": false,
+                  "Falloff": [
+                    {
+                      "x": 0,
+                      "y": 1,
+                      "in": 3.1415927,
+                      "out": -3.1415927,
+                      "mode": "Mirrored"
+                    },
+                    {
+                      "x": 1,
+                      "y": 0,
+                      "in": 0,
+                      "out": 0,
+                      "mode": "Mirrored"
+                    }
+                  ],
+                  "Force2d": false,
+                  "MaxRepeatTime": 0,
+                  "MinRepeatTime": 0,
+                  "Occlusion": false,
+                  "OcclusionOverride": false,
+                  "OcclusionRadius": 32,
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "Pitch": 1,
+                  "PlayOnStart": false,
+                  "ReflectionOverride": false,
+                  "Reflections": false,
+                  "Repeat": true,
+                  "SoundEvent": "sounds/water_spray.sound",
+                  "SoundOverride": true,
+                  "StopOnNew": false,
+                  "TargetMixer": {
+                    "Name": "game",
+                    "Id": "50badb5c-2567-43e1-a3e1-bff95d60c93e"
+                  },
+                  "Volume": 0
                 }
               ]
             }
