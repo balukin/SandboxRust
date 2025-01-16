@@ -563,7 +563,16 @@ public sealed class RustableObject : Component
 			await GameTask.Delay( 1 );
 		}
 
-		erosionOutputBuffer.GetData<VertexData>( newVertices );
+		try
+		{
+			erosionOutputBuffer.GetData<VertexData>( newVertices );
+		}
+		catch (ObjectDisposedException)
+		{
+			// If game is shutting down during this call, the buffer is already disposed and an exception will be raised
+			// We can safely ignore it because everything is being shut down anyway and there's no point in leaving an error in the log
+			return;
+		}
 
 		var vb = new VertexBuffer();
 		vb.Init( true );
