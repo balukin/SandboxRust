@@ -2773,10 +2773,46 @@
           ]
         },
         {
+          "__guid": "5ec3a734-1bd4-4a40-b25d-a42bd64106df",
+          "Flags": 0,
+          "Name": "Cubemap (7)",
+          "Position": "178.9612,-98.19088,220.0456",
+          "Scale": "1,1,0.9333457",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.EnvmapProbe",
+              "__guid": "d9642155-4f79-457f-8464-62c537a31dc4",
+              "Bounds": {
+                "Mins": "-300,-300,-300",
+                "Maxs": "300,300,300"
+              },
+              "DelayBetweenUpdates": 0.1,
+              "Feathering": 4,
+              "FrameInterval": 4,
+              "MaxDistance": 150,
+              "MultiBounce": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Projection": "Box",
+              "RenderDynamically": true,
+              "Texture": "textures/cubemaps/default2.vtex",
+              "TintColor": "1,1,1,1",
+              "UpdateStrategy": "OnEnabled",
+              "ZFar": 256,
+              "ZNear": 45
+            }
+          ]
+        },
+        {
           "__guid": "a50e107f-afa5-45e2-89be-04b6fa05088f",
           "Flags": 0,
           "Name": "Cubemap (1)",
-          "Position": "313.2566,-82.32594,159.1209",
+          "Position": "25.0961,23.08964,208.2974",
           "Scale": "1,1,0.9333457",
           "Enabled": true,
           "Components": [
@@ -2804,7 +2840,7 @@
               "TintColor": "1,1,1,1",
               "UpdateStrategy": "OnEnabled",
               "ZFar": 256,
-              "ZNear": 25
+              "ZNear": 45
             }
           ]
         },
