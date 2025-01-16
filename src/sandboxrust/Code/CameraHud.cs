@@ -28,6 +28,11 @@ public sealed class CameraHud : Component
 		{
 			ui.ExplainerText = RustUI.ExplainerDefault;
 		}
+
+		if(Input.Pressed("hud_toggle"))
+		{
+			ui.HudVisible = !ui.HudVisible;
+		}
 	}
 
 	protected override void OnDestroy()
