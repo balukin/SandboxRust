@@ -1,0 +1,17 @@
+@using Sandbox
+@using Sandbox.UI
+
+
+<div class="hud-item">
+    <span class="icon">@Icon</span>
+    <span class="text">@Text</span>
+    <span class="explainer">@Explainer</span>
+</div>
+
+@code {
+    public string Icon { get; set; }
+
+    public string Text { get; set; }
+
+    public string Explainer { get; set; }
+}

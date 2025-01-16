@@ -8,48 +8,12 @@
 	{
 		<div id="top-left-overlay">
 			<div class="hud-panel">
-				<div class="hud-item">
-					<span class="icon">🛠️</span>
-					<span class="text">Quality Options</span>
-					<span class="explainer">
-                        (Q)
-                    </span>
-				</div>
-				<div class="hud-item">
-					<span class="icon">⏳</span>
-					<span class="text">Rusting Speed: @( OxygenLevel.ToString( "P0" ) )</span>
-					<span class="explainer">
-                        (🠉 🠋)
-                    </span>
-				</div>
-				<div class="hud-item">
-					<span class="icon">🧊</span>
-					<span class="text">Mesh Erosion Interval: @ErosionFrequency</span>
-					<span class="explainer">
-                        (🠈 🠊)
-                    </span>
-				</div>
-				<div class="hud-item">
-					<span class="icon">🔦</span>
-					<span class="text">Flashlight: @( FlashlightEnabled ? "On" : "Off" )</span>
-					<span class="explainer">
-                        (F)
-                    </span>
-				</div>
-				<div class="hud-item">
-					<span class="icon">🎨</span>
-					<span class="text">Rendering Mode: @RenderingMode</span>
-					<span class="explainer">
-                        (R)
-                    </span>
-				</div>				
-				<div class="hud-item">
-					<span class="icon">⏩</span>
-					<span class="text">Erosion Strength: @ErosionStrength</span>
-					<span class="explainer">
-                        (🠈 🠊)
-                    </span>
-				</div>
+				<HudItem Icon="🛠️" Text="Quality Options" Explainer="(Q)" />				
+				<HudItem Icon="🔦" Text=@($"Flashlight: {(FlashlightEnabled ? "On" : "Off")}") Explainer="(F)" />
+				<HudItem Icon="🎨" Text=@($"Rendering Mode: {RenderingMode}") Explainer="(R)" />
+				<HudItem Icon="⏳" Text=@($"Rusting Speed: {OxygenLevel:P0}") Explainer="(🠉 🠋)" />
+				<HudItem Icon="🧊" Text=@($"Mesh Erosion Interval: {ErosionFrequency}") Explainer="(🠈 🠊)" />
+				<HudItem Icon="⏩" Text=@($"Erosion Strength: {ErosionStrength}") Explainer="(PgUp, PgDn)" />
 			</div>
 		</div>
 	}
