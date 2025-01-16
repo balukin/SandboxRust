@@ -523,6 +523,7 @@ public sealed class RustableObject : Component
 		// TODO: We can probably use only one RW buffer, each thread operates on its own [vertex] in isolation
 		erosionInputBuffer.SetData<VertexData>( oldVertices.Select( v => new VertexData( v ) ).ToArray() );
 		meshErosionShader.Attributes.Set( "InputVertices", erosionInputBuffer );
+		meshErosionShader.Attributes.Set( "VolumeResolution", currentVolumeResolution );
 		meshErosionShader.Attributes.Set( "OutputVertices", erosionOutputBuffer );
 		meshErosionShader.Attributes.Set( "RustData", RustData );
 		meshErosionShader.Attributes.Set( "ErosionTarget", currentErosionTarget );
@@ -652,8 +653,7 @@ public sealed class RustableObject : Component
 	private Texture CreateVolumeTexture( int size )
 	{
 		var data = new byte[size * size * size * 3];
-
-		// Random garbage to check if it's even getting to the shader
+		
 		FillInitialData( size, data );
 
 		return Texture.CreateVolume( size, size, size, ImageFormat.RGB888 )
@@ -668,6 +668,7 @@ public sealed class RustableObject : Component
 		const bool debugCheckerboard = false;
 		if ( debugCheckerboard )
 		{
+			// Random garbage to check if it's even getting to the shader
 			const int globalMultiplier = 1;
 			const int checkerboardSizeR = 16 * globalMultiplier;
 			const int checkerboardSizeG = 4 * globalMultiplier;
