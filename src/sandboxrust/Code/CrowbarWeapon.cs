@@ -25,7 +25,7 @@ public class CrowbarWeapon : BaseWeapon
             SurfaceNormal = tr.Normal,
             ImpactDirection = Player.EyeTransform.Forward.Normal,
             ImpactRadius = 0.3f,
-            ImpactStrength = 2.0f,
+            ImpactStrength = 4.0f,
             ImpactPenetrationStrength = 0.3f, // tex space, todo: unify it with other weapons
             ImpactPenetrationConeDeg = 20.0f,
             WeaponType = WeaponType.Crowbar

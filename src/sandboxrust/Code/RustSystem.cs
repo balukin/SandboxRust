@@ -27,8 +27,8 @@ public class RustSystem : Component
     /// Minimum frames between erosion updates for each object
     /// </summary>
     [Property]
-    [Range( 1, 300 )]
-    public int ErosionFrequency = 97;
+    [Range( 1, 500 )]
+    public int ErosionFrequency = 241;
 
     /// <summary>
     /// Collection of all known active rustable objects

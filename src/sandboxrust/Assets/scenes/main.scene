@@ -773,7 +773,7 @@
         {
           "__type": "RustSystem",
           "__guid": "22e080c3-a42e-449f-b4fe-9dab33243f90",
-          "ErosionFrequency": 97,
+          "ErosionFrequency": 241,
           "RenderingMode": "Colored",
           "SimulationFrequency": 7,
           "ErosionStrength": 1.5,
