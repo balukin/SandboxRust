@@ -115,6 +115,19 @@ PS
     RenderState(DepthBias, 500); 
     RenderState(DepthFunc, GREATER);
 
+    struct RustDetail
+    {
+        float3 color;
+        float3 normal;
+    };
+
+    struct MoistureEffect
+    {
+        float specularIntensity;
+        float specularSharpness;
+        float3 colorTint;
+    };
+
     float3 FilteredVolumeSample(float3 pos)
     {
         // PCF-like sampling but for 3D texture to make jaggies go away
@@ -138,9 +151,8 @@ PS
         return sum * 0.125;
     }
 
-    float3 GenerateRustDetail(float3 pos, float baseRust, float3 normal)
+    RustDetail GenerateRustDetail(float3 pos, float baseRust, float3 normal)
     {
-        // TODO: maybe use precalculated noise textures to save performance?
         // Create noise states
         fnl_state perlinNoise = fnlCreateState(12345);
         fnl_state cellularNoise = fnlCreateState(67890);
@@ -158,8 +170,6 @@ PS
         // Sample noises and remap from [-1,1] to [0,1]
         float lowFreq = fnlGetNoise3D(perlinNoise, pos.x, pos.y, pos.z) * 0.5 + 0.5;
         float highFreq = fnlGetNoise3D(cellularNoise, pos.x, pos.y, pos.z) * 0.5 + 0.5;
-        
-        // Blend low and high frequency detail
         float combined = lerp(lowFreq, highFreq, 0.5);
         float rustAmount = baseRust * combined;
         
@@ -167,19 +177,20 @@ PS
         fnl_state colorNoise = fnlCreateState(11111);
         colorNoise.frequency = 2.0;
         colorNoise.noise_type = FNL_NOISE_PERLIN;
-        
+
         float colorVal = fnlGetNoise3D(colorNoise, pos.x, pos.y, pos.z) * 0.5 + 0.5;
         float3 baseColor = lerp(float3(1.0, 0.4, 0.0), float3(0.8, 0.0, 0.0), colorVal);
 
-        return baseColor * rustAmount;
-    }
+        RustDetail detail;
+        detail.color = baseColor * rustAmount;
 
-    struct MoistureEffect
-    {
-        float specularIntensity;
-        float specularSharpness;
-        float3 colorTint;
-    };
+        // Simple normal perturbation from noise
+        const float PerturbationMultiplier = 0.3;
+        float3 rustPerturbation = float3((combined - 0.5) * 2.0, (colorVal - 0.5) * 2.0, (rustAmount - 0.5) * 2.0) * PerturbationMultiplier;
+        detail.normal = normalize(normal + rustPerturbation);
+
+        return detail;
+    }
 
     MoistureEffect CalculateMoistureEffect(float moisture)
     {
@@ -200,23 +211,24 @@ PS
         return effect;
     }
 
-    float3 CalculateFlashlightLighting(float3 worldPos, float3 normal, float3 baseColor, float baseRust, float moisture)
+    float4 ShadeStandard(PixelInput i, float3 worldNormal, float3 baseColor, float baseRust, float moisture)
     {
-        // fragment --> light 
-        float3 toLight = normalize(g_fFlashlightPosition - worldPos);
-        
-        // Get moisture effects
-        MoistureEffect moistureEffect = CalculateMoistureEffect(moisture);
-        
-        // Apply moisture tint to base color
-        baseColor *= moistureEffect.colorTint;
-        
-        // Lambert-ish diffuse lighting
-        float diffuseFactor = saturate(dot(toLight, normal)) * g_fFlashlightIntensity;
-        float3 diffuseLight = baseColor * diffuseFactor * 2.0;
-        
-        return baseColor + diffuseLight;
+        Material m = Material::From(i);
+
+        // Apply rust details
+        m.Normal = worldNormal;
+        m.Albedo = baseColor;        
+
+        // Simple take: treat moisture and rust as influences on metalness/roughness
+        // This actually works pretty well
+        m.Metalness = saturate(moisture);
+        m.Roughness = lerp(1.0f, 0.3f, saturate(baseRust));
+        m.Opacity = max(baseRust, moisture / 1.4f);
+
+        // Return standard shading
+        return ShadingModelStandard::Shade(m);
     }
+
 
 	float4 MainPs( PixelInput i ) : SV_Target0
 	{  
@@ -232,8 +244,10 @@ PS
         // MoistureEffect effect = CalculateMoistureEffect(moisture);
         // return float4(effect.colorTint, 1.0);
         // // END DEBUG
-        float3 finalRustColor = GenerateRustDetail(i.vPositionOs, baseRust, i.vNormalWs);
-        finalRustColor = CalculateFlashlightLighting(absoluteWorldPos, i.vNormalWs, finalRustColor, baseRust, moisture);
+        RustDetail finalRustDetail = GenerateRustDetail(i.vPositionOs, baseRust, i.vNormalWs);
+
+        // Standard shading for the rust effect
+        float4 standardColor = ShadeStandard(i, finalRustDetail.normal, finalRustDetail.color, baseRust, moisture);
 
         // Calculate view direction for reflections
         float3 viewDir = normalize(g_vCameraPositionWs - absoluteWorldPos);
@@ -243,11 +257,11 @@ PS
         
         // Blend reflection based on moisture (wetter = more reflective)
         // Also reduce reflection intensity on very rusty areas
-        float reflectionStrength = moisture * (1.0 - baseRust * 0.7);
-        finalRustColor = lerp(finalRustColor, reflectionColor, reflectionStrength * 0.3);
+        float reflectionStrength = moisture * (1.0f - baseRust * 0.7f);
+        float3 finalColor = lerp(standardColor.rgb, reflectionColor, reflectionStrength * 0.3f);
 
         // Blend it with rust clearly overlaying the base color and moisture a tiny bit more transparent
         // Probably could use a more sophisticated blend mode config instead
-        return float4(finalRustColor, max(baseRust, moisture/1.4));
+        return float4(finalColor, max(baseRust, moisture/1.4));
 	}
 }
