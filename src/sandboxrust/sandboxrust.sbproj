@@ -1,7 +1,7 @@
 {
   "Title": "SandboxRust",
   "Type": "game",
-  "Org": "local",
+  "Org": "balukin",
   "Ident": "sandboxrust",
   "Schema": 1,
   "IncludeSourceFiles": false,
