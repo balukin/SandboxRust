@@ -78,12 +78,12 @@
                 "rotations": {}
               },
               "RenderOptions": {
-                "GameLayer": true,
-                "OverlayLayer": false,
+                "GameLayer": false,
+                "OverlayLayer": true,
                 "BloomLayer": false,
                 "AfterUILayer": false
               },
-              "RenderType": "On",
+              "RenderType": "Off",
               "Sequence": {
                 "Name": null
               },
@@ -379,7 +379,7 @@
                 "BloomLayer": false,
                 "AfterUILayer": false
               },
-              "RenderType": "On",
+              "RenderType": "Off",
               "Sequence": {
                 "Name": null
               },
