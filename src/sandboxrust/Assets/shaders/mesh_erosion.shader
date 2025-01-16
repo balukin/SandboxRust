@@ -109,6 +109,22 @@ CS
         return float3(0, 0, 0);
     }
 
+    float3 CalculateErosionDisplacement(float3 positionOs, float structuralStrength)
+    {
+        // Structural strength below 70% starts erosion (displacing vertices towards the target)
+        float effectiveDamage = max(0, 1.0f - structuralStrength - 0.3f);
+
+        // Calculate erosion displacement with distance-based falloff
+        float3 toTarget = g_vErosionTarget - positionOs;
+        float3 erosionDirection = normalize(toTarget);
+        float distanceToTarget = length(toTarget);
+        
+        float distanceFalloff = saturate(distanceToTarget / 100.0f);
+        float erosionAmount = effectiveDamage * g_flErosionStrength * distanceFalloff;
+        
+        return erosionDirection * erosionAmount;
+    }
+
     [numthreads(64, 1, 1)]
     void MainCs(uint3 vThreadId : SV_DispatchThreadID, uint3 vGroupId : SV_GroupID, uint3 vGroupThreadId : SV_GroupThreadID)
     {
@@ -125,16 +141,9 @@ CS
 
         // Get structural strength from the blue channel
         float structuralStrength = rustData.b;
-
-        // Structural strength below 70% starts erosion (displacing vertices towards the target)
-        float effectiveDamage = max(0, 1.0f - structuralStrength - 0.3f);
-
-        // Calculate erosion displacement
-        float3 erosionDirection = normalize(g_vErosionTarget - vPositionOs);
-        float erosionAmount = effectiveDamage * g_flErosionStrength;
-        float3 erosionOffset = erosionDirection * erosionAmount;
         
-        // And calculate extra displacement from impact if we had one this frame
+        // Calculate erosion and impact displacements
+        float3 erosionOffset = CalculateErosionDisplacement(vPositionOs, structuralStrength);
         float3 impactOffset = CalculateImpactDisplacement(vPositionOs, samplePos, rustData);
 
         // Apply combined displacement

@@ -43,6 +43,13 @@
                         (R)
                     </span>
 				</div>				
+				<div class="hud-item">
+					<span class="icon">⏩</span>
+					<span class="text">Erosion Strength: @ErosionStrength</span>
+					<span class="explainer">
+                        (🠈 🠊)
+                    </span>
+				</div>
 			</div>
 		</div>
 	}
@@ -91,6 +98,7 @@
 	public bool FlashlightEnabled { get; set; }
 	public RustRenderingMode RenderingMode { get; set; }
 	public int ErosionFrequency { get; set; }
+	public float ErosionStrength { get; set; }
 	public int VolumeResolution { get; set; } = 64;
 	public int ObjectUpdatesPerFrame { get; set; } = 1;
 	public bool SoftRustEnabled { get; set; } = true;
@@ -147,14 +155,19 @@
 	}
 
 	protected override int BuildHash() => System.HashCode.Combine(
-		OxygenLevel,
-		FlashlightEnabled,
-		RenderingMode,
-		OptionsOpen,
-		VolumeResolution,
-		ObjectUpdatesPerFrame,
-		SoftRustEnabled,
-		ErosionFrequency
+		System.HashCode.Combine(
+			OxygenLevel,
+			FlashlightEnabled,
+			RenderingMode,
+			OptionsOpen,
+			VolumeResolution
+		),
+		System.HashCode.Combine(
+			ObjectUpdatesPerFrame,
+			SoftRustEnabled,
+			ErosionFrequency,
+			ErosionStrength
+		)
 	);
 
 }

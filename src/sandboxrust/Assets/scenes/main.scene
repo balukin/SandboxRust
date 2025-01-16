@@ -820,7 +820,7 @@
           "ErosionFrequency": 97,
           "RenderingMode": "Colored",
           "SimulationFrequency": 7,
-          "ErosionStrength": 0.2,
+          "ErosionStrength": 1.5,
           "Flashlight": {
             "_type": "component",
             "component_id": "97706068-f980-4650-aa2f-a7597e0c549f",

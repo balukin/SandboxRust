@@ -9,8 +9,8 @@ public class RustSystem : Component
     public Flashlight Flashlight { get; set; }
 
     [Property]
-    [Range( 0, 2 )]
-	public float ErosionStrength { get; set; } = 0.3f;
+    [Range( 0, 10 )]
+	public float ErosionStrength { get; set; } = 1.5f;
 
 	private long frameCount = 0;
 
@@ -59,6 +59,7 @@ public class RustSystem : Component
         HandleInput();
         CameraHud.Current.UI.ErosionFrequency = ErosionFrequency;
         CameraHud.Current.UI.RenderingMode = RenderingMode;
+        CameraHud.Current.UI.ErosionStrength = ErosionStrength;
     }
     
     private void HandleInput()
@@ -77,6 +78,16 @@ public class RustSystem : Component
         if ( Input.Pressed( "erosion_interval_down" ) )
         {
             ErosionFrequency = (int)(ErosionFrequency * 0.9f);
+        }
+
+        if( Input.Pressed( "erosion_strength_up" ) )
+        {
+            ErosionStrength += 0.1f;
+        }
+
+        if( Input.Pressed( "erosion_strength_down" ) )
+        {
+            ErosionStrength -= 0.1f;
         }
 
         if ( ErosionFrequency < 10 )
