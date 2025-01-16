@@ -45,58 +45,12 @@
       ],
       "Children": [
         {
-          "__guid": "fe388b3d-1f3e-4a64-ba30-640a1ad28edc",
-          "Flags": 0,
-          "Name": "VmGun",
-          "Position": "18.16621,-7.200005,-4.952101",
-          "Rotation": "0,0,1,-0.00000004371139",
-          "Components": [
-            {
-              "__type": "Sandbox.SkinnedModelRenderer",
-              "__guid": "b2cc0572-b18d-495c-910e-95dfa9c80ec6",
-              "AnimationGraph": null,
-              "BodyGroups": 18446744073709551615,
-              "BoneMergeTarget": null,
-              "CreateAttachments": false,
-              "CreateBoneObjects": false,
-              "MaterialGroup": null,
-              "MaterialOverride": null,
-              "Model": "models/weapons_activision/viewmodel_usa_colt45_pistol/viewmodel_usa_colt45_pistol_lod0.vmdl",
-              "Morphs": {},
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "Parameters": {
-                "bools": {},
-                "ints": {},
-                "floats": {},
-                "vectors": {},
-                "rotations": {}
-              },
-              "RenderOptions": {
-                "GameLayer": true,
-                "OverlayLayer": false,
-                "BloomLayer": false,
-                "AfterUILayer": false
-              },
-              "RenderType": "On",
-              "Sequence": {
-                "Name": null
-              },
-              "Tint": "1,1,1,1",
-              "UseAnimGraph": true
-            }
-          ]
-        },
-        {
           "__guid": "ff80b390-918f-4253-847b-41165530068b",
           "Flags": 0,
           "Name": "VmSpray",
-          "Position": "18.16624,-7.199998,-20.85213",
-          "Rotation": "0,0,0.4984891,0.866896",
+          "Position": "18.166,10,-20.852",
+          "Rotation": "0,0,0.1925224,0.9812925",
+          "Enabled": true,
           "Components": [
             {
               "__type": "Sandbox.SkinnedModelRenderer",
@@ -135,6 +89,29 @@
               },
               "Tint": "1,1,1,1",
               "UseAnimGraph": true
+            },
+            {
+              "__type": "SprayWeapon",
+              "__guid": "95685aba-10b2-4305-8b26-4539ff6a459f",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Player": {
+                "_type": "component",
+                "component_id": "d583a755-0308-465d-8b5f-2f7198d03ebe",
+                "go": "46267e29-e1ab-4602-8065-8ad32284bd85",
+                "component_type": "PlayerController"
+              },
+              "SprayParticleSystem": {
+                "_type": "component",
+                "component_id": "570ae761-b2cb-4353-a6fa-6d50e97cd3c4",
+                "go": "c84775a5-d53b-4535-b515-80d7cc5dc61f",
+                "component_type": "SprayParticleSystem"
+              },
+              "VisualizeHits": false
             }
           ],
           "Children": [
@@ -388,7 +365,9 @@
               "OnComponentStart": null,
               "OnComponentUpdate": null,
               "Parameters": {
-                "bools": {},
+                "bools": {
+                  "b_grounded": false
+                },
                 "ints": {},
                 "floats": {},
                 "vectors": {},
@@ -406,6 +385,24 @@
               },
               "Tint": "1,1,1,1",
               "UseAnimGraph": true
+            },
+            {
+              "__type": "CrowbarWeapon",
+              "__guid": "324ec168-6bc2-4fc5-b6aa-bae2fb6e3207",
+              "ClangSound": "sounds/clang.sound",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Player": {
+                "_type": "component",
+                "component_id": "d583a755-0308-465d-8b5f-2f7198d03ebe",
+                "go": "46267e29-e1ab-4602-8065-8ad32284bd85",
+                "component_type": "PlayerController"
+              },
+              "VisualizeHits": false
             }
           ]
         },
@@ -592,47 +589,6 @@
           "OnComponentUpdate": null,
           "Priority": 5,
           "Speed": 1
-        },
-        {
-          "__type": "WeaponSwitcher",
-          "__guid": "dd6e6979-35a5-47d5-b1fd-4b1716aac807",
-          "CrowbarGo": {
-            "_type": "gameobject",
-            "go": "92003e23-62d1-4414-b0a8-dc675a6d15aa"
-          },
-          "CurrentWeapon": "Spray",
-          "GunGo": {
-            "_type": "gameobject",
-            "go": "fe388b3d-1f3e-4a64-ba30-640a1ad28edc"
-          },
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "SprayGo": {
-            "_type": "gameobject",
-            "go": "ff80b390-918f-4253-847b-41165530068b"
-          }
-        },
-        {
-          "__type": "Weapon",
-          "__guid": "40459d0a-360e-46f3-992a-2492732f4249",
-          "ClangSound": "sounds/clang.sound",
-          "SprayParticleSystem": {
-            "_type": "component",
-            "component_id": "570ae761-b2cb-4353-a6fa-6d50e97cd3c4",
-            "go": "c84775a5-d53b-4535-b515-80d7cc5dc61f",
-            "component_type": "SprayParticleSystem"
-          },
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "VisualizeHits": false
         }
       ],
       "Children": [
@@ -2790,8 +2746,7 @@
     "mdlresrc.rtx_metalbox#12015",
     "tesssssssssst.untitled_1291451210#35250",
     "titanovsky.nuclear_bomb#54062",
-    "trend.fracture_sphere#20124",
-    "yupigames.viewmodel_usa_colt45_pistol_lod0#61815"
+    "trend.fracture_sphere#20124"
   ],
   "__version": 2
 }
