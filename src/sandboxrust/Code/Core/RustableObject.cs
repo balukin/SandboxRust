@@ -417,17 +417,16 @@ public sealed class RustableObject : Component
 		simulationShader.Attributes.Set( "TargetTexture", RustData );
 		simulationShader.Attributes.Set( "WorldToObject", worldToObject );
 		simulationShader.Attributes.Set( "VolumeResolution", currentVolumeResolution );
+		simulationShader.Attributes.Set( "NeighborRustInfluence", rustSystem.NeighborRustInfluence );
 
 		if ( atmosphere != null )
 		{
 			simulationShader.Attributes.Set( "OxygenLevel", atmosphere.OxygenLevel );
-			simulationShader.Attributes.Set( "WaterVapor", atmosphere.WaterVapor );
 		}
 		else
 		{
 			// Use some default reasonable values if no Atmosphere component is present (probably something else breaks anyway)
 			simulationShader.Attributes.Set( "OxygenLevel", 0.2f );
-			simulationShader.Attributes.Set( "WaterVapor", 0.5f );
 		}
 
 		simulationShader.Dispatch( currentVolumeResolution, currentVolumeResolution, currentVolumeResolution );

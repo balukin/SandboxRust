@@ -38,7 +38,7 @@ CS
 
     // Global parameters for rust simulation
     float g_flOxygenLevel < Attribute("OxygenLevel"); Range(0.0, 1.0); Default(0.2); >;
-    float g_flWaterVapor < Attribute("WaterVapor"); Range(0.0, 1.0); Default(0.5); >;
+    float g_flNeighborRustInfluence < Attribute("NeighborRustInfluence"); Range(0.0, 5.0); Default(0.2); >;
     int g_iVolumeResolution < Attribute("VolumeResolution"); Default(64); >;
 
     // Rust growth simulation constants
@@ -48,7 +48,6 @@ CS
     static const float RUST_SPREAD_RADIUS = 1.5;             // How far rust spreads in texels
     static const float MIN_MOISTURE = 0.1;                   // Minimum moisture needed for rust to form
     static const float RUST_GROWTH_RATE = 0.05;              // Base rate of rust formation
-    static const float NEIGHBOR_RUST_INFLUENCE = 0.3;        // How much nearby rust accelerates growth
     static const int SAMPLE_COUNT = 6;                       // Number of neighboring points to check
 
     // Get texture-space direction that corresponds to world-space up
@@ -149,10 +148,6 @@ CS
         float currentRust = currentState.r;
         float currentMoisture = currentState.g;
 
-        // No rust growth if moisture is below threshold
-        if (currentMoisture < MIN_MOISTURE)
-            return currentRust;
-
         // Sample neighboring points in a cube pattern
         float neighboringRust = 0.0;
         static const int3 offsets[SAMPLE_COUNT] = {
@@ -181,20 +176,16 @@ CS
 
         // Calculate rust growth based on all factors:
         // - Base growth rate
-        // - Moisture level (direct multiplier)
-        // - Oxygen level (controls reaction speed)
-        // - Water vapor (environmental factor)
-        // - Neighboring rust (... some physical explanation here)
-        float rustGrowth = currentRust + (
-            RUST_GROWTH_RATE *  
-            currentMoisture * 
-            g_flOxygenLevel * 
-            g_flWaterVapor * 
-            (1.0 + neighboringRust * NEIGHBOR_RUST_INFLUENCE)
-        );
+        // - Moisture level
+        // - Oxygen level
+        // - Water vapor
+        // - Neighboring rust
+        float moistureGrowth  = currentMoisture / 2.0;
+        float neighborInfluence = neighboringRust * g_flNeighborRustInfluence;
+        float newGrowth = RUST_GROWTH_RATE * g_flOxygenLevel * (moistureGrowth + neighborInfluence);
 
         // Clamp the result to valid range
-        return saturate(rustGrowth);
+        return saturate(currentRust + newGrowth);
     }
 
     float SimulateStructuralDetoration(uint3 vThreadId, float rust, float moisture, float structuralStrength)

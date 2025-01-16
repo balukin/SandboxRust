@@ -732,8 +732,7 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "OxygenLevel": 1,
-          "WaterVapor": 0.5
+          "OxygenLevel": 1
         },
         {
           "__type": "RustSystem",
@@ -748,6 +747,7 @@
             "go": "7e271c7d-0bd5-47c3-bc31-d38ccad99fb2",
             "component_type": "Flashlight"
           },
+          "NeighborRustInfluence": 0.2,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,

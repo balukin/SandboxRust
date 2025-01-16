@@ -17,6 +17,7 @@
 					<HudItem Icon="⏳" Text=@($"Rusting Speed: {OxygenLevel:P0}") Explainer="(🠉 🠋)" />
 					<HudItem Icon="🧊" Text=@($"Mesh Erosion Interval: {ErosionFrequency}") Explainer="(🠈 🠊)" />
 					<HudItem Icon="⏩" Text=@($"Erosion Strength: {ErosionStrength:F1}") Explainer="(+, -)" />
+					<HudItem Icon="🧊" Text=@($"Neighbor Rust Influence: {NeighborRustInfluence:F1}") Explainer="(PgUp/PgDn)" />
 				</div>
 			</div>
 
@@ -85,6 +86,7 @@
     public int ObjectUpdatesPerFrame { get; set; } = 1;
     public bool SoftRustEnabled { get; set; } = true;
     public bool RecalculateNormals { get; set; } = true;
+    public float NeighborRustInfluence { get; set; } = 0.2f;
 
     public string ExplainerText { get; set; } = ExplainerDefault;
     public const string ExplainerDefault = $"Use LMB to spray water on the metallic objects. " +
@@ -135,15 +137,15 @@
 		// Debounce the changes plus fix the thing where the value is still the old value when ValueChanged is called
 		Task.Delay(500, debounceCts.Token).ContinueWith( _ =>
 		{
-			var scene = FindRootPanel().Scene;
+			Scene scene = FindRootPanel().Scene;
+			
 			var qualitySystem = scene.GetSystem<QualitySystem>();
+			var rustSystem = scene.GetAll<RustSystem>().First();
 
 			qualitySystem.ObjectUpdatesPerFrame = ObjectUpdatesPerFrame;
 			qualitySystem.VolumeResolution = VolumeResolution;
 			qualitySystem.SoftRustEnabled = SoftRustEnabled;
 			qualitySystem.RecalculateNormals = RecalculateNormals;
-
-			Log.Info($"QualitySystem updated: {qualitySystem.ObjectUpdatesPerFrame}, {qualitySystem.VolumeResolution}, {qualitySystem.SoftRustEnabled}");
 		} );
 	}
 
@@ -154,7 +156,8 @@
 			RenderingMode,
 			OptionsOpen,
 			VolumeResolution,
-			ExplainerText
+			ExplainerText,
+			NeighborRustInfluence
 		),
 		System.HashCode.Combine(
 			ObjectUpdatesPerFrame,

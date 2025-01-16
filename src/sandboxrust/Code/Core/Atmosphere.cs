@@ -4,13 +4,14 @@ using Sandbox;
 /// Controls atmospheric conditions that affect rust formation.
 /// Should be placed on a scene-level object.
 /// </summary>
+/// <remarks>
+/// This is remnant of the previous implementation that used water vapor and some other made up stuff.
+/// This should be mostly merged into RustSystem and OxygenLevel should be simply called RustingSpeed.
+/// </remarks>
 public sealed class Atmosphere : Component
 {
     [Property, Range( 0, 1 )]
     public float OxygenLevel { get; set; } = 0.2f;
-
-    [Property, Range( 0, 1 )]
-    public float WaterVapor { get; set; } = 0.5f;
 
     protected override void OnUpdate()
     {

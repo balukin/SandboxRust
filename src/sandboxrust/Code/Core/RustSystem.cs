@@ -11,6 +11,10 @@ public class RustSystem : Component
     [Property]
     [Range( 0, 10 )]
 	public float ErosionStrength { get; set; } = 1.5f;
+    
+    [Property]
+    [Range( 0, 5 )]
+    public float NeighborRustInfluence { get; set; } = 0.2f;
 
 	private long frameCount = 0;
 
@@ -60,6 +64,7 @@ public class RustSystem : Component
         CameraHud.Current.UI.ErosionFrequency = ErosionFrequency;
         CameraHud.Current.UI.RenderingMode = RenderingMode;
         CameraHud.Current.UI.ErosionStrength = ErosionStrength;
+        CameraHud.Current.UI.NeighborRustInfluence = NeighborRustInfluence;
     }
     
     private void HandleInput()
@@ -97,6 +102,23 @@ public class RustSystem : Component
         {
             ErosionStrength -= 0.1f;
             CameraHud.Current.UI.ExplainerText = "Mesh deformation will be weaker.";
+        }
+
+        if( Input.Pressed( "neighbor_rust_influence_up" ) )
+        {
+            NeighborRustInfluence += 0.1f;
+            CameraHud.Current.UI.ExplainerText = "Rust will spread faster based on proximity.";
+        }
+
+        if( Input.Pressed( "neighbor_rust_influence_down" ) )
+        {
+            NeighborRustInfluence -= 0.1f;
+            CameraHud.Current.UI.ExplainerText = "Rust will spread slower based on proximity.";
+        }
+
+        if ( NeighborRustInfluence < 0 )
+        {
+            NeighborRustInfluence = 0;
         }
 
         if ( ErosionFrequency < 10 )
