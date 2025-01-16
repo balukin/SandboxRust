@@ -16,6 +16,12 @@
 				<HudItem Icon="⏩" Text=@($"Erosion Strength: {ErosionStrength}") Explainer="(PgUp, PgDn)" />
 			</div>
 		</div>
+
+		<div id="context-explainer">
+			<div class="hud-panel">
+				<div class="explainer-text">@ExplainerText</div>
+			</div>
+		</div>
 	}
 	else
 	{
@@ -66,6 +72,7 @@
 	public int VolumeResolution { get; set; } = 64;
 	public int ObjectUpdatesPerFrame { get; set; } = 1;
 	public bool SoftRustEnabled { get; set; } = true;
+	public string ExplainerText { get; set; } = "Hello world!";
 
 
 	private CancellationTokenSource debounceCts;
@@ -124,7 +131,8 @@
 			FlashlightEnabled,
 			RenderingMode,
 			OptionsOpen,
-			VolumeResolution
+			VolumeResolution,
+			ExplainerText
 		),
 		System.HashCode.Combine(
 			ObjectUpdatesPerFrame,

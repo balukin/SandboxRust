@@ -30,7 +30,7 @@ body {
   padding: $spacingBase;
   background: linear-gradient(to right, $backgroundStart, $backgroundEnd);
   border-radius: 10px;
-  border: 6px solid $borderDim;
+  border: 3px solid $borderDim;
   box-shadow: 0 4px 12px $shadowColor;
   backdrop-filter: blur(8px);
   display: flex;
@@ -152,6 +152,26 @@ ButtonGroup {
       background-color: $activeButtonBg;
       color: #1e1e2e;
       font-weight: 800;
+    }
+  }
+}
+
+#context-explainer {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  pointer-events: none;
+  text-align: center;
+  
+  .hud-panel {
+    min-width: 500px;
+    max-width: 800px;
+    align-items: center;
+    
+    .explainer-text {
+      color: $baseTextColor;
+      font-size: $fontSizeLarge;
+      opacity: $opacityHigh;
     }
   }
 }
