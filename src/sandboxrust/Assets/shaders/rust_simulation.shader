@@ -66,7 +66,27 @@ CS
         return 0.12 * (64.0 / float(g_iVolumeResolution));
     }
 
-    // Simulate how the water drips down from the top of the object
+    float GetStreakBias(float3 texCoord)
+    {
+        // x and y represent the horizontal plane, we can use that to create streaky patterns vertically
+        float x = texCoord.x + 1;
+        float y = texCoord.y + 1;
+        float z = texCoord.z + 1;
+        
+        // Primary streaks
+        float streak1 = frac(x * 8.0 + sin(y * 12.0) * 0.6);
+        float streak2 = frac(y * 7.0 + cos(x * 10.0) * 0.8);
+        float variation = sin(x * 15.0) * cos(y * 13.0) * 0.5 + 0.5;
+        
+        // Mix it with scientifcally obtained ratios
+        float primaryMask = smoothstep(0.4, 0.6, streak1) * smoothstep(0.35, 0.65, streak2);
+        
+        // Blend with some variation and return the bias that will result in the drip-down
+        // being more pronounced in certain points of the xz plane
+        return lerp(0.6, 1.2, primaryMask * variation);
+    }
+
+    // Modify SimulateWaterDrip function
     float SimulateWaterDrip(uint3 globalId)
     {
         float3 texCoord = float3(globalId) / float(g_iVolumeResolution);
@@ -117,7 +137,9 @@ CS
         validSamples = max(validSamples, 1.0);
         float averageMoisture = totalMoisture / validSamples;
         
-        return averageMoisture * (1.0 - GetWaterDripEvaporationRate());
+        // Apply streak bias to the moisture calculation
+        float streakBias = GetStreakBias(texCoord);
+        return averageMoisture * streakBias * (1.0 - GetWaterDripEvaporationRate());
     }
 
     // Simulates rust growth based on moisture, oxygen, and neighboring rust
