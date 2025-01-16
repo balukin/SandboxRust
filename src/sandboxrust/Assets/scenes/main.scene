@@ -786,110 +786,6 @@
                   "Enabled": true,
                   "__Prefab": "props/box.prefab",
                   "__PrefabVariables": {}
-                },
-                {
-                  "__guid": "254c832e-c014-48d6-a18a-16b599c87546",
-                  "Flags": 0,
-                  "Name": "white_rotating_box",
-                  "Position": "0,-101.9679,57.57082",
-                  "Enabled": true,
-                  "Components": [
-                    {
-                      "__type": "Sandbox.ModelRenderer",
-                      "__guid": "cc2c92ec-41e1-4dd5-9507-dd94df5ee6c8",
-                      "BodyGroups": 18446744073709551615,
-                      "CreateAttachments": false,
-                      "MaterialGroup": null,
-                      "MaterialOverride": null,
-                      "Model": "models/props/furniture/aperture_cube.vmdl",
-                      "OnComponentDestroy": null,
-                      "OnComponentDisabled": null,
-                      "OnComponentEnabled": null,
-                      "OnComponentFixedUpdate": null,
-                      "OnComponentStart": null,
-                      "OnComponentUpdate": null,
-                      "RenderOptions": {
-                        "GameLayer": true,
-                        "OverlayLayer": false,
-                        "BloomLayer": false,
-                        "AfterUILayer": false
-                      },
-                      "RenderType": "On",
-                      "Tint": "1,1,1,1"
-                    },
-                    {
-                      "__type": "RustableObject",
-                      "__guid": "dc0e0ab3-dc22-4360-9e10-17a676cd9c64",
-                      "OverrideVolumeResolution": 0,
-                      "ErosionTarget": "0,0,0",
-                      "OnComponentDestroy": null,
-                      "OnComponentDisabled": null,
-                      "OnComponentEnabled": null,
-                      "OnComponentFixedUpdate": null,
-                      "OnComponentStart": null,
-                      "OnComponentUpdate": null
-                    },
-                    {
-                      "__type": "TestMovement",
-                      "__guid": "06b18f60-dc56-47a9-a9b9-b20b994fd58e",
-                      "__enabled": false,
-                      "IsRotating": true,
-                      "OnComponentDestroy": null,
-                      "OnComponentDisabled": null,
-                      "OnComponentEnabled": null,
-                      "OnComponentFixedUpdate": null,
-                      "OnComponentStart": null,
-                      "OnComponentUpdate": null,
-                      "RotationSpeedDegPerSec": 30
-                    },
-                    {
-                      "__type": "Sandbox.Rigidbody",
-                      "__guid": "a83a00fa-2b85-462b-a4a5-128c1e9f8760",
-                      "AngularDamping": 0,
-                      "Gravity": false,
-                      "LinearDamping": 0,
-                      "Locking": {
-                        "X": false,
-                        "Y": false,
-                        "Z": false,
-                        "Pitch": false,
-                        "Yaw": false,
-                        "Roll": false
-                      },
-                      "MassCenterOverride": "0,0,0",
-                      "MassOverride": 0,
-                      "MotionEnabled": true,
-                      "OnComponentDestroy": null,
-                      "OnComponentDisabled": null,
-                      "OnComponentEnabled": null,
-                      "OnComponentFixedUpdate": null,
-                      "OnComponentStart": null,
-                      "OnComponentUpdate": null,
-                      "OverrideMassCenter": false,
-                      "RigidbodyFlags": 0,
-                      "StartAsleep": false
-                    },
-                    {
-                      "__type": "Sandbox.ModelCollider",
-                      "__guid": "b023c8e1-8de2-4adf-865b-02914a8a3709",
-                      "Friction": null,
-                      "IsTrigger": false,
-                      "Model": "models/props/furniture/aperture_cube.vmdl",
-                      "OnComponentDestroy": null,
-                      "OnComponentDisabled": null,
-                      "OnComponentEnabled": null,
-                      "OnComponentFixedUpdate": null,
-                      "OnComponentStart": null,
-                      "OnComponentUpdate": null,
-                      "OnObjectTriggerEnter": null,
-                      "OnObjectTriggerExit": null,
-                      "OnTriggerEnter": null,
-                      "OnTriggerExit": null,
-                      "Static": false,
-                      "Surface": "props/hittable_surface.surface",
-                      "SurfaceVelocity": "0,0,0"
-                    }
-                  ]
                 }
               ]
             },
@@ -2932,7 +2828,6 @@
     "jodiscontent.spray1#24114",
     "kenneynl.foodkitpan#80727",
     "luke.dnd_metalbarrel#60589",
-    "mdlresrc.rtx_metalbox#12015",
     "tesssssssssst.untitled_1291451210#35250",
     "titanovsky.nuclear_bomb#54062",
     "trend.fracture_sphere#20124"
