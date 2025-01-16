@@ -1,6 +1,6 @@
 using System;
 
-// TODO: Merge this and WeaponSwitcher into one component and create weapon definition objects instead of switching over weapon types
+// TODO: Merge this and WeaponSwitcher into one component and create weapon classes instead of switching over weapon types 
 
 /// <summary>
 /// Handles shooting and scanning for hits.
@@ -17,6 +17,9 @@ public class Weapon : Component
 
     [Property]
     public SoundEvent ClangSound;
+
+    [Property]
+    public SprayParticleSystem SprayParticleSystem;
 
     [Property]
     public bool VisualizeHits { get; set; } = false;
@@ -47,6 +50,18 @@ public class Weapon : Component
         if ( Input.Down( "attack1" ) )
         {
             Attack();
+        }        
+    }
+
+    protected override void OnUpdate()
+    {
+        if(Input.Down( "attack1" ) && switcher.CurrentWeapon == WeaponType.Spray)
+        {
+            SprayParticleSystem.Rate = 100;
+        }
+        else
+        {
+            SprayParticleSystem.Rate = 0;
         }
     }
 
