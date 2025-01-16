@@ -2343,7 +2343,7 @@
                     {
                       "__type": "RustableObject",
                       "__guid": "f12fac8c-c6ae-47f4-b8ee-05145e0c16c3",
-                      "OverrideVolumeResolution": 32,
+                      "OverrideVolumeResolution": 0,
                       "ErosionTarget": "0,0,0",
                       "OnComponentDestroy": null,
                       "OnComponentDisabled": null,
@@ -2436,7 +2436,7 @@
                     {
                       "__type": "RustableObject",
                       "__guid": "bb09b493-0cf3-4092-8f20-4b5c839a4917",
-                      "OverrideVolumeResolution": 32,
+                      "OverrideVolumeResolution": 0,
                       "ErosionTarget": "0,0,0",
                       "OnComponentDestroy": null,
                       "OnComponentDisabled": null,
@@ -2529,7 +2529,7 @@
                     {
                       "__type": "RustableObject",
                       "__guid": "966059af-d5d5-464f-aea6-9dce3b06da5f",
-                      "OverrideVolumeResolution": 32,
+                      "OverrideVolumeResolution": 0,
                       "ErosionTarget": "0,0,0",
                       "OnComponentDestroy": null,
                       "OnComponentDisabled": null,
