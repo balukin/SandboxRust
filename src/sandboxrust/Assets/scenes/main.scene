@@ -452,7 +452,7 @@
       "__guid": "46267e29-e1ab-4602-8065-8ad32284bd85",
       "Flags": 0,
       "Name": "Player",
-      "Position": "-128.8864,-114.145,129.9578",
+      "Position": "-60.05124,-84.806,129.9578",
       "Enabled": true,
       "Components": [
         {
@@ -716,42 +716,6 @@
         }
       ],
       "Children": []
-    },
-    {
-      "__guid": "f483c6d7-b374-4530-977f-52158dfea7b6",
-      "Flags": 0,
-      "Name": "Cubemap",
-      "Position": "-19.40498,-124.9215,175.3656",
-      "Scale": "1,1,0.9333457",
-      "Enabled": true,
-      "Components": [
-        {
-          "__type": "Sandbox.EnvmapProbe",
-          "__guid": "7b2ac681-0478-4e01-acde-9d444fd96ff1",
-          "Bounds": {
-            "Mins": "-300,-300,-300",
-            "Maxs": "300,300,300"
-          },
-          "DelayBetweenUpdates": 0.1,
-          "Feathering": 4,
-          "FrameInterval": 4,
-          "MaxDistance": 150,
-          "MultiBounce": false,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "Projection": "Box",
-          "RenderDynamically": true,
-          "Texture": "textures/cubemaps/default2.vtex",
-          "TintColor": "1,1,1,1",
-          "UpdateStrategy": "OnEnabled",
-          "ZFar": 256,
-          "ZNear": 1
-        }
-      ]
     },
     {
       "__guid": "a229aaca-417c-485d-8e69-1e1ec126fff0",
@@ -1995,7 +1959,7 @@
               "__guid": "b4c857c3-f85b-4078-8465-783bd7083142",
               "Flags": 0,
               "Name": "zuk",
-              "Position": "212.0604,-334.7538,132.6133",
+              "Position": "212.0604,-383.402,132.6133",
               "Scale": "0.6,0.6,0.6",
               "Enabled": true,
               "Components": [
@@ -2328,7 +2292,7 @@
               "__guid": "5bc9026f-82d6-40d9-9441-3365baeb97a3",
               "Flags": 0,
               "Name": "box_standing",
-              "Position": "81.34267,-8.556137,157.321",
+              "Position": "74.10203,-82.32594,157.321",
               "Enabled": true,
               "Components": [
                 {
@@ -2701,6 +2665,230 @@
                   ]
                 }
               ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "__guid": "a45e2836-010b-47d1-b088-8aa16b270fd7",
+      "Flags": 0,
+      "Name": "EnvMaps",
+      "Enabled": true,
+      "Children": [
+        {
+          "__guid": "2f88e6c3-9d89-456e-88e1-cc5f5d914e9e",
+          "Flags": 0,
+          "Name": "Cubemap (5)",
+          "Position": "1.803215,-254.4217,209.8591",
+          "Scale": "1,1,0.9333457",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.EnvmapProbe",
+              "__guid": "6989cb18-c07d-4e4d-a1f8-704b77d79a24",
+              "Bounds": {
+                "Mins": "-300,-300,-300",
+                "Maxs": "300,300,300"
+              },
+              "DelayBetweenUpdates": 5,
+              "Feathering": 4,
+              "FrameInterval": 16,
+              "MaxDistance": 150,
+              "MultiBounce": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Projection": "Box",
+              "RenderDynamically": true,
+              "Texture": "textures/cubemaps/default2.vtex",
+              "TintColor": "1,1,1,1",
+              "UpdateStrategy": "OnEnabled",
+              "ZFar": 256,
+              "ZNear": 50
+            }
+          ]
+        },
+        {
+          "__guid": "105c521b-6f8b-4432-bb70-957b5e65bbc7",
+          "Flags": 0,
+          "Name": "Cubemap (3)",
+          "Position": "200.6286,-374.5264,190.7596",
+          "Scale": "1,1,0.9333457",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.EnvmapProbe",
+              "__guid": "8b3d2e7b-bc8e-4318-84b5-215d8762761d",
+              "Bounds": {
+                "Mins": "-300,-300,-300",
+                "Maxs": "300,300,300"
+              },
+              "DelayBetweenUpdates": 0.1,
+              "Feathering": 4,
+              "FrameInterval": 4,
+              "MaxDistance": 150,
+              "MultiBounce": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Projection": "Box",
+              "RenderDynamically": true,
+              "Texture": "textures/cubemaps/default2.vtex",
+              "TintColor": "1,1,1,1",
+              "UpdateStrategy": "OnEnabled",
+              "ZFar": 256,
+              "ZNear": 50
+            }
+          ]
+        },
+        {
+          "__guid": "f71c0fc5-305b-448a-8053-7e642d90db2f",
+          "Flags": 0,
+          "Name": "Cubemap (2)",
+          "Position": "200.6286,-218.3288,190.7596",
+          "Scale": "1,1,0.9333457",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.EnvmapProbe",
+              "__guid": "e61b62d8-7468-40e8-83cf-0f365f446b61",
+              "Bounds": {
+                "Mins": "-300,-300,-300",
+                "Maxs": "300,300,300"
+              },
+              "DelayBetweenUpdates": 0.1,
+              "Feathering": 4,
+              "FrameInterval": 4,
+              "MaxDistance": 150,
+              "MultiBounce": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Projection": "Box",
+              "RenderDynamically": true,
+              "Texture": "textures/cubemaps/default2.vtex",
+              "TintColor": "1,1,1,1",
+              "UpdateStrategy": "OnEnabled",
+              "ZFar": 256,
+              "ZNear": 50
+            }
+          ]
+        },
+        {
+          "__guid": "a50e107f-afa5-45e2-89be-04b6fa05088f",
+          "Flags": 0,
+          "Name": "Cubemap (1)",
+          "Position": "313.2566,-82.32594,159.1209",
+          "Scale": "1,1,0.9333457",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.EnvmapProbe",
+              "__guid": "afe2e223-425b-4d67-80fb-abb1ec31bd3e",
+              "Bounds": {
+                "Mins": "-300,-300,-300",
+                "Maxs": "300,300,300"
+              },
+              "DelayBetweenUpdates": 0.1,
+              "Feathering": 4,
+              "FrameInterval": 4,
+              "MaxDistance": 150,
+              "MultiBounce": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Projection": "Box",
+              "RenderDynamically": true,
+              "Texture": "textures/cubemaps/default2.vtex",
+              "TintColor": "1,1,1,1",
+              "UpdateStrategy": "OnEnabled",
+              "ZFar": 256,
+              "ZNear": 25
+            }
+          ]
+        },
+        {
+          "__guid": "0e1acf11-3471-4648-ac40-bd80593645ee",
+          "Flags": 0,
+          "Name": "Cubemap (4)",
+          "Position": "-269.096,-52.2617,184.1342",
+          "Scale": "1,1,0.9333457",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.EnvmapProbe",
+              "__guid": "ea489cbe-8567-4d08-ad2d-dfc2753ffcd2",
+              "Bounds": {
+                "Mins": "-300,-300,-300",
+                "Maxs": "300,300,300"
+              },
+              "DelayBetweenUpdates": 0.1,
+              "Feathering": 4,
+              "FrameInterval": 4,
+              "MaxDistance": 150,
+              "MultiBounce": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Projection": "Box",
+              "RenderDynamically": true,
+              "Texture": "textures/cubemaps/default2.vtex",
+              "TintColor": "1,1,1,1",
+              "UpdateStrategy": "OnEnabled",
+              "ZFar": 256,
+              "ZNear": 25
+            }
+          ]
+        },
+        {
+          "__guid": "f483c6d7-b374-4530-977f-52158dfea7b6",
+          "Flags": 0,
+          "Name": "Cubemap",
+          "Position": "74.10203,-82.32594,159.1209",
+          "Scale": "1,1,0.9333457",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.EnvmapProbe",
+              "__guid": "7b2ac681-0478-4e01-acde-9d444fd96ff1",
+              "Bounds": {
+                "Mins": "-300,-300,-300",
+                "Maxs": "300,300,300"
+              },
+              "DelayBetweenUpdates": 0.1,
+              "Feathering": 4,
+              "FrameInterval": 4,
+              "MaxDistance": 150,
+              "MultiBounce": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Projection": "Box",
+              "RenderDynamically": true,
+              "Texture": "textures/cubemaps/default2.vtex",
+              "TintColor": "1,1,1,1",
+              "UpdateStrategy": "OnEnabled",
+              "ZFar": 256,
+              "ZNear": 25
             }
           ]
         }

@@ -183,7 +183,7 @@ CS
 
     [numthreads(8, 8, 8)]
     void MainCs(uint3 localId : SV_GroupThreadID, uint3 groupId : SV_GroupID, uint3 vThreadId : SV_DispatchThreadID)
-    {       
+    {
         if (any(vThreadId >= g_iVolumeResolution)) return;
 
         float3 center = g_tSource[vThreadId];
