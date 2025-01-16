@@ -14,8 +14,8 @@ $fontSizeBase: 22px;
 $fontSizeLarge: 26px;
 
 // Spacing
-$spacingBase: 12px;
-$spacingLarge: 20px;
+$spacingBase: 8px;
+$spacingLarge: 12px;
 
 // Opacity
 $opacityLow: 0.5;
@@ -27,7 +27,7 @@ body {
 }
 
 .hud-panel {
-  padding: $spacingBase;
+  padding: $spacingLarge;
   background: linear-gradient(to right, $backgroundStart, $backgroundEnd);
   border-radius: 10px;
   border: 3px solid $borderDim;
@@ -165,7 +165,7 @@ ButtonGroup {
   
   .hud-panel {
     min-width: 500px;
-    max-width: 800px;
+    max-width: 1000px;
     align-items: center;
     
     .explainer-text {

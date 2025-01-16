@@ -68,26 +68,35 @@ public class RustSystem : Component
         {
             RenderingMode = RenderingMode == RustRenderingMode.Debug ? RustRenderingMode.Colored : RustRenderingMode.Debug;
             Log.Info( "Rendering Mode switched to: " + RenderingMode );
+
+            if(RenderingMode == RustRenderingMode.Debug)
+            {
+                CameraHud.Current.UI.ExplainerText = "Channels: R - Rust, G - Wetness, B - Structure health";
+            }
         }
 
         if ( Input.Pressed( "erosion_interval_up" ) )
         {
             ErosionFrequency = (int)(ErosionFrequency * 1.1f);
+            CameraHud.Current.UI.ExplainerText = "Mesh will deform more often.";
         }
 
         if ( Input.Pressed( "erosion_interval_down" ) )
         {
             ErosionFrequency = (int)(ErosionFrequency * 0.9f);
+            CameraHud.Current.UI.ExplainerText = "Mesh will deform less often.";
         }
 
         if( Input.Pressed( "erosion_strength_up" ) )
         {
             ErosionStrength += 0.1f;
+            CameraHud.Current.UI.ExplainerText = "Mesh deformation will be stronger.";
         }
 
         if( Input.Pressed( "erosion_strength_down" ) )
         {
             ErosionStrength -= 0.1f;
+            CameraHud.Current.UI.ExplainerText = "Mesh deformation will be weaker.";
         }
 
         if ( ErosionFrequency < 10 )

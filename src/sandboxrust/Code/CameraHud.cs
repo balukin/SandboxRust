@@ -23,6 +23,11 @@ public sealed class CameraHud : Component
 		{
 			ui.OptionsOpen = !ui.OptionsOpen;			
 		}
+
+		if(Input.Pressed("Forward") || Input.Pressed("Back") || Input.Pressed("Left") || Input.Pressed("Right"))
+		{
+			ui.ExplainerText = RustUI.ExplainerDefault;
+		}
 	}
 
 	protected override void OnDestroy()

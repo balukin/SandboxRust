@@ -4,76 +4,77 @@
 @using System.Threading
 
 <root>
-	@if ( !OptionsOpen )
-	{
-		<div id="top-left-overlay">
-			<div class="hud-panel">
-				<HudItem Icon="🛠️" Text="Quality Options" Explainer="(Q)" />				
-				<HudItem Icon="🔦" Text=@($"Flashlight: {(FlashlightEnabled ? "On" : "Off")}") Explainer="(F)" />
-				<HudItem Icon="🎨" Text=@($"Rendering Mode: {RenderingMode}") Explainer="(R)" />
-				<HudItem Icon="⏳" Text=@($"Rusting Speed: {OxygenLevel:P0}") Explainer="(🠉 🠋)" />
-				<HudItem Icon="🧊" Text=@($"Mesh Erosion Interval: {ErosionFrequency}") Explainer="(🠈 🠊)" />
-				<HudItem Icon="⏩" Text=@($"Erosion Strength: {ErosionStrength}") Explainer="(PgUp, PgDn)" />
-			</div>
-		</div>
+    @if ( !OptionsOpen )
+    {
+        <div id="top-left-overlay">
+            <div class="hud-panel">
+                <HudItem Icon="🛠️" Text="Quality Options" Explainer="(Q)" />				
+                <HudItem Icon="🔦" Text=@($"Flashlight: {(FlashlightEnabled ? "On" : "Off")}") Explainer="(F)" />
+                <HudItem Icon="🎨" Text=@($"Rendering Mode: {RenderingMode}") Explainer="(R)" />
+                <HudItem Icon="⏳" Text=@($"Rusting Speed: {OxygenLevel:P0}") Explainer="(🠉 🠋)" />
+                <HudItem Icon="🧊" Text=@($"Mesh Erosion Interval: {ErosionFrequency}") Explainer="(🠈 🠊)" />
+                <HudItem Icon="⏩" Text=@($"Erosion Strength: {ErosionStrength}") Explainer="(PgUp, PgDn)" />
+            </div>
+        </div>
 
-		<div id="context-explainer">
-			<div class="hud-panel">
-				<div class="explainer-text">@ExplainerText</div>
-			</div>
-		</div>
-	}
-	else
-	{
-		<div id="options-container">
-			<div id="options" class="hud-panel">
-				<div class="option-group">
-					<label>Volumetric Data Resolution</label>
-					<ButtonGroup Value:bind=@VolumeResolution ValueChanged=@SomethingChanged Options=@ResolutionOptions/>
-					<div class="explainer">Higher values allow more detail but increase VRAM per object cubically</div>
-				</div>
+        <div id="context-explainer">
+            <div class="hud-panel">
+                <div class="explainer-text">@ExplainerText</div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div id="options-container">
+            <div id="options" class="hud-panel">
+                <div class="option-group">
+                    <label>Volumetric Data Resolution</label>
+                    <ButtonGroup Value:bind=@VolumeResolution ValueChanged=@SomethingChanged Options=@ResolutionOptions/>
+                    <div class="explainer">Higher values allow more detail but increase VRAM per object cubically</div>
+                </div>
 
-				<div class="option-group">
-					<label>Max Simulated Updates Per Frame</label>
-					<ButtonGroup Value:bind=@ObjectUpdatesPerFrame ValueChanged=@SomethingChanged Options=@UpdateFrequencyOptions/>
-					<div class="explainer">Controls how many objects are updated each frame</div>
-				</div>
+                <div class="option-group">
+                    <label>Max Simulated Updates Per Frame</label>
+                    <ButtonGroup Value:bind=@ObjectUpdatesPerFrame ValueChanged=@SomethingChanged Options=@UpdateFrequencyOptions/>
+                    <div class="explainer">Controls how many objects are updated each frame</div>
+                </div>
 
-				<div class="option-group">
-					<label>Rust Shading Quality</label>
-					<ButtonGroup Value:bind=@SoftRustEnabled ValueChanged=@SomethingChanged Options=@QualityOptions/>
-					<div class="explainer">Soft rust enables smoother transitions at the cost of extra texture sampling
-					</div>
-				</div>
-				<Button id="close-button" Text="Close" onclick=@( () => OptionsOpen = false )/>
-			</div>
-		</div>
-	}
+                <div class="option-group">
+                    <label>Rust Shading Quality</label>
+                    <ButtonGroup Value:bind=@SoftRustEnabled ValueChanged=@SomethingChanged Options=@QualityOptions/>
+                    <div class="explainer">Soft rust enables smoother transitions at the cost of extra texture sampling
+                    </div>
+                </div>
+                <Button id="close-button" Text="Close" onclick=@( () => OptionsOpen = false )/>
+            </div>
+        </div>
+    }
 
 </root>
 
 @code {
 
-	public bool OptionsOpen
-	{
-		get => optionsOpen;
-		set
-		{
-			optionsOpen = value;
-			Mouse.Visible = optionsOpen;
-		}
-	}
+    public bool OptionsOpen
+    {
+        get => optionsOpen;
+        set
+        {
+            optionsOpen = value;
+            Mouse.Visible = optionsOpen;
+        }
+    }
 
-	public float OxygenLevel { get; set; }
-	public bool FlashlightEnabled { get; set; }
-	public RustRenderingMode RenderingMode { get; set; }
-	public int ErosionFrequency { get; set; }
-	public float ErosionStrength { get; set; }
-	public int VolumeResolution { get; set; } = 64;
-	public int ObjectUpdatesPerFrame { get; set; } = 1;
-	public bool SoftRustEnabled { get; set; } = true;
-	public string ExplainerText { get; set; } = "Hello world!";
-
+    public float OxygenLevel { get; set; }
+    public bool FlashlightEnabled { get; set; }
+    public RustRenderingMode RenderingMode { get; set; }
+    public int ErosionFrequency { get; set; }
+    public float ErosionStrength { get; set; }
+    public int VolumeResolution { get; set; } = 64;
+    public int ObjectUpdatesPerFrame { get; set; } = 1;
+    public bool SoftRustEnabled { get; set; } = true;
+    public string ExplainerText { get; set; } = ExplainerDefault;
+    public const string ExplainerDefault = $"Use LMB to spray water on the metallic objects. " +
+											$"Use RMB to hit the rusted objects with a crowbar";
 
 	private CancellationTokenSource debounceCts;
 	private bool optionsOpen = false;

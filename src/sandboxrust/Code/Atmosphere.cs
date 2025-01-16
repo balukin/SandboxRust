@@ -26,10 +26,12 @@ public sealed class Atmosphere : Component
         if ( Input.Pressed( "o2_major_step_up" ) )
         {
             OxygenLevel += majorStep;
+            CameraHud.Current.UI.ExplainerText = "Rust will form faster on wet surfaces.";
         }
         if ( Input.Pressed( "o2_major_step_down" ) )
         {
             OxygenLevel -= majorStep;
+            CameraHud.Current.UI.ExplainerText = "Rust will form slower on wet surfaces.";
         }
 
         if ( OxygenLevel < 0 )
