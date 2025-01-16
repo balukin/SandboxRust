@@ -452,7 +452,7 @@
       "__guid": "46267e29-e1ab-4602-8065-8ad32284bd85",
       "Flags": 0,
       "Name": "Player",
-      "Position": "-60.05124,-84.806,129.9578",
+      "Position": "-134.9175,-95.46807,129.9578",
       "Enabled": true,
       "Components": [
         {
@@ -1959,7 +1959,7 @@
               "__guid": "b4c857c3-f85b-4078-8465-783bd7083142",
               "Flags": 0,
               "Name": "zuk",
-              "Position": "212.0604,-383.402,132.6133",
+              "Position": "302.3148,-380.7952,132.6133",
               "Scale": "0.6,0.6,0.6",
               "Enabled": true,
               "Components": [
@@ -2716,7 +2716,7 @@
           "__guid": "105c521b-6f8b-4432-bb70-957b5e65bbc7",
           "Flags": 0,
           "Name": "Cubemap (3)",
-          "Position": "200.6286,-374.5264,190.7596",
+          "Position": "290.8831,-371.9196,190.7596",
           "Scale": "1,1,0.9333457",
           "Enabled": true,
           "Components": [
