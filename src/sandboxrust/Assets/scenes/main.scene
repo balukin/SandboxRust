@@ -1445,7 +1445,7 @@
                 {
                   "__type": "RustableObject",
                   "__guid": "4a92dfaa-e477-427b-9e25-590fafad86a0",
-                  "OverrideVolumeResolution": 16,
+                  "OverrideVolumeResolution": 32,
                   "ErosionTarget": "0,0,0",
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -1537,7 +1537,7 @@
                 {
                   "__type": "RustableObject",
                   "__guid": "22a0c852-38a8-4ad7-8387-178334142e5c",
-                  "OverrideVolumeResolution": 16,
+                  "OverrideVolumeResolution": 32,
                   "ErosionTarget": "0,0,0",
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -1720,7 +1720,7 @@
                 {
                   "__type": "RustableObject",
                   "__guid": "4132b5e3-1298-425c-93ce-7deee2669d74",
-                  "OverrideVolumeResolution": 16,
+                  "OverrideVolumeResolution": 32,
                   "ErosionTarget": "-0.3000041,-0.09291837,-0.5976771",
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -2330,7 +2330,7 @@
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
                   "OnComponentUpdate": null,
-                  "RotationSpeedDegPerSec": 1
+                  "RotationSpeedDegPerSec": 3
                 }
               ]
             },
@@ -2398,27 +2398,6 @@
                   "Tint": "1,1,1,1"
                 },
                 {
-                  "__type": "Sandbox.BoxCollider",
-                  "__guid": "a7e48e5b-0893-4988-a445-baf514f2209a",
-                  "Center": "0,0,0",
-                  "Friction": null,
-                  "IsTrigger": false,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "OnObjectTriggerEnter": null,
-                  "OnObjectTriggerExit": null,
-                  "OnTriggerEnter": null,
-                  "OnTriggerExit": null,
-                  "Scale": "50,50,50",
-                  "Static": false,
-                  "Surface": "props/hittable_surface.surface",
-                  "SurfaceVelocity": "0,0,0"
-                },
-                {
                   "__type": "Sandbox.Rigidbody",
                   "__guid": "ae434da0-1040-404b-a2d0-14ddc810cd6c",
                   "AngularDamping": 0,
@@ -2456,6 +2435,26 @@
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
                   "OnComponentUpdate": null
+                },
+                {
+                  "__type": "Sandbox.ModelCollider",
+                  "__guid": "f6d6c12d-4972-4ade-b3ed-81cc0efb5727",
+                  "Friction": null,
+                  "IsTrigger": false,
+                  "Model": "models/dev/box.vmdl",
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "OnObjectTriggerEnter": null,
+                  "OnObjectTriggerExit": null,
+                  "OnTriggerEnter": null,
+                  "OnTriggerExit": null,
+                  "Static": false,
+                  "Surface": null,
+                  "SurfaceVelocity": "0,0,0"
                 }
               ]
             },
@@ -2463,15 +2462,15 @@
               "__guid": "fa5f6ca7-d0e3-4aa2-85a8-e12e4352ab67",
               "Flags": 0,
               "Name": "smaller_boxes",
-              "Position": "-324.8927,-8.072151,144.9465",
+              "Position": "-324.8927,-7.017751,144.9465",
               "Enabled": true,
               "Children": [
                 {
                   "__guid": "4f865fe9-6852-4d98-b31c-bd3aab3db20e",
                   "Flags": 0,
                   "Name": "box_standing (2)",
-                  "Position": "0.00003051758,20.28442,28.70511",
-                  "Scale": "0.5,0.5,0.5",
+                  "Position": "26.68747,16.94122,38.98853",
+                  "Scale": "0.75,0.75,0.75",
                   "Enabled": true,
                   "Components": [
                     {
@@ -2496,27 +2495,6 @@
                       },
                       "RenderType": "On",
                       "Tint": "1,1,1,1"
-                    },
-                    {
-                      "__type": "Sandbox.BoxCollider",
-                      "__guid": "cc703efd-994a-4be5-aebb-c8308a8fbb06",
-                      "Center": "0,0,0",
-                      "Friction": null,
-                      "IsTrigger": false,
-                      "OnComponentDestroy": null,
-                      "OnComponentDisabled": null,
-                      "OnComponentEnabled": null,
-                      "OnComponentFixedUpdate": null,
-                      "OnComponentStart": null,
-                      "OnComponentUpdate": null,
-                      "OnObjectTriggerEnter": null,
-                      "OnObjectTriggerExit": null,
-                      "OnTriggerEnter": null,
-                      "OnTriggerExit": null,
-                      "Scale": "50,50,50",
-                      "Static": false,
-                      "Surface": "props/hittable_surface.surface",
-                      "SurfaceVelocity": "0,0,0"
                     },
                     {
                       "__type": "Sandbox.Rigidbody",
@@ -2548,7 +2526,7 @@
                     {
                       "__type": "RustableObject",
                       "__guid": "f12fac8c-c6ae-47f4-b8ee-05145e0c16c3",
-                      "OverrideVolumeResolution": 16,
+                      "OverrideVolumeResolution": 32,
                       "ErosionTarget": "0,0,0",
                       "OnComponentDestroy": null,
                       "OnComponentDisabled": null,
@@ -2556,6 +2534,26 @@
                       "OnComponentFixedUpdate": null,
                       "OnComponentStart": null,
                       "OnComponentUpdate": null
+                    },
+                    {
+                      "__type": "Sandbox.ModelCollider",
+                      "__guid": "7310d955-740c-4f24-b941-e14ec2cc1f78",
+                      "Friction": null,
+                      "IsTrigger": false,
+                      "Model": "models/dev/box.vmdl",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OnObjectTriggerEnter": null,
+                      "OnObjectTriggerExit": null,
+                      "OnTriggerEnter": null,
+                      "OnTriggerExit": null,
+                      "Static": false,
+                      "Surface": null,
+                      "SurfaceVelocity": "0,0,0"
                     }
                   ]
                 },
@@ -2563,8 +2561,9 @@
                   "__guid": "5d453327-9235-419d-a194-b7286c203bd1",
                   "Flags": 0,
                   "Name": "box_standing (1)",
-                  "Position": "0.00003051758,43.17255,0.00004577637",
-                  "Scale": "0.5,0.5,0.5",
+                  "Position": "26.69614,54.58561,0",
+                  "Rotation": "0,0,0.3826835,0.9238795",
+                  "Scale": "0.75,0.75,0.75",
                   "Enabled": true,
                   "Components": [
                     {
@@ -2589,27 +2588,6 @@
                       },
                       "RenderType": "On",
                       "Tint": "1,1,1,1"
-                    },
-                    {
-                      "__type": "Sandbox.BoxCollider",
-                      "__guid": "f7c5d974-a946-46a3-b427-d28f42eabf48",
-                      "Center": "0,0,0",
-                      "Friction": null,
-                      "IsTrigger": false,
-                      "OnComponentDestroy": null,
-                      "OnComponentDisabled": null,
-                      "OnComponentEnabled": null,
-                      "OnComponentFixedUpdate": null,
-                      "OnComponentStart": null,
-                      "OnComponentUpdate": null,
-                      "OnObjectTriggerEnter": null,
-                      "OnObjectTriggerExit": null,
-                      "OnTriggerEnter": null,
-                      "OnTriggerExit": null,
-                      "Scale": "50,50,50",
-                      "Static": false,
-                      "Surface": "props/hittable_surface.surface",
-                      "SurfaceVelocity": "0,0,0"
                     },
                     {
                       "__type": "Sandbox.Rigidbody",
@@ -2641,7 +2619,7 @@
                     {
                       "__type": "RustableObject",
                       "__guid": "bb09b493-0cf3-4092-8f20-4b5c839a4917",
-                      "OverrideVolumeResolution": 16,
+                      "OverrideVolumeResolution": 32,
                       "ErosionTarget": "0,0,0",
                       "OnComponentDestroy": null,
                       "OnComponentDisabled": null,
@@ -2649,6 +2627,26 @@
                       "OnComponentFixedUpdate": null,
                       "OnComponentStart": null,
                       "OnComponentUpdate": null
+                    },
+                    {
+                      "__type": "Sandbox.ModelCollider",
+                      "__guid": "176307e4-c45b-4190-8ee2-34382eabf205",
+                      "Friction": null,
+                      "IsTrigger": false,
+                      "Model": "models/dev/box.vmdl",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OnObjectTriggerEnter": null,
+                      "OnObjectTriggerExit": null,
+                      "OnTriggerEnter": null,
+                      "OnTriggerExit": null,
+                      "Static": false,
+                      "Surface": null,
+                      "SurfaceVelocity": "0,0,0"
                     }
                   ]
                 },
@@ -2656,7 +2654,9 @@
                   "__guid": "d9e267d1-6c0c-42d2-842d-92cf3fa61480",
                   "Flags": 0,
                   "Name": "box_standing (3)",
-                  "Scale": "0.5,0.5,0.5",
+                  "Position": "31.1369,-18.32185,-0.00003051758",
+                  "Rotation": "0,0,0.3826835,0.9238795",
+                  "Scale": "0.75,0.75,0.75",
                   "Enabled": true,
                   "Components": [
                     {
@@ -2681,27 +2681,6 @@
                       },
                       "RenderType": "On",
                       "Tint": "1,1,1,1"
-                    },
-                    {
-                      "__type": "Sandbox.BoxCollider",
-                      "__guid": "b7a81f43-fa60-4ce9-9a15-e6a6da373364",
-                      "Center": "0,0,0",
-                      "Friction": null,
-                      "IsTrigger": false,
-                      "OnComponentDestroy": null,
-                      "OnComponentDisabled": null,
-                      "OnComponentEnabled": null,
-                      "OnComponentFixedUpdate": null,
-                      "OnComponentStart": null,
-                      "OnComponentUpdate": null,
-                      "OnObjectTriggerEnter": null,
-                      "OnObjectTriggerExit": null,
-                      "OnTriggerEnter": null,
-                      "OnTriggerExit": null,
-                      "Scale": "50,50,50",
-                      "Static": false,
-                      "Surface": "props/hittable_surface.surface",
-                      "SurfaceVelocity": "0,0,0"
                     },
                     {
                       "__type": "Sandbox.Rigidbody",
@@ -2733,7 +2712,7 @@
                     {
                       "__type": "RustableObject",
                       "__guid": "966059af-d5d5-464f-aea6-9dce3b06da5f",
-                      "OverrideVolumeResolution": 16,
+                      "OverrideVolumeResolution": 32,
                       "ErosionTarget": "0,0,0",
                       "OnComponentDestroy": null,
                       "OnComponentDisabled": null,
@@ -2741,6 +2720,26 @@
                       "OnComponentFixedUpdate": null,
                       "OnComponentStart": null,
                       "OnComponentUpdate": null
+                    },
+                    {
+                      "__type": "Sandbox.ModelCollider",
+                      "__guid": "1e5341af-cab2-4e0d-a8e5-73856ee4536c",
+                      "Friction": null,
+                      "IsTrigger": false,
+                      "Model": "models/dev/box.vmdl",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OnObjectTriggerEnter": null,
+                      "OnObjectTriggerExit": null,
+                      "OnTriggerEnter": null,
+                      "OnTriggerExit": null,
+                      "Static": false,
+                      "Surface": null,
+                      "SurfaceVelocity": "0,0,0"
                     }
                   ]
                 }
