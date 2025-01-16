@@ -2039,7 +2039,7 @@
               "Flags": 0,
               "Name": "zuk",
               "Position": "212.0604,-334.7538,132.6133",
-              "Scale": "0.75,0.75,0.75",
+              "Scale": "0.6,0.6,0.6",
               "Enabled": true,
               "Components": [
                 {
@@ -2456,6 +2456,293 @@
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
                   "OnComponentUpdate": null
+                }
+              ]
+            },
+            {
+              "__guid": "fa5f6ca7-d0e3-4aa2-85a8-e12e4352ab67",
+              "Flags": 0,
+              "Name": "smaller_boxes",
+              "Position": "-324.8927,-8.072151,144.9465",
+              "Enabled": true,
+              "Children": [
+                {
+                  "__guid": "4f865fe9-6852-4d98-b31c-bd3aab3db20e",
+                  "Flags": 0,
+                  "Name": "box_standing (2)",
+                  "Position": "0.00003051758,20.28442,28.70511",
+                  "Scale": "0.5,0.5,0.5",
+                  "Enabled": true,
+                  "Components": [
+                    {
+                      "__type": "Sandbox.ModelRenderer",
+                      "__guid": "3804c5a9-0827-4142-ba8b-8c3c936d0b91",
+                      "BodyGroups": 18446744073709551615,
+                      "CreateAttachments": false,
+                      "MaterialGroup": null,
+                      "MaterialOverride": "materials/metal_generic.vmat",
+                      "Model": "models/dev/box.vmdl",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "RenderOptions": {
+                        "GameLayer": true,
+                        "OverlayLayer": false,
+                        "BloomLayer": false,
+                        "AfterUILayer": false
+                      },
+                      "RenderType": "On",
+                      "Tint": "1,1,1,1"
+                    },
+                    {
+                      "__type": "Sandbox.BoxCollider",
+                      "__guid": "cc703efd-994a-4be5-aebb-c8308a8fbb06",
+                      "Center": "0,0,0",
+                      "Friction": null,
+                      "IsTrigger": false,
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OnObjectTriggerEnter": null,
+                      "OnObjectTriggerExit": null,
+                      "OnTriggerEnter": null,
+                      "OnTriggerExit": null,
+                      "Scale": "50,50,50",
+                      "Static": false,
+                      "Surface": "props/hittable_surface.surface",
+                      "SurfaceVelocity": "0,0,0"
+                    },
+                    {
+                      "__type": "Sandbox.Rigidbody",
+                      "__guid": "db7d98df-425a-4376-975e-63a2bf01065a",
+                      "AngularDamping": 0,
+                      "Gravity": true,
+                      "LinearDamping": 0,
+                      "Locking": {
+                        "X": false,
+                        "Y": false,
+                        "Z": false,
+                        "Pitch": false,
+                        "Yaw": false,
+                        "Roll": false
+                      },
+                      "MassCenterOverride": "0,0,0",
+                      "MassOverride": 0,
+                      "MotionEnabled": true,
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OverrideMassCenter": false,
+                      "RigidbodyFlags": 0,
+                      "StartAsleep": false
+                    },
+                    {
+                      "__type": "RustableObject",
+                      "__guid": "f12fac8c-c6ae-47f4-b8ee-05145e0c16c3",
+                      "OverrideVolumeResolution": 16,
+                      "ErosionTarget": "0,0,0",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null
+                    }
+                  ]
+                },
+                {
+                  "__guid": "5d453327-9235-419d-a194-b7286c203bd1",
+                  "Flags": 0,
+                  "Name": "box_standing (1)",
+                  "Position": "0.00003051758,43.17255,0.00004577637",
+                  "Scale": "0.5,0.5,0.5",
+                  "Enabled": true,
+                  "Components": [
+                    {
+                      "__type": "Sandbox.ModelRenderer",
+                      "__guid": "c31a9854-4a6a-4546-86f8-68a3b0f1bff5",
+                      "BodyGroups": 18446744073709551615,
+                      "CreateAttachments": false,
+                      "MaterialGroup": null,
+                      "MaterialOverride": "materials/metal_generic.vmat",
+                      "Model": "models/dev/box.vmdl",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "RenderOptions": {
+                        "GameLayer": true,
+                        "OverlayLayer": false,
+                        "BloomLayer": false,
+                        "AfterUILayer": false
+                      },
+                      "RenderType": "On",
+                      "Tint": "1,1,1,1"
+                    },
+                    {
+                      "__type": "Sandbox.BoxCollider",
+                      "__guid": "f7c5d974-a946-46a3-b427-d28f42eabf48",
+                      "Center": "0,0,0",
+                      "Friction": null,
+                      "IsTrigger": false,
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OnObjectTriggerEnter": null,
+                      "OnObjectTriggerExit": null,
+                      "OnTriggerEnter": null,
+                      "OnTriggerExit": null,
+                      "Scale": "50,50,50",
+                      "Static": false,
+                      "Surface": "props/hittable_surface.surface",
+                      "SurfaceVelocity": "0,0,0"
+                    },
+                    {
+                      "__type": "Sandbox.Rigidbody",
+                      "__guid": "f72c5b35-1037-4b45-bc11-ae6674de4081",
+                      "AngularDamping": 0,
+                      "Gravity": true,
+                      "LinearDamping": 0,
+                      "Locking": {
+                        "X": false,
+                        "Y": false,
+                        "Z": false,
+                        "Pitch": false,
+                        "Yaw": false,
+                        "Roll": false
+                      },
+                      "MassCenterOverride": "0,0,0",
+                      "MassOverride": 0,
+                      "MotionEnabled": true,
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OverrideMassCenter": false,
+                      "RigidbodyFlags": 0,
+                      "StartAsleep": false
+                    },
+                    {
+                      "__type": "RustableObject",
+                      "__guid": "bb09b493-0cf3-4092-8f20-4b5c839a4917",
+                      "OverrideVolumeResolution": 16,
+                      "ErosionTarget": "0,0,0",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null
+                    }
+                  ]
+                },
+                {
+                  "__guid": "d9e267d1-6c0c-42d2-842d-92cf3fa61480",
+                  "Flags": 0,
+                  "Name": "box_standing (3)",
+                  "Scale": "0.5,0.5,0.5",
+                  "Enabled": true,
+                  "Components": [
+                    {
+                      "__type": "Sandbox.ModelRenderer",
+                      "__guid": "c38c3d4f-d57e-42bb-9faf-f6619e12e95f",
+                      "BodyGroups": 18446744073709551615,
+                      "CreateAttachments": false,
+                      "MaterialGroup": null,
+                      "MaterialOverride": "materials/metal_generic.vmat",
+                      "Model": "models/dev/box.vmdl",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "RenderOptions": {
+                        "GameLayer": true,
+                        "OverlayLayer": false,
+                        "BloomLayer": false,
+                        "AfterUILayer": false
+                      },
+                      "RenderType": "On",
+                      "Tint": "1,1,1,1"
+                    },
+                    {
+                      "__type": "Sandbox.BoxCollider",
+                      "__guid": "b7a81f43-fa60-4ce9-9a15-e6a6da373364",
+                      "Center": "0,0,0",
+                      "Friction": null,
+                      "IsTrigger": false,
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OnObjectTriggerEnter": null,
+                      "OnObjectTriggerExit": null,
+                      "OnTriggerEnter": null,
+                      "OnTriggerExit": null,
+                      "Scale": "50,50,50",
+                      "Static": false,
+                      "Surface": "props/hittable_surface.surface",
+                      "SurfaceVelocity": "0,0,0"
+                    },
+                    {
+                      "__type": "Sandbox.Rigidbody",
+                      "__guid": "f21d40c2-7d91-4645-8e9f-2e2306de124a",
+                      "AngularDamping": 0,
+                      "Gravity": true,
+                      "LinearDamping": 0,
+                      "Locking": {
+                        "X": false,
+                        "Y": false,
+                        "Z": false,
+                        "Pitch": false,
+                        "Yaw": false,
+                        "Roll": false
+                      },
+                      "MassCenterOverride": "0,0,0",
+                      "MassOverride": 0,
+                      "MotionEnabled": true,
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OverrideMassCenter": false,
+                      "RigidbodyFlags": 0,
+                      "StartAsleep": false
+                    },
+                    {
+                      "__type": "RustableObject",
+                      "__guid": "966059af-d5d5-464f-aea6-9dce3b06da5f",
+                      "OverrideVolumeResolution": 16,
+                      "ErosionTarget": "0,0,0",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null
+                    }
+                  ]
                 }
               ]
             }
