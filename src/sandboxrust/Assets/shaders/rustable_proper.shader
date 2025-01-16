@@ -185,30 +185,11 @@ PS
         detail.color = baseColor * rustAmount;
 
         // Simple normal perturbation from noise
-        const float PerturbationMultiplier = 0.1;
+        const float PerturbationMultiplier = 0.25;
         float3 rustPerturbation = float3((combined - 0.5) * 2.0, (colorVal - 0.5) * 2.0, (rustAmount - 0.5) * 2.0) * PerturbationMultiplier;
         detail.normal = normalize(normal + rustPerturbation);
 
         return detail;
-    }
-
-    MoistureEffect CalculateMoistureEffect(float moisture)
-    {
-        MoistureEffect effect;
-        
-        // Increase reflectivity with moisture
-        effect.specularIntensity = lerp(1.0, 2.0, moisture);
-        
-        // Make reflections sharper/more focused when wet
-        effect.specularSharpness = lerp(1.0, 1.5, moisture);
-        
-        // Add slight blue tint that darkens the surface when wet
-        // Hard to get right since most of the effect comes from blend factor
-        float3 dryColor = float3(1.0, 1.0, 1.0);
-        float3 wetColor = float3(0.85, 0.85, 0.95);
-        effect.colorTint = lerp(dryColor, wetColor, moisture * 4);
-        
-        return effect;
     }
 
     float4 ShadeStandard(PixelInput i, float3 worldNormal, float3 baseColor, float baseRust, float moisture)
@@ -240,10 +221,6 @@ PS
         float baseRust = rustData.r; 
         float moisture = rustData.g;
 
-        // // DEBUG
-        // MoistureEffect effect = CalculateMoistureEffect(moisture);
-        // return float4(effect.colorTint, 1.0);
-        // // END DEBUG
         RustDetail finalRustDetail = GenerateRustDetail(i.vPositionOs, baseRust, i.vNormalWs);
 
         // Standard shading for the rust effect
