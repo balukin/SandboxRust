@@ -6,7 +6,7 @@ public class CrowbarWeapon : BaseWeapon
     public SoundEvent ClangSound { get; set; }
 
     public override float ShootDelay => 0.5f;
-    public override float WeaponRange => 50f;
+    public override float WeaponRange => 75f;
     public override float AnimStartToImpactDelay => 0.1f;
 
     protected override void OnUpdate()
