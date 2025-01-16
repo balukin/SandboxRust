@@ -168,7 +168,7 @@
                   "OnComponentStart": null,
                   "OnComponentUpdate": null,
                   "OnEdge": false,
-                  "Rate": 100,
+                  "Rate": 0,
                   "RateOverDistance": 0,
                   "VelocityMultiplier": 100,
                   "VelocityRandom": 0.1
