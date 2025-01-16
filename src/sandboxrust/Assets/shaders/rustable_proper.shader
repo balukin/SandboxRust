@@ -185,7 +185,7 @@ PS
         detail.color = baseColor * rustAmount;
 
         // Simple normal perturbation from noise
-        const float PerturbationMultiplier = 0.3;
+        const float PerturbationMultiplier = 0.1;
         float3 rustPerturbation = float3((combined - 0.5) * 2.0, (colorVal - 0.5) * 2.0, (rustAmount - 0.5) * 2.0) * PerturbationMultiplier;
         detail.normal = normalize(normal + rustPerturbation);
 
