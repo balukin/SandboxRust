@@ -454,14 +454,22 @@ public sealed class RustableObject : Component
 		var texPos = (positionOs - boundsMin) * boundsScale;
 		var shader = getSprayedShader;
 
+		// Convert penetration strength from world space to texture space
+		var worldScale = Transform.World.Scale.Length;
+		var maxPenetrationOs = impactData.ImpactPenetrationStrength * boundsScale.Length * worldScale;
+		var maxPenetration = MathF.Min(1.0f, maxPenetrationOs);
+
+		shader.Attributes.Set( "BoundsScale", boundsScale );
+		shader.Attributes.Set( "BoundsMin", boundsMin );
 		shader.Attributes.Set( "DataTexture", RustData );
 		shader.Attributes.Set( "ImpactPosition", texPos );
 		shader.Attributes.Set( "ImpactRadius", impactData.ImpactRadius );
 		shader.Attributes.Set( "ImpactStrength", impactData.ImpactStrength );
 		shader.Attributes.Set( "ImpactDirection", impactDirOs );
 		shader.Attributes.Set( "ConeAngleRad", impactData.ImpactPenetrationConeDeg * MathF.PI / 180.0f );
-		shader.Attributes.Set( "MaxPenetration", impactData.ImpactPenetrationStrength );
+		shader.Attributes.Set( "MaxPenetration", maxPenetration );
 		shader.Attributes.Set( "VolumeResolution", currentVolumeResolution );
+		shader.Attributes.Set( "SprayDirection", impactDirOs );
 
 		shader.Dispatch( currentVolumeResolution, currentVolumeResolution, currentVolumeResolution );
 	}

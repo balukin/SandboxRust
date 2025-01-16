@@ -173,8 +173,8 @@ public class Weapon : Component
                 ImpactDirection = direction,
                 ImpactRadius = 0.15f,
                 ImpactStrength = 0.2f,
-                ImpactPenetrationStrength = 0.0f,
-                ImpactPenetrationConeDeg = 0.0f,
+                ImpactPenetrationStrength = 5f, // world space this time, todo: unify it with other weapons
+                ImpactPenetrationConeDeg = 0.0f, // doesn't work for spray shader anyway
                 WeaponType = weapon
             };
         }
@@ -187,7 +187,7 @@ public class Weapon : Component
                 ImpactDirection = direction,
                 ImpactRadius = 0.3f,
                 ImpactStrength = 2.0f,
-                ImpactPenetrationStrength = 0.3f,
+                ImpactPenetrationStrength = 0.3f, // texture space
                 ImpactPenetrationConeDeg = 20.0f,
                 WeaponType = weapon
             };
