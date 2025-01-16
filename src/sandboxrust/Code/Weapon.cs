@@ -11,7 +11,7 @@ public class Weapon : Component
     PlayerController player;
     WeaponSwitcher switcher;
 
-    public float ShootDelay => switcher.CurrentWeapon == WeaponType.Spray ? 0.05f : 0.5f;
+    public float ShootDelay => switcher.CurrentWeapon == WeaponType.Spray ? 0.016f : 0.5f;
     public float WeaponRange => switcher.CurrentWeapon == WeaponType.Spray ? 100f : 50f;
     public float AnimStartToImpactDelay => switcher.CurrentWeapon == WeaponType.Spray ? 0.00f : 0.1f;
 
@@ -172,7 +172,7 @@ public class Weapon : Component
                 SurfaceNormal = tr.Normal,
                 ImpactDirection = direction,
                 ImpactRadius = 0.15f,
-                ImpactStrength = 0.2f,
+                ImpactStrength = 0.03f,
                 ImpactPenetrationStrength = 5f, // world space this time, todo: unify it with other weapons
                 ImpactPenetrationConeDeg = 0.0f, // doesn't work for spray shader anyway
                 WeaponType = weapon
