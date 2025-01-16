@@ -170,8 +170,8 @@ public class Weapon : Component
                 Position = tr.HitPosition,
                 SurfaceNormal = tr.Normal,
                 ImpactDirection = direction,
-                ImpactRadius = 0.2f,
-                ImpactStrength = 1.0f,
+                ImpactRadius = 0.3f,
+                ImpactStrength = 2.0f,
                 ImpactPenetrationStrength = 0.3f,
                 ImpactPenetrationConeDeg = 20.0f,
                 WeaponType = weapon
