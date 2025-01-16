@@ -568,17 +568,51 @@ public sealed class RustableObject : Component
 		var vb = new VertexBuffer();
 		vb.Init( true );
 
-		var bb = new BBox();
-
-		Vertex[] proxyVertexTriplets = new Vertex[oldIndices.Length];
+		// Note: This can be optimized to save on the number of array iterations but I forgot about normals
+		// and adding them here is last minute change. I don't want to break it.
+		
+		// First pass - rewrite vertices with new positions into intermediate list
+		var vertices = new List<Vertex>();
 		for ( int i = 0; i < newVertices.Length; i++ )
 		{
 			var newPosition = newVertices[i].ToVector3();
 			var oldVertex = oldVertices[i];
 			var newVertex = oldVertex with { Position = newPosition };
-			vb.Add( newVertex );
-			bb = bb.AddPoint( newPosition );
-			meshVertices[i] = newVertex;
+			vertices.Add( newVertex );			
+		}
+
+		// Second pass - recalculate normals if needed
+		if ( qualitySystem.RecalculateNormals )
+		{
+			// Calculate new normals for each triangle
+			for ( int i = 0; i < oldIndices.Length; i += 3 )
+			{
+				var v1 = newVertices[oldIndices[i]].ToVector3();
+				var v2 = newVertices[oldIndices[i + 1]].ToVector3();
+				var v3 = newVertices[oldIndices[i + 2]].ToVector3();
+
+				// Calculate triangle normal
+				var edge1 = v2 - v1;
+				var edge2 = v3 - v1;
+				var normal = Vector3.Cross( edge1, edge2 ).Normal;
+
+				// Store normal for each vertex of this triangle
+				vertices[oldIndices[i]] = vertices[oldIndices[i]] with { Normal = normal };
+				vertices[oldIndices[i + 1]] = vertices[oldIndices[i + 1]] with { Normal = normal };
+				vertices[oldIndices[i + 2]] = vertices[oldIndices[i + 2]] with { Normal = normal };
+
+				// Smoothing normals could be added here later if material or mesh or whatever decides to use them
+			}
+		}
+
+		// Populate the target buffers once we have all the vertices processed
+		Vertex[] proxyVertexTriplets = new Vertex[oldIndices.Length];
+		var bb = new BBox();
+		for ( int i = 0; i < vertices.Count; i++ )
+		{
+			vb.Add( vertices[i] );
+			bb = bb.AddPoint( vertices[i].Position );
+			meshVertices[i] = vertices[i];
 		}
 
 		for ( int i = 0; i < oldIndices.Length; i++ )
@@ -589,7 +623,7 @@ public sealed class RustableObject : Component
 
 			// See ProcessMeshVertices for explanation why we copy vertices to a new array
 			// We could reuse the above method when we're done here but we're iterating over indices anyway...
-			proxyVertexTriplets[i] = oldVertices[index] with { Position = newVertices[index].ToVector3() };
+			proxyVertexTriplets[i] = vertices[index];
 		}
 
 
@@ -621,6 +655,9 @@ public sealed class RustableObject : Component
 
 		pendingProxyVertices = proxyVertexTriplets;
 		meshUpdatePending = true;
+
+		
+		
 	}
 
 	/// <summary>

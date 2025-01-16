@@ -8,4 +8,5 @@ public class QualitySystem( Scene scene ) : GameObjectSystem( scene )
     public int ObjectUpdatesPerFrame { get; set; } = 1;
     public int VolumeResolution { get; set; } = 64;
     public bool SoftRustEnabled { get; set; } = true;
+    public bool RecalculateNormals { get; set; } = true;
 }

@@ -48,6 +48,13 @@
 						<div class="explainer">Soft rust enables smoother transitions at the cost of extra texture sampling
 						</div>
 					</div>
+					<div class="option-group">
+						<label>Recalculate Normals</label>
+						<ButtonGroup Value:bind=@RecalculateNormals ValueChanged=@SomethingChanged Options=@RecalculateNormalsOptions/>
+						<div class="explainer">
+							Recalculate normals for meshes after deformation
+						</div>
+					</div>
 					<Button id="close-button" Text="Close" onclick=@( () => OptionsOpen = false )/>
 				</div>
 			</div>
@@ -77,6 +84,8 @@
     public int VolumeResolution { get; set; } = 64;
     public int ObjectUpdatesPerFrame { get; set; } = 1;
     public bool SoftRustEnabled { get; set; } = true;
+    public bool RecalculateNormals { get; set; } = true;
+
     public string ExplainerText { get; set; } = ExplainerDefault;
     public const string ExplainerDefault = $"Use LMB to spray water on the metallic objects. " +
 											$"Use RMB to hit the rusted objects with a crowbar";
@@ -105,6 +114,12 @@
 		new Option( "Soft", true ) 
 	};
 
+    private List<Option> RecalculateNormalsOptions { get; } = new()
+    {
+        new Option( "No", false ),
+        new Option( "Yes", true ) 
+    };
+
 	protected override void OnAfterTreeRender( bool firstTime )
 	{
 		base.OnAfterTreeRender( firstTime );
@@ -126,6 +141,7 @@
 			qualitySystem.ObjectUpdatesPerFrame = ObjectUpdatesPerFrame;
 			qualitySystem.VolumeResolution = VolumeResolution;
 			qualitySystem.SoftRustEnabled = SoftRustEnabled;
+			qualitySystem.RecalculateNormals = RecalculateNormals;
 
 			Log.Info($"QualitySystem updated: {qualitySystem.ObjectUpdatesPerFrame}, {qualitySystem.VolumeResolution}, {qualitySystem.SoftRustEnabled}");
 		} );
@@ -145,7 +161,8 @@
 			SoftRustEnabled,
 			ErosionFrequency,
 			ErosionStrength,
-			HudVisible
+			HudVisible,
+			RecalculateNormals
 		)
 	);
 
