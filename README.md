@@ -2,7 +2,7 @@
 
 A real-time rust simulation tech demo where objects can dynamically rust and erode based on player actions. Built using an in-development version of S&box engine.
 
-![GIF placeholder](media/720p.png)
+![GIF placeholder](media/multi_image.jpg)
 
 ## Some details
 
