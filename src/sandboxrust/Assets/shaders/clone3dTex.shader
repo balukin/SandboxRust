@@ -5,7 +5,7 @@ MODES
 
 COMMON
 {
-	#include "common/shared.hlsl"
+    #include "common/shared.hlsl"
 }
 
 CS

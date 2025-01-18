@@ -11,8 +11,8 @@ MODES
 
 COMMON
 {
-	#include "common/shared.hlsl"
-	#include "common/classes/AmbientLight.hlsl"	 
+    #include "common/shared.hlsl"
+    #include "common/classes/AmbientLight.hlsl"	 
     #include "common/rust_helpers.hlsl"
 
     #define S_TRANSLUCENT 1
@@ -24,25 +24,25 @@ COMMON
 
 struct VertexInput
 {
-	#include "common/vertexinput.hlsl"
+    #include "common/vertexinput.hlsl"
 };
 
 struct PixelInput
 {
-	#include "common/pixelinput.hlsl"
+    #include "common/pixelinput.hlsl"
     float3 vPositionOs : TEXCOORD8;
 };
 
 VS
 {
-	#include "common/vertex.hlsl"
+    #include "common/vertex.hlsl"
 
-	PixelInput MainVs( VertexInput i )
-	{
+    PixelInput MainVs( VertexInput i )
+    {
         PixelInput o = ProcessVertex( i );
         o.vPositionOs = i.vPositionOs.xyz;
         return FinalizeVertex( o );
-	}
+    }
 }
 
 PS
@@ -63,11 +63,11 @@ PS
     RenderState(DepthFunc, GREATER);
 
 
-	float4 MainPs( PixelInput i ) : SV_Target0
-	{    
+    float4 MainPs( PixelInput i ) : SV_Target0
+    {    
         float3 samplePos = ObjectToTextureSpace(i.vPositionOs, g_vBoundsMin, g_vBoundsScale);
         float3 rustData = g_tRustDataRead.Sample(g_sPointClamp, samplePos);
         
         return float4(rustData.rgb, 1.0);
-	}
+    }
 }

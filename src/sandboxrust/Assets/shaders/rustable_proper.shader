@@ -11,8 +11,8 @@ MODES
 
 COMMON
 {
-	#include "common/shared.hlsl"
-	#include "common/classes/AmbientLight.hlsl"	 
+    #include "common/shared.hlsl"
+    #include "common/classes/AmbientLight.hlsl"	 
     #include "common/rust_helpers.hlsl"
     // https://github.com/Auburn/FastNoiseLite under MIT from Jordan Peck and other contributors
     #include "common/fast_noise_lite.hlsl" 
@@ -31,34 +31,34 @@ COMMON
 
 struct VertexInput
 {
-	#include "common/vertexinput.hlsl"
+    #include "common/vertexinput.hlsl"
 }; 
 
 struct PixelInput 
 {
-	#include "common/pixelinput.hlsl"
+    #include "common/pixelinput.hlsl"
     float3 vPositionOs : TEXCOORD8;
 };
 
 VS
 {
-	#include "common/vertex.hlsl"
+    #include "common/vertex.hlsl"
 
-	PixelInput MainVs( VertexInput i )
-	{
+    PixelInput MainVs( VertexInput i )
+    {
         PixelInput o = ProcessVertex( i );
         o.vPositionOs = i.vPositionOs.xyz;
         return FinalizeVertex( o );
-	}
+    }
 }
 
 PS
 {
-	#include "vr_environment_map.fxc"    
-	#include "light_probe_volume.fxc"
-	#include "envmap_filtering.hlsl"
+    #include "vr_environment_map.fxc"    
+    #include "light_probe_volume.fxc"
+    #include "envmap_filtering.hlsl"
 
-	// Finds the closest environment map and samples it, loosely based on base library AmbientLight::FromEnvMapProbe
+    // Finds the closest environment map and samples it, loosely based on base library AmbientLight::FromEnvMapProbe
     float3 SampleMetallicReflection(float3 WorldPosition, float2 ScreenPosition, float3 WorldNormal, float3 ViewDir)
     {
         // Calculate reflection vector
@@ -75,7 +75,7 @@ PS
         for (uint i = 0; i < GetNumEnvMaps(tile); i++)
         {
             const uint index = TranslateEnvMapIndex(i, tile);
-			const float edgeFeathering = EnvMapFeathering(index);
+            const float edgeFeathering = EnvMapFeathering(index);
 
             
             // Transform world position to environment map local space
@@ -92,8 +92,8 @@ PS
         // Sample only the closest environment map
         if (closestDistance < 100000.0f)
         {
-			// What is this second parameter? Seems to sampling mip level?
-			// 0.1 should be good enough for semi-blurry reflections
+            // What is this second parameter? Seems to sampling mip level?
+            // 0.1 should be good enough for semi-blurry reflections
             reflectionColor = SampleEnvironmentMapLevel(reflectDir, 0.1f, closestIndex);		
         }
 
@@ -211,8 +211,8 @@ PS
     }
 
 
-	float4 MainPs( PixelInput i ) : SV_Target0
-	{  
+    float4 MainPs( PixelInput i ) : SV_Target0
+    {  
         float3 samplePos = ObjectToTextureSpace(i.vPositionOs, g_vBoundsMin, g_vBoundsScale);
         float3 absoluteWorldPos = i.vPositionWithOffsetWs + g_vCameraPositionWs;
 
@@ -240,5 +240,5 @@ PS
         // Blend it with rust clearly overlaying the base color and moisture a tiny bit more transparent
         // Probably could use a more sophisticated blend mode config instead
         return float4(finalColor, max(baseRust, moisture/1.4));
-	}
+    }
 }
