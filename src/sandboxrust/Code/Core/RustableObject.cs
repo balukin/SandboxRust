@@ -49,6 +49,12 @@ public sealed class RustableObject : Component
 	public Vector3 ErosionTarget { get; set; }
 
 	/// <summary>
+	/// If > 0, it will expand the mesh vertex positions by this amount when creating the hull in all axes.
+	/// </summary>
+	[Property]
+	public float VertexHullBias = 0.0f;
+
+	/// <summary>
 	/// If set, it will override the volume resolution for this object and will ignore the quality system settings.
 	/// </summary>
 	/// <remarks>
@@ -264,7 +270,7 @@ public sealed class RustableObject : Component
 		// No more than 10 in case other conditions are invalid
 		for ( var densificationTurn = 0; densificationTurn < 10; densificationTurn++ )
 		{
-			var result = meshDensifier.Densify( 5f );
+			var result = meshDensifier.Densify( 5f, VertexHullBias );
 
 			if ( result.newTriangleCount > 50_000 )
 			{
@@ -639,7 +645,7 @@ public sealed class RustableObject : Component
 
 		// This is also costly and we're 99.(9)% safe to do it off main thread because we're not touching any engine code
 		await GameTask.WorkerThread();
-		var hull = new MeshHull( newVertices, bb );
+		var hull = new MeshHull( newVertices, bb, VertexHullBias );
 		await GameTask.MainThread();
 
 		var mesh = new Mesh();

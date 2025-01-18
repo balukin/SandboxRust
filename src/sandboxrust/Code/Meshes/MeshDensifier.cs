@@ -83,7 +83,7 @@ public class MeshDensifier : Component
 	/// <remarks>
 	/// This will only run a one pass of subdivision. Use result to decide if more passes are needed.
 	/// </remarks>
-	public DensificationResult Densify(float maxEdgeLength )
+	public DensificationResult Densify(float maxEdgeLength, float hullVertexBias = 0.0f )
 	{
 		var sw = Stopwatch.StartNew();
 		
@@ -253,7 +253,7 @@ public class MeshDensifier : Component
 		// Log.Info( $"Mesh bounds: {bounds}" );
 		// Log.Info( "Mesh is valid: " + mesh.IsValid() );
 
-		var hull = new MeshHull( vertices, bb );
+		var hull = new MeshHull( vertices, bb, hullVertexBias );
 
 		var newModel = Model.Builder
 			.AddMesh( mesh )
