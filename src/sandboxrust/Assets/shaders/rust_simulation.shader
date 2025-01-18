@@ -1,18 +1,20 @@
 // RGB Reminder: R for rust, G for moisture, B for structural strength
 // Simulation rules:
-// - ignore the fact that object may be concave, simulation can run across the gaps of the mesh as if it was a box
-// - treat everything as water-permeable 
-// MOISURE
-// - Water drips from the top of the object down (z axis) in world space
-// CORROSION
-// - Rust begins to grow on the surface of the object that is wet
-// - Simplified rust growth is a function of
-//     - surface moisture
-//     - atmospheric oxygen 
-//     - amount of water vapor in the air (sort of a global rustability factor)
-//     - neighboring rust (made-up physics: rust-damaged surface exposes more iron to the air)
-// - We ignore time factor, oxygen amount is linearly related to rusting speed so adding more oxygen will speed up the rusting process without
-//   having to implement time control (which would have to affect physics simulation speed, too)
+// - Simulates rust formation in 3D space using a volume texture
+// - Water and rust can propagate across the entire volume, ignoring mesh topology
+// MOISTURE
+// - Water drips downward along world space Z axis with evaporation
+// - Creates natural streaking patterns using procedural noise
+// - Global evaporation affects all moisture over time
+// RUST
+// - Rust growth depends on:
+//     - Moisture levels
+//     - Atmospheric oxygen (configurable global parameter called "Rusting Speed" in the UI)
+//     - Neighboring rust influence (configurable spread factor)
+//     - Base growth rate constant
+// STRUCTURAL
+// - Structural integrity decreases as rust accumulates
+// - Degradation begins when rust level exceeds 50%
 MODES
 {
     Default();
@@ -62,7 +64,7 @@ CS
     // Attenuate the drip to simulate evaporation or something
     float GetWaterDripEvaporationRate()
     {
-        return 0.12 * (64.0 / float(g_iVolumeResolution));
+        return WATER_DRIP_EVAPORATION_RATE * (64.0 / float(g_iVolumeResolution));
     }
 
     float GetStreakBias(float3 texCoord)
@@ -178,7 +180,6 @@ CS
         // - Base growth rate
         // - Moisture level
         // - Oxygen level
-        // - Water vapor
         // - Neighboring rust
         float moistureGrowth  = currentMoisture / 2.0;
         float neighborInfluence = neighboringRust * g_flNeighborRustInfluence;
