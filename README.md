@@ -33,7 +33,7 @@ See [ASSETS.md](ASSETS.md) for more information.
 
 ## Why?
 
-Mostly to learn one or two new things. S&Box is a very interesting project and has been fun to work on. The drag and drop asset pipeline is a joy to use. I don't really plan to build a game or anything on top of this project, but I prefer to learn new tools by doing something with them so it was a good opportunity.
+Mostly to learn one or two new things. S&Box is a very interesting project and has been fun to work with. The drag and drop asset pipeline is a joy to use. I don't really plan to build a game or anything on top of this project, but I prefer to learn new tools by doing something with them so it was a good opportunity.
 
 ## Development
 
