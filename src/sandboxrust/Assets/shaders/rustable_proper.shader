@@ -21,10 +21,6 @@ COMMON
     CreateInputTexture3D( RustDataRead, Srgb, 8, "", "_rustdata_read", "Material,10/10", Default3( 1.0, 1.0, 1.0 ) );
     CreateTexture3D( g_tRustDataRead ) < Channel( RGB, Box( RustDataRead ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;    
 
-    float3 g_fFlashlightPosition < Attribute("FlashlightPosition"); >;
-    float3 g_fFlashlightDirection < Attribute("FlashlightDirection"); >;
-    float g_fFlashlightIntensity < Attribute("FlashlightIntensity"); >;
-    float g_fFlashlightAngle < Attribute("FlashlightAngle"); >;
     bool g_bSoftRustEnabled < Attribute("SoftRustEnabled"); >;
     int g_iVolumeResolution < Attribute("VolumeResolution"); Default(64); >;
 }
@@ -59,13 +55,13 @@ PS
     #include "envmap_filtering.hlsl"
 
     // Finds the closest environment map and samples it, loosely based on base library AmbientLight::FromEnvMapProbe
-    float3 SampleMetallicReflection(float3 WorldPosition, float2 ScreenPosition, float3 WorldNormal, float3 ViewDir)
+    float3 SampleMetallicReflection(float3 worldPosition, float2 screenPosition, float3 worldNormal, float3 toCameraDir)
     {
         // Calculate reflection vector
-        float3 reflectDir = reflect(-ViewDir, WorldNormal);
+        float3 reflectDir = reflect(-toCameraDir, worldNormal);
         
         // Get the tile based on screen position
-        const uint2 tile = GetTileForScreenPosition(ScreenPosition);
+        const uint2 tile = GetTileForScreenPosition(screenPosition);
         
         float3 reflectionColor = float3(0, 0, 0);
         float closestDistance = 100000.0f;
@@ -79,7 +75,7 @@ PS
 
             
             // Transform world position to environment map local space
-            const float3 localPos = mul(float4(WorldPosition, 1.0f), EnvMapWorldToLocal(index)).xyz;
+            const float3 localPos = mul(float4(worldPosition, 1.0f), EnvMapWorldToLocal(index)).xyz;
             
             float distance = length(localPos);
             if (distance < closestDistance)
@@ -185,8 +181,8 @@ PS
         detail.color = baseColor * rustAmount;
 
         // Simple normal perturbation from noise
-        const float PerturbationMultiplier = 0.25;
-        float3 rustPerturbation = float3((combined - 0.5) * 2.0, (colorVal - 0.5) * 2.0, (rustAmount - 0.5) * 2.0) * PerturbationMultiplier;
+        const float perturbationMultiplier = 0.25;
+        float3 rustPerturbation = float3((combined - 0.5) * 2.0, (colorVal - 0.5) * 2.0, (rustAmount - 0.5) * 2.0) * perturbationMultiplier;
         detail.normal = normalize(normal + rustPerturbation);
 
         return detail;
@@ -227,10 +223,10 @@ PS
         float4 standardColor = ShadeStandard(i, finalRustDetail.normal, finalRustDetail.color, baseRust, moisture);
 
         // Calculate view direction for reflections
-        float3 viewDir = normalize(g_vCameraPositionWs - absoluteWorldPos);
+        float3 toCameraDir = normalize(g_vCameraPositionWs - absoluteWorldPos);
         
         // Sample environment reflections
-        float3 reflectionColor = SampleMetallicReflection(absoluteWorldPos, i.vPositionSs.xy, i.vNormalWs, viewDir);
+        float3 reflectionColor = SampleMetallicReflection(absoluteWorldPos, i.vPositionSs.xy, i.vNormalWs, toCameraDir);
         
         // Blend reflection based on moisture (wetter = more reflective)
         // Also reduce reflection intensity on very rusty areas
