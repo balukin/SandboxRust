@@ -1986,27 +1986,6 @@
                   "Tint": "1,1,1,1"
                 },
                 {
-                  "__type": "Sandbox.BoxCollider",
-                  "__guid": "df394978-fc8a-4d88-b035-1fc214ced9b1",
-                  "Center": "0,0,0",
-                  "Friction": null,
-                  "IsTrigger": false,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "OnObjectTriggerEnter": null,
-                  "OnObjectTriggerExit": null,
-                  "OnTriggerEnter": null,
-                  "OnTriggerExit": null,
-                  "Scale": "50,50,50",
-                  "Static": false,
-                  "Surface": "props/hittable_surface.surface",
-                  "SurfaceVelocity": "0,0,0"
-                },
-                {
                   "__type": "Sandbox.Rigidbody",
                   "__guid": "eb351f09-55f2-4756-ae95-3b70222fb50f",
                   "__enabled": false,
@@ -2057,6 +2036,26 @@
                   "OnComponentStart": null,
                   "OnComponentUpdate": null,
                   "RotationSpeedDegPerSec": 3
+                },
+                {
+                  "__type": "Sandbox.ModelCollider",
+                  "__guid": "db67b494-39ad-480d-bbe2-12a6cd95fa8a",
+                  "Friction": null,
+                  "IsTrigger": false,
+                  "Model": "models/dev/box.vmdl",
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "OnObjectTriggerEnter": null,
+                  "OnObjectTriggerExit": null,
+                  "OnTriggerEnter": null,
+                  "OnTriggerExit": null,
+                  "Static": false,
+                  "Surface": null,
+                  "SurfaceVelocity": "0,0,0"
                 }
               ]
             },
