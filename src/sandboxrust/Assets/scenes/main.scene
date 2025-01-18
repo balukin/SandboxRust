@@ -732,22 +732,22 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "OxygenLevel": 1
+          "OxygenLevel": 0.3
         },
         {
           "__type": "RustSystem",
           "__guid": "22e080c3-a42e-449f-b4fe-9dab33243f90",
-          "ErosionFrequency": 241,
+          "ErosionFrequency": 199,
           "RenderingMode": "Colored",
           "SimulationFrequency": 7,
-          "ErosionStrength": 1.5,
+          "ErosionStrength": 1.7,
           "Flashlight": {
             "_type": "component",
             "component_id": "97706068-f980-4650-aa2f-a7597e0c549f",
             "go": "7e271c7d-0bd5-47c3-bc31-d38ccad99fb2",
             "component_type": "Flashlight"
           },
-          "NeighborRustInfluence": 0.2,
+          "NeighborRustInfluence": 0.333,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,

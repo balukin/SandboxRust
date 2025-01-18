@@ -10,11 +10,11 @@ public class RustSystem : Component
 
     [Property]
     [Range( 0, 10 )]
-	public float ErosionStrength { get; set; } = 1.5f;
+	public float ErosionStrength { get; set; } = 1.7f;
     
     [Property]
     [Range( 0, 5 )]
-    public float NeighborRustInfluence { get; set; } = 0.2f;
+    public float NeighborRustInfluence { get; set; } = 0.33f;
 
 	private long frameCount = 0;
 
@@ -32,7 +32,7 @@ public class RustSystem : Component
     /// </summary>
     [Property]
     [Range( 1, 500 )]
-    public int ErosionFrequency = 241;
+    public int ErosionFrequency = 199;
 
     /// <summary>
     /// Collection of all known active rustable objects
